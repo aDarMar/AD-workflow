@@ -1,0 +1,170 @@
+function [rem_ch] = sizing_plot(TLARS,CLmax_TO_vett,...
+    CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,...
+    CD0,TisaoT50,...
+    WcroWTO,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,rem_ch)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+%%
+figure(fig_aux.Number)
+subplot 211; hold on
+grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
+ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
+subplot 212; hold on
+grid minor; xlabel('W$_{TO}$ / S [lb/ft$^2$]','Interpreter','latex','FontSize',16);
+ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
+
+[fig_TO,LEG_TO]   = sizing_plot_TO( TLARS.TO.fieldmax,CLmax_TO_vett,sigma );
+[fig_LND,LEG_LND] = sizing_plot_LND( TLARS.LND.SGmax,CLmax_LND_vett,sigma,WLNDoWTO );
+[fig_CL,LEG_CL]   = sizing_plot_Climb( CLmax_TO_vett,CLmax_LND_vett,CLmax_CR_vett,...
+    TLARS.e,TLARS.de_TO,TLARS.de_LND,...
+    CD0,TLARS.dCD0_f_TO,TLARS.dCD0_f_LND,TLARS.dCD0_f_App,TLARS.dCD0_lgs,...
+    TLARS.AR,TLARS.nengine,WLNDoWTO,TLARS.T0oTmc,TisaoT50 );
+[fig_CR,LEG_CR]   = sizing_plot_Cruise( CD0,V_cr_vett,h_cr_vett,WcroWTO,TLARS.e,TLARS.AR,phi_v );
+
+% figure
+% hold on
+%% Take-Off
+nTO = length(CLmax_TO_vett);
+if nargin <15
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    disp( '%%%%%%%%%%%%%%%%%%%%%% TAKE-OFF %%%%%%%%%%%%%%%%%%%%%%%%')
+    disp(' Choose CL max at TO to display' );
+    disp( CLmax_TO_vett );
+    scelte = scelta_fun(nTO);
+else
+    scelte = rem_ch.idxs( 1:rem_ch.n(1) );
+end
+% scelte = listdlg( ...
+%     'PromptString', 'Scegli quali grafici visualizzare:', ...
+%     'SelectionMode', 'multiple', ...
+%     'ListString', {num2str(CLmax_TO_vett)}, ...
+%     'InitialValue', 1:nTO );
+j = 1;
+for i =1:nTO
+    if ismember(i,scelte)
+        set(fig_TO(i,1), 'Visible','on');
+        i_G(j) = i;
+        j = j+1;
+    end
+end
+n_v(1) = j-1;
+%% Landing
+nTO = length(CLmax_LND_vett);
+if nargin <15
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    disp( '%%%%%%%%%%%%%%%%%%%%%% LANDING %%%%%%%%%%%%%%%%%%%%%%%%')
+    disp(' Choose CL max at LANDING to display' );
+    disp( CLmax_LND_vett );
+    scelte = scelta_fun(nTO);
+else
+    scelte = rem_ch.idxs( rem_ch.n(1)+1:rem_ch.n(2) );
+end
+for i =1:nTO
+    if ismember(i,scelte)
+        set(fig_LND(i,1), 'Visible','on');
+        i_G(j) = i;
+        j = j+1;
+    end
+end
+n_v(2) = j-1;
+
+%% CLIMB
+nTO = length(CLmax_LND_vett);
+if nargin<15
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    disp( '%%%%%%%%%%%%%%%%%%%%%% CLIMB %%%%%%%%%%%%%%%%%%%%%%%%')
+    disp(' Choose the combination of CL maxes at each Climb phase: ' );
+    disp( 1:nTO )
+    disp( [' TO     >> ',num2str(CLmax_TO_vett)] );
+    disp( [' Cruise >> ',num2str(CLmax_CR_vett)] );
+    disp( [' LND    >> ',num2str(CLmax_LND_vett)] );
+    scelte = scelta_fun(nTO);
+else
+    scelte = rem_ch.idxs( rem_ch.n(2)+1:rem_ch.n(3) );
+end
+for i =1:nTO
+    if ismember(i,scelte)
+        subplot 211
+        set(fig_CL(i,1:6), 'Visible','on');
+        i_G(j) = i;
+        j = j+1;
+    end
+end
+n_v(3) = j-1;
+
+%% CRUISE
+nTO = length(h_cr_vett);
+if nargin <15
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    disp( '%%%%%%%%%%%%%%%%%%%%%% CRUISE %%%%%%%%%%%%%%%%%%%%%%%%')
+    disp(' Choose the h-V-phi combination in CRUISE to display' );
+    disp( 1:nTO )
+    disp( [' Altitude [m]   >> ',num2str(h_cr_vett)] );
+    disp( [' Speed    [m/s] >> ',num2str(V_cr_vett)] );
+    disp( [' Admission [%]  >> ',num2str(phi_v)] );
+    scelte = scelta_fun(nTO);
+else
+    scelte = rem_ch.idxs( rem_ch.n(3)+1:rem_ch.n(4) );
+end
+for i =1:nTO
+    if ismember(i,scelte)
+        set(fig_CR([1,3,5],i), 'Visible','on');
+        i_G(j) = i;
+        j = j+1;
+    end
+end
+disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+n_v(4) = j-1;
+
+temp = fig_CR( [1,3,5],i_G(n_v(3)+1:n_v(4)) ); temp=temp(:);
+
+idx_t = 0; idx_n = n_v(3)+1:n_v(4);
+for k = 1:( n_v(4) - n_v(3) )
+    idx_t = [idx_t,1+3*( i_G(idx_n(k))-1 ):3*( i_G(idx_n(k)) )];
+end
+idx_t = idx_t(2:end);
+%temp2 = LEG_CR{ i_G( n_v(3)+1:n_v(4) ) }; temp2 = temp2{:}';
+legend( [ fig_TO( i_G(1:n_v(1) ),1 );fig_LND( i_G(n_v(1)+1:n_v(2) ),1 );...
+    fig_CL( i_G( n_v(2)+1:n_v(3) ),1:6 )'; temp ]  ,...
+    { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
+     LEG_CR{idx_t} } );
+subplot 212
+%set(gca, 'Visible', 'off');  % Nasconde gli assi (ma lascia la trama)
+
+rem_ch.idxs = i_G; rem_ch.n = n_v;
+
+
+%% Grafica
+%fig_ri = figure(fig_ri.Number);
+figure(fig_ri.Number)
+ax_fig = axes('Parent', fig_ri); axis([0,1000,0,1]); hold on;  
+grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
+ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
+tmp = [ fig_TO( i_G(1:n_v(1) ),1 );fig_LND( i_G(n_v(1)+1:n_v(2) ),1 );...
+    fig_CL( i_G( n_v(2)+1:n_v(3) ),1:6 )'; temp ];
+n_tmp = length(tmp);
+for i = 1:n_tmp
+    copyobj(tmp(i),ax_fig);
+end
+legend( ax_fig, { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
+     LEG_CR{idx_t} },'Interpreter','latex','FontSize',16 )
+% copyobj( [ fig_TO( i_G(1:n_v(1) ),1 );fig_LND( i_G(n_v(1)+1:n_v(2) ),1 );...
+%     fig_CL( i_G( n_v(2)+1:n_v(3) ),1:6 )'; temp ],ax_fig );
+% legend( ax_fig  ,...
+%     { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
+%      LEG_CR{idx_t} },'Interpreter','latex','FontSize',16 );
+end
+
+function scelta = scelta_fun(nTO)
+scelta = zeros(nTO,1);
+disp('-1 to end');
+i = 1; temp = 1;
+    while i<nTO+1 && temp>0
+        scelta(i) = temp;
+        temp = input('>>');
+       i = i+1;
+    end
+    scelta(i) = temp;
+    scelta = scelta(2:end);
+end

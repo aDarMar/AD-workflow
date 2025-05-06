@@ -1,0 +1,161 @@
+Yakovlev	Company
+MS-21	Family
+310	Model
+	Other Name
+Crew	
+	npax max full economy
+	n piloti
+	n ass. volo
+Weights: 	
+	Ramp (kg)
+85000	Max. take-off (kg)
+73500	Max. landing (kg)
+	Zero-fuel
+21300	Max. payload
+20400	Max. fuel payload
+	Design payload
+	Design fuel load
+	Operational empty
+	Basic Empty Weight
+Fuel_(litres)	
+	Wing
+	CT
+	RCT
+	ACTs
+DIMENSIONS	
+42.25	Length (m)
+4.06	Height (m)
+	Width (m)
+	Finess Ratio
+Fuselage Volumes  (m^3)	
+	Non equipped
+	Passengers Compartment
+	Cockpit
+Cargo Compartment	
+	FWD
+	ADR
+49	BULK
+Wing:	
+	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+	Tip. Chord (m)
+	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+	x Leading Edge tip (m)
+	Y kink (m)
+35.9	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+Horizontal:	
+	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+	Tip. Chord (m)
+	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sh/S
+	ShLh/Sc
+	Elevator Chord (m)
+	ce/c
+Vertical:	
+	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+	Tip. Chord (m)
+	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sv/S
+	SvLv/Sb
+	Rudder  Chord (m)
+	cr/c
+Undercarriage:	
+	Track (m)
+	Wheelbase (m)
+	Turning radius (m)
+	Main Wheel diameter (m)
+	Main Wheel width (m)
+	"No. of wheels (nose;main)"
+Nacelle:	
+	Length (m)
+	Max. width (m)
+	Max. height (m)
+	n
+	x_pos (m)
+	Spanwise location
+Performances:	
+Take-Off	
+2700	ISA sea level (m)
+	ISA +15ºC SL.
+	ISA 5000ft
+	ISA +15ºC 5000ft
+	V2 (kts) (IAS)
+Landing	
+	ISA sea level (m)
+	ISA +15ºC SL.
+	ISA 5000ft
+	ISA +15ºC 5000ft
+136	Vapp (kts) (IAS)
+Cruise	
+	V (kts) (TAS)
+	M
+	h cruise (ft)
+	e
+	Cd0
+Range	
+	Max. payload
+	Design range
+	Max. fuel (+ payload)
+5100	Ferry range
+ROCs	
+	h_1 (ft)
+	RC_1 (ft/min)
+	h_2 (ft)
+	RC_2 (ft/min)
+	h_3 (ft)
+	RC_3 (ft/min)
+Thrust	
+274680	Static Thrust (N)
+	Max Continous (N)
+	TSFC

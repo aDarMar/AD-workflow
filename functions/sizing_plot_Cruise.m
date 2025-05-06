@@ -1,0 +1,55 @@
+function [fig,LEG] = sizing_plot_Cruise(CD0,Vcr,h_cruise,WcroWTO,e,AR,phi_v,T0oTcr)
+%sizing_plot_Cruise Function that draws the cruise limitation for a jet
+%airplane. Inputs can be vector and in such case, every element corresponds
+%to a specific flight condition
+%   CD0: zero-lift drag coefficie in cruise (clean config)
+%   Vcr: cruise speed in [m/s]
+%   h_cruise : cruise altitude in [m]
+%   WTOoWcr: vector containing weigth ratios between [end of climb (4), end
+%       of cruise (5) ] weights over WTO weight
+%   e: oswald factor in cruise Uclean config.)
+%   AR: Imposed AR
+%   phi_v: vector of admission rates [-]
+%   T0oTcr: ratio of max static thrust over Thrust in cruise. If not given
+%       the model Tcr = T0*phi*sigma will be used
+
+nConds = length(Vcr);
+COND = {'Initial W ','Final W ','Avg. W '};
+nW = length( WcroWTO );
+if nW == 2
+    WcroWTO(3) = ( WcroWTO(1) + WcroWTO(2) ) *0.5;
+    nW = nW + 1;
+end
+K = 1/(pi*AR*e);
+WoS = linspace(0,700,100); % [Kg/m^2]
+for j = 1:nConds
+    [T, a, P, rho] = atmosisa(h_cruise(j));
+    
+    sigma = rho/1.225;
+    if nargin < 8
+        T0oTcr = 1/(0.71*sigma*phi_v(j));
+    end
+    q = 0.5*sigma*1.225*Vcr(j)^2;
+
+    for i = 1:nW
+        ToW = ( CD0*q./(WoS*9.81)/WcroWTO(i) + K/q .* (WoS*9.81)*WcroWTO(i) )*WcroWTO(i)*T0oTcr; %WoS in [Kgf]
+        
+        subplot 211; hold on
+        fig(2*i-1,j) = plot( WoS,ToW );
+        fig(2*i-1,j).LineStyle = '-'; fig(2*i-1,j).LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
+        col = rand(1,3); fig(2*i-1,j).MarkerEdgeColor = col;
+        %set(fig(2*i-1,j), 'Visible','off');
+        LEG{i+(j-1)*3} = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
+            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
+        %axis([0,1000,0,1])
+        
+        subplot 212; hold on
+        fig(2*i,j) = plot( WoS*2.204623/(3.28084^2),ToW );
+        fig(2*i,j).LineStyle = '-'; fig(2*i,j).LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
+        col = rand(1,3); fig(2*i,j).MarkerEdgeColor = col;
+        %set(fig(2*i,j), 'Visible','off');
+        %axis([0,280,0,1])
+    end
+    
+end
+end

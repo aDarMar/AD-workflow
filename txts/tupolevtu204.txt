@@ -1,0 +1,156 @@
+	Company
+tupolev	Family
+tu 204	Model
+	Other Name
+Weights:	
+103350	Ramp (kg)
+103000	Max. take-off (kg)
+89500	Max. landing (kg)
+84600	Zero-fuel
+	Max. payload
+	Max. fuel payload
+	Design payload
+	Design fuel load
+	Operational empty
+	Basic Empty Weight
+Fuel_(litres)	
+	Wing
+	CT
+	RCT
+	ACTs
+DIMENSIONS	
+41	Length (m)
+13.9	Height (m)
+	Width (m)
+	Finess Ratio
+Fuselage Volumes  (m^3)	
+	Non equipped
+	Passengers Compartment
+	Cockpit
+Cargo Compartment	
+	FWD
+	ADR
+	BULK
+Wing:	
+	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+	Tip. Chord (m)
+	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+	x Leading Edge tip (m)
+	Y kink (m)
+41.84	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+4.61	MAC (m)
+Horizontal:	
+	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+	Tip. Chord (m)
+	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sh/S
+	ShLh/Sc
+	Elevator Chord (m)
+	ce/c
+Vertical:	
+	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+	Tip. Chord (m)
+	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sv/S
+	SvLv/Sb
+	Rudder  Chord (m)
+	cr/c
+Undercarriage:	
+	Track (m)
+	Wheelbase (m)
+	Turning radius (m)
+	Main Wheel diameter (m)
+	Main Wheel width (m)
+	"No. of wheels (nose;main)"
+Nacelle:	
+	Length (m)
+	Max. width (m)
+	Max. height (m)
+	n
+	x_pos (m)
+	Spanwise location
+Performances:	
+Take-Off	
+	ISA sea level (m)
+	ISA +15ºC SL.
+	ISA 5000ft
+	ISA +15ºC 5000ft
+160	V2 (kts) (IAS)
+Landing	
+	ISA sea level (m)
+	ISA +15ºC SL.
+	ISA 5000ft
+	ISA +15ºC 5000ft
+140	Vapp (kts) (IAS)
+Cruise	
+450	V (kts) (TAS)
+0.79	M
+38000	h cruise (ft)
+	e
+	Cd0
+Range	
+	Max. payload
+5000	Design range
+	Max. fuel (+ payload)
+	Ferry range
+ROCs	
+15000	h_1 (ft)
+2300	RC_1 (ft/min)
+ROCs	
+5000	h_1 (ft)
+3500	RC_1 (ft/min)
+Thrust	
+	Static Thrust (N)
+	Max Continous (N)
+	TSFC

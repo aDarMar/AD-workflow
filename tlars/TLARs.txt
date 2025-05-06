@@ -1,0 +1,42 @@
+TLARS
+General
+250	npax
+	ncrew
+2 npil
+Aerodynamics
+10	AR
+0.85	Oswald Factor in Clean config
+0.01	dCD0 due to flaps in Take-Off config
+0.055	dCD0 due to flaps in landing config
+	dCD0 due to flaps in Approach config
+0.015	dCD0 due to deployed landing gears
+0.05	delta oswald in Take-Off (negative)
+0.1	delta oswald in Landing (negative)
+Propulsion
+1.0	T0 over Tmax continous
+2	n. of engines
+Take-Off
+8000	max T/O field length (FAR25) [ft]
+Climb
+1500	avg. RoC [ft/min]
+300	avg. Vel [kts]
+16	avg. Efficiency [-]
+0.53	TSFC [1/hr]
+Cruise
+39000	cruise ceil [ft]
+4800	cruise range [nmi]
+0.83	cruise mach [-]
+16	avg. Efficiency [-]
+0.53	TSFC [1/hr]
+Loiter
+18	avg. Efficiency [-]
+0.53	TSFC [1/hr]
+45	Loiter time [min]
+Alternate
+29000	cruise ceil [ft]
+250	alternate range [nmi]
+0.7	alternate mach [-]
+18	avg. Efficiency [-]
+0.53	TSFC [1/hr]
+Landing
+4000	Landing Field Length[ft]

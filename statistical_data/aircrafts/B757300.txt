@@ -1,0 +1,166 @@
+Boeing	Company
+B757	Family
+300	Model
+B753	Other Name
+Crew	
+279	npax max full economy
+2	n piloti
+	n ass. volo
+Weights:	
+122930	Ramp (kg)
+122470	Max. take-off (kg)
+101610	Max. landing (kg)
+95260	Zero-fuel
+30690	Max. payload    (Pto A)
+	payload @ Max. fuel (Pto B)
+	Max. fuel weight    (Pto B)
+	Design payload      (Pto D)
+	Design fuel load    (Pto D)
+64580	Operational empty
+63215.65	Basic Empty Weight
+	Empty Mass (kg)
+Fuel_(litres)	
+Usable(Lt)
+43495	Wing
+0	CT
+0	RCT
+0	ACTs
+Unusable(Lt)
+	Total
+DIMENSIONS	
+54.43	Length (m)
+4.01	Height (m)
+3.76	Width (m)
+13.57356608	Finess Ratio
+Fuselage Volumes  (m^3)	
+	Non equipped
+	Passengers Compartment
+	Cockpit
+Cargo Compartment	
+18.1	FWD
+29.7	AFT
+	BULK
+Wing:	
+8.82	Root Chord (m)
+8.10	Exp Root Chord (m)
+5.07	Kink Chord (m)
+1.89	Tip. Chord (m)
+22.3	x Leading Edge c_exp (m)
+25.3	x Leading Edge kink(m)
+31.3	x Leading Edge tip (m)
+7.76	Y kink (m)
+38.06	Span (m)
+185.25	Area (m²)
+25	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+7.819506613	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+Horizontal:	
+4.63	Root Chord (m)
+4.34	Exp Root Chord (m)
+	Kink Chord (m)
+1.74	Tip. Chord (m)
+47.3	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+51.8	x Leading Edge tip (m)
+1.61	Y Exp. Root (m)
+	Y kink (m)
+15.22	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sh/S
+	ShLh/Sc
+1.42	Elevator Chord (m)
+	ce/c
+Vertical:	
+7.39	Root Chord (m)
+6.8	Exp Root Chord (m)
+	Kink Chord (m)
+2.32	Tip. Chord (m)
+44.7	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+52.0	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+7.3	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sv/S
+	SvLv/Sb
+2.37	Rudder  Chord (m)
+	cr/c
+Undercarriage:	
+7.32	Track (m)
+22.35	Wheelbase (m)
+	Turning radius (m)
+	Main Wheel diameter (m)
+	Main Wheel width (m)
+	"No. of wheels (nose;main)"
+Nacelle:	
+	Length (m)
+2.46	Max. width (m)
+	Max. height (m)
+2	n
+	x_pos (m)
+	Spanwise location
+Performances:	
+Take-Off	
+2387	ISA sea level (m)
+2531	ISA +15ºC SL.
+4285	ISA 4000ft
+4075	ISA +15ºC 4000ft
+145	V2 (kts) (IAS)
+Landing	
+1725	ISA sea level (m)
+	ISA +15ºC SL.
+1900	ISA 4000ft
+	ISA +15ºC 4000ft
+143	Vapp (kts) (IAS)
+Cruise	
+490	V (kts) (TAS)
+0.8	M
+41000	h cruise (ft)
+	e
+	Cd0
+Range	
+2266	Max. payload (nmi)
+2900	Design range (nmi)
+3187	Max. fuel (+ payload) (nmi)
+4108	Ferry range (nmi)
+ROCs	
+5000	h_1 (ft)
+3000	RC_1 (ft/min)
+15000	h_2 (ft)
+3000	RC_2 (ft/min)
+24000	h_3 (ft)
+2500	RC_3 (ft/min)
+Thrust	
+191580	Static Thrust (N)
+180500	Max Continous (N)
+	TSFC

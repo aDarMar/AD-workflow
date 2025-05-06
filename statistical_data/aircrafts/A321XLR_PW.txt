@@ -1,0 +1,165 @@
+Airbus	Company
+A321	Family
+neoXLR	Model
+271NY	Other Name
+Crew	
+220	npax max full economy
+2	n piloti
+5	n ass. volo
+Weights:	
+101400	Ramp (kg)
+101000	Max. take-off (kg)
+79200	Max. landing (kg)
+75600	Zero-fuel (kg) 
+23500	Max. payload    (Pto A)
+	payload @ Max. fuel (Pto B)
+	Max. fuel weight    (Pto B)
+	Design payload      (Pto D)
+	Design fuel load    (Pto D)
+	Operational empty
+46600	Minimum Weight
+	Empty Mass (kg)
+Fuel_(litres)	
+Usable(Lt)
+15380	Wing
+8150	CT
+13100	RCT
+3120	ACTs
+Unusable(Lt)
+251	Total
+DIMENSIONS	
+44.51	Length (m)
+4.14	Height (m)
+3.95	Width (m)
+	Finess Ratio
+Fuselage Volumes  (m^3)	
+418	Non equipped
+155	Passengers Compartment
+9	Cockpit
+Cargo Compartment	
+16.19	FWD
+13.25	ADR
+5.88	BULK
+Wing:	
+	Root Chord (m)
+6.24	Exp Root Chord (m)
+4.03	Kink Chord (m)
+1.46	Tip. Chord (m)
+17.0	x Leading Edge c_exp (m)
+23.3	x Leading Edge kink(m)
+26.3	x Leading Edge tip (m)
+6.35	Y kink (m)
+35.8	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+Horizontal:	
+	Root Chord (m)
+3.44	Exp Root Chord (m)
+	Kink Chord (m)
+1.17	Tip. Chord (m)
+39.1	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+42.5	x Leading Edge tip (m)
+2.55	Y Exp. Root (m)
+	Y kink (m)
+4.91	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sh/S
+	ShLh/Sc
+	Elevator Chord (m)
+	ce/c
+Vertical:	
+5.577	Root Chord (m)
+	Exp Root Chord (m)
+	Kink Chord (m)
+1.521	Tip. Chord (m)
+36.8	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+41.9	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+5.9	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sv/S
+	SvLv/Sb
+	Rudder  Chord (m)
+	cr/c
+Undercarriage:	
+7.59	Track (m)
+16.9	Wheelbase (m)
+	Turning radius (m)
+0.93	Main Wheel diameter (m)
+	Main Wheel width (m)
+	"No. of wheels (nose;main)"
+Nacelle:	
+5.09	Length (m)
+2.67	Max. width (m)
+2.6	Max. height (m)
+2	n
+15.4	x_pos (m)
+11.4	Spanwise location
+Performances:	
+Take-Off	
+2450	ISA sea level (m)
+2600	ISA +15ºC SL.
+4000	ISA 5000ft
+4000	ISA +15ºC 5000ft
+145	V2 (kts) (IAS)
+Landing	
+	ISA sea level (m)
+	ISA +15ºC SL.
+	ISA 5000ft
+	ISA +15ºC 5000ft
+136	Vapp (kts) (IAS)
+Cruise	
+473	V (kts) (IAS)
+	M
+39100	h (ft)
+	e
+	Cd0
+Range	
+3030	Max. payload
+4700	Design range
+4000	Max. fuel (+ payload)
+5100	Ferry range
+ROCs	
+5000	h_1 (ft)
+2000	RC_1 (ft/min)
+15000	h_2 (ft)
+1500	RC_2 (ft/min)
+24000	h_3 (ft)
+1200	RC_3 (ft/min)
+Thrust	
+14728	Static Thrust (N)
+10342	Max Continous (N)

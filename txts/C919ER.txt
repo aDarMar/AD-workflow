@@ -1,0 +1,166 @@
+COMAC	Company
+C919	Family
+ER	Model
+	Other Name
+Crew	
+174	npax max full economy
+2	n piloti
+	n ass. volo
+Weights:	
+79300	Ramp (kg)
+78900	Max. take-off (kg)
+67800	Max. landing (kg)
+64600	Zero-fuel
+18900	Max. payload    (Pto A)
+	payload @ Max. fuel (Pto B)
+	Max. fuel weight    (Pto B)
+	Design payload      (Pto D)
+	Design fuel load    (Pto D)
+45700	Operational empty
+44741.5	Basic Empty Weight
+	Empty Mass (kg)
+Fuel_(litres)	
+Usable(Lt)
+24917	Wing
+0	CT
+0	RCT
+0	ACTs
+Unusable(Lt)
+	Total
+DIMENSIONS	
+38.9	Length (m)
+4.166	Height (m)
+3.96	Width (m)
+9.337493999	Finess Ratio
+Fuselage Volumes  (m^3)	
+	Non equipped
+	Passengers Compartment
+	Cockpit
+Cargo Compartment	
+15.367	FWD
+21.731	AFT
+	BULK
+Wing:	
+6.89	Root Chord (m)
+6.21	Exp Root Chord (m)
+4.05	Kink Chord (m)
+1.63	Tip. Chord (m)
+13.6	x Leading Edge c_exp (m)
+15.9	x Leading Edge kink(m)
+21.2	x Leading Edge tip (m)
+6.10	Y kink (m)
+35.8	Span (m)
+129.15	Area (m²)
+25	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+9.923654665	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+Horizontal:	
+3.64	Root Chord (m)
+3.24	Exp Root Chord (m)
+	Kink Chord (m)
+1.49	Tip. Chord (m)
+33.6	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+36.7	x Leading Edge tip (m)
+1.22	Y Exp. Root (m)
+	Y kink (m)
+12.60	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sh/S
+	ShLh/Sc
+1.08	Elevator Chord (m)
+	ce/c
+Vertical:	
+6.08	Root Chord (m)
+5.67	Exp Root Chord (m)
+	Kink Chord (m)
+1.75	Tip. Chord (m)
+31.2	x Leading Edge c_exp (m)
+	x Leading Edge kink(m)
+36.5	x Leading Edge tip (m)
+	Y Exp. Root (m)
+	Y kink (m)
+6.0	Span (m)
+	Area (m²)
+	L.E. Sweep (º)
+	Chord 1/4 Sweep (º)
+	Dihedral (°)
+	Aspect Ratio
+	Taper Ratio
+	(t/c)_root
+	(t/c)_kink
+	(t/c)_tip
+	Average (t/c) %
+	MAC (m)
+	Arm (m)
+	Sv/S
+	SvLv/Sb
+1.89	Rudder  Chord (m)
+	cr/c
+Undercarriage:	
+7.62	Track (m)
+13.47	Wheelbase (m)
+	Turning radius (m)
+	Main Wheel diameter (m)
+	Main Wheel width (m)
+	"No. of wheels (nose;main)"
+Nacelle:	
+	Length (m)
+2.46	Max. width (m)
+	Max. height (m)
+2	n
+	x_pos (m)
+	Spanwise location
+Performances:	
+Take-Off	
+1976	ISA sea level (m)
+2143	ISA +15ºC SL.
+2234	ISA 1000m non 4000ft
+2301	ISA +10ºC 1000m non 4000ft
+145	V2 (kts) (IAS)
+Landing	
+1900	ISA sea level (m)
+	ISA +15ºC SL.
+2080	ISA 4000ft
+	ISA +15ºC 4000ft
+137	Vapp (kts) (IAS)
+Cruise	
+450	V (kts) (TAS)
+0.785	M
+37000	h cruise (ft)
+	e
+	Cd0
+Range	
+2118	Max. payload (nmi)
+3011	Design range (nmi)
+3227	Max. fuel (+ payload) (nmi)
+3723	Ferry range (nmi)
+ROCs	
+5000	h_1 (ft)
+2000	RC_1 (ft/min)
+15000	h_2 (ft)
+1500	RC_2 (ft/min)
+24000	h_3 (ft)
+1200	RC_3 (ft/min)
+Thrust	
+137100	Static Thrust (N)
+133220	Max Continous (N)
+	TSFC
