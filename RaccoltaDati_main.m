@@ -152,7 +152,6 @@ while flag
     %abs.WoT = ( Sizing(iS).WoT - Sizing(iS-1).WoT ) ;
     flag = err.WoS > tol; %&& abs.WoT <tol;
     iS = iS + 1;
-    %subplot 211
     %hold off
     
 end
