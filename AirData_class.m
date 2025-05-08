@@ -41,7 +41,8 @@ classdef AirData_class
         fus_cc_vol % Volume utile dei cargo compartments [m^3]
         fus_nCC % Numero di cargo compartments
         % - Dimensioni Ala
-        wing %struttura che ocntiene come campi wing.c = corde delle sezioni wing.x,wing.y = coordinate x/y delle sezioni wing.toc = t/c delle sezioni + t/c medio
+        wing
+        %wing %struttura che ocntiene come campi wing.c = corde delle sezioni wing.x,wing.y = coordinate x/y delle sezioni wing.toc = t/c delle sezioni + t/c medio
         % 1 = root 2 = root_exp 3 = kink 4 = tip
         wing_b %apertura alare [m]
         wing_S %superficie alare
@@ -132,6 +133,9 @@ classdef AirData_class
         TSFC
         % - ROCs
         ROC % struttura contenente ROC_max [m/s] e quota [m] alla quale si ha il ROC
+        % Derived Data
+        ToW
+        WoS
     end
     methods
         function obj = AirData_class(dataFileName)
@@ -242,7 +246,11 @@ classdef AirData_class
             if ~strcmp(temp,tag_wing)
                 error('Expected Wing fields');
             end
-            obj.wing.croot    = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
+            
+            
+            temp_cs = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
+            
+            %obj.wing.croot    = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
             obj.wing.croot_exp= fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
             obj.wing.ckink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
             obj.wing.ctip     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
@@ -439,7 +447,7 @@ classdef AirData_class
             if ~strcmp(temp,tag_nac)
                 error('Expected Thrust fields');
             end
-            obj.T0 = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            obj.T0        = fscanf(f_id, '%f '); temp = fgetl(f_id);
             obj.Tmax_cont = fscanf(f_id, '%f '); temp = fgetl(f_id);
             catch ERR
                 warning( ['Reading from file failed ',newline,ERR.message] )
@@ -453,6 +461,7 @@ classdef AirData_class
             try
                 [obj.wing,obj.wing_S,obj.wing_AR,obj.wing_TR,obj.wing_sweepLE,obj.wing_025sweep,obj.wing_mac] = ...
                     obj.surfGeom( obj.wing,obj.wing_b,obj.wing_S,obj.wing_AR,obj.wing_TR,obj.wing_sweepLE );
+                obj.WoS = obj.MTOM/obj.wing_S;
             catch ERR_1
                 warning( ' Error Calculating Wing Geomtery ' )
             end
@@ -478,6 +487,12 @@ classdef AirData_class
             
             % Atro
             obj.Mark = obj.marker_assign();
+            
+            if isempty(obj.T0)
+                obj.ToW = nan;
+            else
+                obj.ToW = obj.T0/obj.MTOM;
+            end
         end
         function obj = weightEst(obj)
             %weightEst: funzione che ricava i pesi dai pesi definiti.
@@ -495,8 +510,76 @@ classdef AirData_class
                     disp( ' Max Fuel Weight assigned vs Calculaed from Tanks Capacity ' );
                     obj.checkLog( obj.MFW,check_temp,'MFW' );
                 end
-
+                
+                
+                
                 % Calcolo di Massa di Carburante e Zero Fuel Mass
+                % %                 if isempty( obj.MFW ) && isempty( obj.fuel_cap ) && isempty( obj.MZF )
+                % %
+                % %                     warning( ' Unable to Determinate Fuel Weight and Operative Empty Mass  ' );
+                % %
+                % %                 else
+                % %
+                % %                     if isempty( obj.fuel_cap )
+                % %                         if isempty( obj.MZF )
+                % %                             obj.MZF = obj.MTOM - obj.MFW;
+                % %                         else
+                % %                             temp = obj.MTOM - obj.MZF;
+                % %                             if ~isempty( obj.MFW )
+                % %                                 disp( ' Assigned Fuel Mass vs MTOM - MZF ');
+                % %                                 obj.checkLog( obj.MFW,temp,'MFW' );
+                % %                             end
+                % %                         end
+                % %                     else
+                % %                         % fuel_cap in [Litri]
+                % %                         rho_f = 0.785; %[Kg/L]
+                % %                         check_temp = obj.fuel_cap * rho_f;
+                % %                         if isempty( obj.MZF )
+                % %                             if isempty( obj.MFW )
+                % %                                 obj.MFW = check_temp;
+                % %                                 obj.MZF = obj.MTOM - obj.MFW;
+                % %                             else
+                % %                                 disp( ' Max. Fuel weight from Tank Capacity vs Assigned Fuel Mass ');
+                % %                                 obj.checkLog( obj.MFW,check_temp,'MFW' );
+                % %                                 obj.MZF = obj.MTOM - obj.MFW;
+                % %                             end
+                % %                         else
+                % %                             temp = obj.MTOM - obj.MZF;
+                % %                             disp( ' Max. Fuel weight from Tank Capacity vs MTOM - MZF ');
+                % %                             obj.checkLog( temp,check_temp,'MZF' );
+                % %                             if isempty( obj.MFW )
+                % %                                 obj.MFW = temp;
+                % %                             else
+                % %                                 disp( ' MTOM - MZF vs Assigned Fuel Mass ');
+                % %                                 obj.checkLog( temp,check_temp,'MFW' );
+                % %                             end
+                % %                         end
+                % %                     end
+                % %
+                % %
+                % %
+            %end
+%                 if isempty( obj.MFW ) && isempty( obj.fuel_cap )
+%                     warning('Unable to calculate Fuel Weights');
+%                     obj.MFW = nan;
+%                 else
+%                     if ~isempty( obj.fuel_cap )
+%                         % fuel_cap in [Litri]
+%                         rho_f = 0.785; %[Kg/L]
+%                         check_temp = obj.fuel_cap*rho_f; %ATTENZIONE alle unità di misura
+%                         if isempty( obj.MFW )
+%                             obj.MFW = check_temp;
+%                         else
+%                             obj.checkLog( obj.MFW,check_temp,'MFW' );
+%                         end
+%                     end
+%                 end
+%                 check_temp = obj.MTOM - obj.MFW;
+%                 if isempty( obj.MZF )
+%                     obj.MZF = check_temp;
+%                 else
+%                     obj.checkLog( obj.MZF,check_temp,'MZF' )
+%                 end
 
                 if isempty( obj.MPM )&& isempty( obj.OEM )
                     warining('Unable to calculate Operative Empty Mass');
@@ -564,9 +647,9 @@ classdef AirData_class
             end
         end
         
-        function [lsurf_str,S,AR,TR,sweepLE,sweep025,cmac] = surfGeom(obj,lsurf_str,b,S,AR,TR,sweepLE_in)
-            %surfGeom: funzione che calcola i parametri geometrici di una
-            %superficie portante
+        function [lsurf_str,S,AR,TR,sweepLE,sweep025,cmac] = prepGeom(obj,lsurf_str,b,S,AR,TR,sweepLE_in)
+            %prepGeom: function that arranges data readed from txt file
+            %into variables used to define WingClass
             % INPUT:
             %   lsufr_str: struct contenente come campi i parametri
             %       geometrici della superficie%    
@@ -575,13 +658,15 @@ classdef AirData_class
             TRi = 0;
             if isempty( lsurf_str.ckink )
                 TRi = 1; lsurf_str.y_kink = 0;
+                chk = 1; % flag to check if the wing hasn't got a kink
             else
                 if isempty( lsurf_str.y_kink )
                     warning( 'Kink Position Required, cannot proceed' );
                     lsurf_str.y_kink = nan;
+                    chk = 0;
                 end
             end
-            chk  = TRi == 1;
+            %chk  = TRi == 1;
             if isempty( lsurf_str.croot ) && isempty( lsurf_str.ctip )
                warning( 'Too few data, cannot proceed to geometric calculations' );
                lsurf_str.croot = nan; lsurf_str.ctip = nan;
@@ -647,6 +732,169 @@ classdef AirData_class
             end
         end
         
+        function readVals(obj)
+
+            for i = 1:2
+                % i = 1
+                % Reads c_root, c_root_exp c_kink c_tip
+                % i = 2
+                % Reads x_apex, xLE_root_exp xLE_kink xLE_tip
+                for j = 1:4
+                    
+                    temp = fscanf(f_id, '%f ');
+                    if isempty( temp )
+                        temp = nan;
+                    end
+                    temp_sects(i,j) = temp;
+                    temp = fgetl(f_id);
+                end
+            end
+            temp_sects = temp_sects';
+            geom_sects_aus(1) = dfus;
+            for i = 1:2
+                % Reads y_kink y_tip
+                temp = fscanf(f_id, '%f '); temp = fgetl(f_id);
+                if isempty( temp )
+                    temp = nan;
+                end
+                geom_sects_aus(i+1) = temp;
+            end
+            geom_sects_aus = geom_sects_aus(:)';
+            %S        = fscanf(f_id, '%f '); 
+            temp = fgetl(f_id);
+            
+            sweepLE  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            sweep025 = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            dihedral = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            
+            %AR       = fscanf(f_id, '%f ');
+            temp = fgetl(f_id);
+            %TR       = fscanf(f_id, '%f ');
+            temp = fgetl(f_id);
+            
+            for i=1:4
+                % Reads toc root,kink,tip and avg
+                temp = fscanf(f_id, '%f ');
+                if isempty( temp)
+                    temp = nan
+                end
+                toc_vett(i) =  temp;
+                temp = fgetl(f_id);
+            end
+
+            mac      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            
+        end
+
+        function [sect_vec,apexC,sweep_vect] = checkGeom(obj,temp_sects,toc_vec)
+            %checkGeom: function that checks if there are enough
+            %geometrical data to define the wing and prepares the input
+            %variables for the wingClass constructor
+            %INPUT
+            %   temp_sects: 4X3 matrix containing chords, x_LE coords,
+            %       2*y_sect for root, exp. root, kink and tip sections
+            %   toc_vec: vector containing the t/c_max at each section plus
+            %       the averange value.
+            if ( isnan( temp_sects(1,1) )&& isnan( temp_sects(1,2) ) ||  isnan( temp_sects(2,1) )&& isnan( temp_sects(2,2) ) ) ... % isnan c_root && x_apex || isnan croot_exp %% df/2
+                    && isnan( temp_sects(4,1) ) && isnan( temp_sects(4,2) ) % isnan(ctip) && isnan(b)
+                warning('Not enough data for computing wing geometry');
+            else
+                if xor( isnan(temp_sects(3,1)),isnan(temp_sects(3,2)) ) % XOR( c_kink,2*y_kink )
+                    warning('Incomplete kink data, cannot proceed');
+                else
+                    if isnan( temp_sects(3,1) ) % isnan ckink
+                        sect_vec = nan(2,1);
+                        % single panel wing
+                        if isnan( temp_sects(1,1) ) % isnan croot
+                            % defined using cexp_root
+                            [temp1,temp2,sweep_vect] = obj.extrapolate_root( temp_sects(2,1),temp_sects(2,2),0.5*temp_sects(2,3),...
+                                temp_sects(4,1),temp_sects(4,2),0.5*temp_sects(4,3) );
+                            
+                            sect_vec(1,1) = temp1;
+                            apexC(1)      = temp2;
+                            
+                        else
+                            % defined using croot
+                            sweep_vect = atan( (temp_sects(4,2)-temp_sects(1,2)) / (0.5*temp_sects(4,3)) )*180/pi; % atan( (x_tip-x_apex) / b/2 )
+                            
+                            sect_vec(1,1) = temp_sects(1,1);
+                            apexC(1)      = temp_sects(1,2);
+                        end
+                        sect_vec(2,1) = temp_sects(4,1);
+                        j = 1;
+                        for i = [1,3]
+                            if isnan( toc_vec(i) )
+                                if isnan( ~toc_vec(4) )
+                                    % assign t/c_avg to every section
+                                    sect_vec(1:2,3) = toc_vec(4)*ones(2,1);
+                                end
+                                % no informations about t/c
+                                break
+                            end
+                            sect_vec(j,3) = toc_vec(i);
+                            j = j+1;
+                        end
+                        
+                    else
+                        %double paneled wing
+                        sweep_vect    = nan(2,1);
+                        sweep_vect(2) = atan( 2*(temp_sects(4,2)-temp_sects(3,2)) / ( temp_sects(4,3)-temp_sects(3,3) ) ); %Sweep_out = atan( (x_tip-x_kink)/( b/2 - y_kink) )
+                        sect_vec      = nan(3,1);
+                        if isnan( temp_sects(1,1) ) % isnan croot
+                            % defined using cexp_root
+                            [temp1,temp2,temp3] = obj.extrapolate_root( temp_sects(2,1),temp_sects(2,2),0.5*temp_sects(2,3),...
+                                temp_sects(3,1),temp_sects(3,2),0.5*temp_sects(3,3) );
+                            sweep_vect(1) = temp3;
+                            apexC(1)      = temp2;
+                            sect_vec(1,1) = temp1;
+                        else
+                            % defined using c_root
+                            sweep_vect(1) = 2*(temp_sects(3,2)-temp_sects(1,2)) / ( temp_sects(3,3)-temp_sects(1,3)); %atan( (x_kink-x_apex)/( y_kink) )
+                            apexC(1)      = temp_sects(1,2); % x_apex
+                            sect_vec(1,1) = temp_sects(1,1); % croot
+                            sweep_vect(1) = atan( sweep_vect(1) ); %Sweep in [rad]
+                        end
+                        sect_vec(2:3,1) = temp_sects(3:4,1); % ckink ctip
+                        
+                        j = 1;
+                        for i = 1:3
+                            if isnan( toc_vec(i) )
+                                if isnan( ~toc_vec(4) )
+                                    % assign t/c_avg to every section
+                                    sect_vec(1:3,3) = toc_vec(4)*ones(2,1);
+                                end
+                                % no informations about t/c
+                                break
+                            end
+                            sect_vec(j,3) = toc_vec(i);
+                            j = j+1;
+                        end
+                        
+                    end
+                end
+            end
+            
+            
+            if toc_vec
+            end
+        end
+        
+            function [croot,x_apex,tan_sweep] = extrapolate_root(~,c1,x1,y1,c2,x2,y2)
+                %extrapolate_root: function that given two sections
+                %extrapolates the coordinates and chord of the root
+                %INPUT
+                %   c1,x1,y1: chord and coordinates of the most inboard
+                %       section
+                %   c2,x2,y2: chord and coordinates of the most outboard
+                %       section
+                tan_sweep = 2*(x2-x1) / ( y2-y1 ) ; % (x_tip-xLE_exp) / (b/2 - df/2) )
+                x_apex    = x1 - tan_sweep*y1; %x_apex = xLE_croot_ecp - tan(sweep_in)*df/2
+                tan_TE    = (x2+c2-x1-c1) / ( y2-y1 );
+                temp      = x1+c1 - tan_TE*y1; %x_apex = xTE_croot_ecp - tan(sweep_in)*df/2
+                croot = temp - x_apex;
+                tan_sweep = atan( tan_sweep )*180/pi;
+            end
+            
         function [sweepLE_equiv,croot_equiv] = eqsurf( ~,lsurf_str,S,kinkFLG )
             
             sweepLE_equiv = 2*lsurf_str.y_tip*(lsurf_str.xle_tip - lsurf_str.x_apex);
