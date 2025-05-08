@@ -1,2 +1,6 @@
 # Matlab backup files
 *.asv
+# Input text files
+txts/**/*.txt
+statistical_data/**/*.txt
+tlars/*.txt

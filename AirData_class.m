@@ -495,76 +495,8 @@ classdef AirData_class
                     disp( ' Max Fuel Weight assigned vs Calculaed from Tanks Capacity ' );
                     obj.checkLog( obj.MFW,check_temp,'MFW' );
                 end
-                
-                
-                
+
                 % Calcolo di Massa di Carburante e Zero Fuel Mass
-                % %                 if isempty( obj.MFW ) && isempty( obj.fuel_cap ) && isempty( obj.MZF )
-                % %
-                % %                     warning( ' Unable to Determinate Fuel Weight and Operative Empty Mass  ' );
-                % %
-                % %                 else
-                % %
-                % %                     if isempty( obj.fuel_cap )
-                % %                         if isempty( obj.MZF )
-                % %                             obj.MZF = obj.MTOM - obj.MFW;
-                % %                         else
-                % %                             temp = obj.MTOM - obj.MZF;
-                % %                             if ~isempty( obj.MFW )
-                % %                                 disp( ' Assigned Fuel Mass vs MTOM - MZF ');
-                % %                                 obj.checkLog( obj.MFW,temp,'MFW' );
-                % %                             end
-                % %                         end
-                % %                     else
-                % %                         % fuel_cap in [Litri]
-                % %                         rho_f = 0.785; %[Kg/L]
-                % %                         check_temp = obj.fuel_cap * rho_f;
-                % %                         if isempty( obj.MZF )
-                % %                             if isempty( obj.MFW )
-                % %                                 obj.MFW = check_temp;
-                % %                                 obj.MZF = obj.MTOM - obj.MFW;
-                % %                             else
-                % %                                 disp( ' Max. Fuel weight from Tank Capacity vs Assigned Fuel Mass ');
-                % %                                 obj.checkLog( obj.MFW,check_temp,'MFW' );
-                % %                                 obj.MZF = obj.MTOM - obj.MFW;
-                % %                             end
-                % %                         else
-                % %                             temp = obj.MTOM - obj.MZF;
-                % %                             disp( ' Max. Fuel weight from Tank Capacity vs MTOM - MZF ');
-                % %                             obj.checkLog( temp,check_temp,'MZF' );
-                % %                             if isempty( obj.MFW )
-                % %                                 obj.MFW = temp;
-                % %                             else
-                % %                                 disp( ' MTOM - MZF vs Assigned Fuel Mass ');
-                % %                                 obj.checkLog( temp,check_temp,'MFW' );
-                % %                             end
-                % %                         end
-                % %                     end
-                % %
-                % %
-                % %
-            %end
-%                 if isempty( obj.MFW ) && isempty( obj.fuel_cap )
-%                     warning('Unable to calculate Fuel Weights');
-%                     obj.MFW = nan;
-%                 else
-%                     if ~isempty( obj.fuel_cap )
-%                         % fuel_cap in [Litri]
-%                         rho_f = 0.785; %[Kg/L]
-%                         check_temp = obj.fuel_cap*rho_f; %ATTENZIONE alle unità di misura
-%                         if isempty( obj.MFW )
-%                             obj.MFW = check_temp;
-%                         else
-%                             obj.checkLog( obj.MFW,check_temp,'MFW' );
-%                         end
-%                     end
-%                 end
-%                 check_temp = obj.MTOM - obj.MFW;
-%                 if isempty( obj.MZF )
-%                     obj.MZF = check_temp;
-%                 else
-%                     obj.checkLog( obj.MZF,check_temp,'MZF' )
-%                 end
 
                 if isempty( obj.MPM )&& isempty( obj.OEM )
                     warining('Unable to calculate Operative Empty Mass');

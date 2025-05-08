@@ -26,7 +26,7 @@ MTOMvsEM_plot(Airl,nAero,[a,b],[0.0810,1.0730;0.0913,1.0425]);
 
 %% TLARs Definition
 TLARs_path = [main_fold,'\tlars\TLARs.txt'];
-aero_design = design_airplane( TLARs_path );
+%aero_design = design_airplane( TLARs_path );
 % Definizione TLARS ( da portare in una funzione a parte )
 TLARS = read_TLARs( TLARs_path );
 
@@ -72,24 +72,7 @@ CLmax_LND_vett = [ 2.1, 2.3, 2.5 ]; sigma = 1;
 TisaoT50 = 1/0.8; phi_v = [1,0.85];
 V_cr_vet = [TLARS.cruise.V,229.82];
 h_cr_vet = [TLARS.cruise.h,TLARS.cruise.h];
-%CD0 = 0.001; %dCD0_f_TO = 0.0005; dCD0_f_LND = 0.0007; dCD0_f_App = 0.0006; dCD0_lgs = 0.0001;
 
-% % figure(  )
-% % subplot 211; hold on
-% % grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
-% % ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
-% % subplot 212; hold on
-% % grid minor; xlabel('W$_{TO}$ / S [lb/ft$^2$]','Interpreter','latex','FontSize',16);
-% % ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
-
-% % sizing_plot_TO( TLARS.TO.fieldmax,CLmax_TO_vett,sigma )
-% % sizing_plot_LND( TLARS.LND.SGmax,CLmax_LND_vett,sigma,WLNDoWTO )
-% % sizing_plot_Climb( CLmax_TO_vett,CLmax_LND_vett,CLmax_CR_vett,...
-% %     TLARS.e,TLARS.de_TO,TLARS.de_LND,...
-% %     CD0,TLARS.dCD0_f_TO,TLARS.dCD0_f_LND,TLARS.dCD0_f_App,TLARS.dCD0_lgs,...
-% %     TLARS.AR,TLARS.nengine,WLNDoWTO,TLARS.T0oTmc,TisaoT50 );
-% % sizing_plot_Cruise( CD0,TLARS.cruise.V,TLARS.cruise.h,WcroWTO,TLARS.e,TLARS.AR,phi_v )
-%Sg = ()
 % Initialization
 iS = 1;
 Sizing(iS).WoS = 550;   % First Guess WoS [Kg/m^2]
@@ -111,8 +94,6 @@ iS = 2;
 
 flag = 1; tol = 1e-2;
 
- 
-    
 while flag
 
     if iS > 2
@@ -133,7 +114,7 @@ while flag
     else
         Sizing(iS-1).WoT = tmp;
     end
-    %figure(fig_ri.Number)
+    figure(fig_ri.Number)
     fig_pt = plot( Sizing(iS-1).WoS,Sizing(iS-1).WoT );
     fig_pt.LineStyle = 'none';  fig_pt.Marker = 'o'; fig_pt.MarkerSize = 6;
     col = rand(1,3); fig_pt.MarkerEdgeColor = col;
