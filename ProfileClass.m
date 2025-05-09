@@ -62,14 +62,14 @@ classdef ProfileClass %<handle
             obj.K =NaN; obj.Cd0 =NaN; obj.Re =NaN; obj.Cf =NaN; obj.e = 1;
             obj.FF =NaN; obj.h = NaN;
             % Assegna le coordinate del profilo pulito
-            obj.c = geomV(1);
-            obj.eps = geomV(2);
-            obj.tc = geomV(3);
-            obj.LERc = geomV(4);
-            obj.xtc = geomV(5);
-            obj.xtrUp = geomV(6);
+            obj.c      = geomV(1);
+            obj.eps    = geomV(2);
+            obj.tc     = geomV(3);
+            obj.LERc   = geomV(4);
+            obj.xtc    = geomV(5);
+            obj.xtrUp  = geomV(6);
             obj.xtrLow = geomV(7);
-            obj.dY = geomV(8);
+            obj.dY     = geomV(8);
             if length(M) == length(aeroV(:,1))
                 obj.M = M;
                 obj.a = aeroV(:,1);

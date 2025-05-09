@@ -42,48 +42,49 @@ classdef AirData_class
         fus_nCC % Numero di cargo compartments
         % - Dimensioni Ala
         wing
-        %wing %struttura che ocntiene come campi wing.c = corde delle sezioni wing.x,wing.y = coordinate x/y delle sezioni wing.toc = t/c delle sezioni + t/c medio
-        % 1 = root 2 = root_exp 3 = kink 4 = tip
-        wing_b %apertura alare [m]
-        wing_S %superficie alare
-        wing_sweepLE %sweep al Leading edge [deg]
-        wing_025sweep %sweep al 25 della corda
-        wing_dihedral %Diedro [deg]
-        wing_AR %Aspect Ratio
-        wing_TR %Taper Ratio
-        wing_toc_avg %t/c medio
-        wing_mac %corda media aerodinamica [m]
+%         %wing %struttura che ocntiene come campi wing.c = corde delle sezioni wing.x,wing.y = coordinate x/y delle sezioni wing.toc = t/c delle sezioni + t/c medio
+%         % 1 = root 2 = root_exp 3 = kink 4 = tip
+%         wing_b %apertura alare [m]
+%         wing_S %superficie alare
+%         wing_sweepLE %sweep al Leading edge [deg]
+%         wing_025sweep %sweep al 25 della corda
+%         wing_dihedral %Diedro [deg]
+%         wing_AR %Aspect Ratio
+%         wing_TR %Taper Ratio
+%         wing_toc_avg %t/c medio
+%         wing_mac %corda media aerodinamica [m]
         % - Dimensioni Piano Orizzontale
-        hor %struttura che ocntiene come campi wing.c = corde delle sezioni wing.x,wing.y = coordinate x/y delle sezioni
-        % 1 = root 2 = root_exp 3 = kink 4 = tip
-        hor_b %apertura alare [m]
-        hor_S %superficie alare [m^2]
-        hor_sweepLE
-        hor_sweep025
-        hor_dihedral
-        hor_AR 
-        hor_TR %taper ratio
-        hor_mac %corda media aerodinamica [m]
-        hor_L %distanza tra i centri aerodinamici di ala e piano [m]
-        hor_ShoS %rapporto S_hor/S_wing
-        hor_VolRat %rapporto volumetrico piano di coda
-        hor_cel %corda dell'elevator
-        hor_ceoc % c_el/mac_hor
+        horizontal
+%         hor %struttura che ocntiene come campi wing.c = corde delle sezioni wing.x,wing.y = coordinate x/y delle sezioni
+%         % 1 = root 2 = root_exp 3 = kink 4 = tip
+%         hor_b %apertura alare [m]
+%         hor_S %superficie alare [m^2]
+%         hor_sweepLE
+%         hor_sweep025
+%         hor_dihedral
+%         hor_AR 
+%         hor_TR %taper ratio
+%         hor_mac %corda media aerodinamica [m]
+%         hor_L %distanza tra i centri aerodinamici di ala e piano [m]
+%         hor_ShoS %rapporto S_hor/S_wing
+%         hor_VolRat %rapporto volumetrico piano di coda
+%         hor_cel %corda dell'elevator
+%         hor_ceoc % c_el/mac_hor
         % - Dimensioni Piano Verticale
-        vert
-        vert_b
-        vert_S
-        vert_sweepLE
-        vert_sweep025
-        vert_dihedral
-        vert_AR
-        vert_TR
-        vert_mac
-        vert_L
-        vert_ShoS
-        vert_VolRat
-        vert_crud %Corda del timone
-        vert_croc %c_rud/mac_ver
+        vertical
+%         vert_b
+%         vert_S
+%         vert_sweepLE
+%         vert_sweep025
+%         vert_dihedral
+%         vert_AR
+%         vert_TR
+%         vert_mac
+%         vert_L
+%         vert_ShoS
+%         vert_VolRat
+%         vert_crud %Corda del timone
+%         vert_croc %c_rud/mac_ver
         % - Undercarriage
         wheel_track
         wheelbase
@@ -246,33 +247,33 @@ classdef AirData_class
             if ~strcmp(temp,tag_wing)
                 error('Expected Wing fields');
             end
+            obj.wing = obj.readVals(obj.fus_Width,f_id);
             
-            
-            temp_cs = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
-            
-            %obj.wing.croot    = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
-            obj.wing.croot_exp= fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
-            obj.wing.ckink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
-            obj.wing.ctip     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
-            obj.wing.x_apex   = nan; % wing apex
-            obj.wing.xle_exp  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_cexp
-            obj.wing.xle_kink = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_kink
-            obj.wing.xle_tip  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_tip
-            obj.wing.y_root = 0; obj.wing.y_rootexp = obj.fus_Width*0.5;
-            obj.wing.y_kink   = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_link
-            obj.wing_b        = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing.y_tip = obj.wing_b*0.5;
-            obj.wing_S        = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing_sweepLE  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing_025sweep = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing_dihedral = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing_AR       = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing_TR       = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing.toc_root = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing.toc_kink = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing.toc_tip  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.wing.toc_avg  = fscanf(f_id, '%f '); temp = fgetl(f_id); %sarebbe t/c_avg
-            obj.wing_mac      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             temp_cs = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
+%             
+%             %obj.wing.croot    = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
+%             obj.wing.croot_exp= fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
+%             obj.wing.ckink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
+%             obj.wing.ctip     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
+%             obj.wing.x_apex   = nan; % wing apex
+%             obj.wing.xle_exp  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_cexp
+%             obj.wing.xle_kink = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_kink
+%             obj.wing.xle_tip  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_tip
+%             obj.wing.y_root = 0; obj.wing.y_rootexp = obj.fus_Width*0.5;
+%             obj.wing.y_kink   = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_link
+%             obj.wing_b        = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing.y_tip = obj.wing_b*0.5;
+%             obj.wing_S        = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing_sweepLE  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing_025sweep = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing_dihedral = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing_AR       = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing_TR       = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing.toc_root = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing.toc_kink = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing.toc_tip  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.wing.toc_avg  = fscanf(f_id, '%f '); temp = fgetl(f_id); %sarebbe t/c_avg
+%             obj.wing_mac      = fscanf(f_id, '%f '); temp = fgetl(f_id);
 
             %- Dimensioni Piano Orizzontale
             temp = fgetl(f_id);
@@ -280,36 +281,36 @@ classdef AirData_class
             if ~strcmp(temp,tag_hor)
                 error('Expected Horizontal fields');
             end
-            
-            obj.hor.croot     = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
-            obj.hor.croot_exp = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
-            obj.hor.ckink     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
-            obj.hor.ctip      = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
-            obj.hor.x_apex    = nan;
-            obj.hor.xle_exp   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_exp
-            obj.hor.xle_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_kink
-            obj.hor.xle_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_tip
-            obj.hor.y_root    = 0;
-            obj.hor.y_rootexp = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_root_exp
-            obj.hor.y_kink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_kink
-            obj.hor_b         = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor.y_tip     = obj.hor_b * 0.5;
-            obj.hor_S         = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_sweepLE   = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_sweep025  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_dihedral  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_AR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_TR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor.toc_root  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor.toc_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor.toc_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor.toc_avg   = fscanf(f_id, '%f '); temp = fgetl(f_id); %sarebbe t/c_avg
-            obj.hor_mac       = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_L         = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_ShoS      = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_VolRat    = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_cel       = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.hor_ceoc      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            obj.horizontal = obj.readVals(f_id);
+%             obj.hor.croot     = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
+%             obj.hor.croot_exp = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
+%             obj.hor.ckink     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
+%             obj.hor.ctip      = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
+%             obj.hor.x_apex    = nan;
+%             obj.hor.xle_exp   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_exp
+%             obj.hor.xle_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_kink
+%             obj.hor.xle_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_tip
+%             obj.hor.y_root    = 0;
+%             obj.hor.y_rootexp = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_root_exp
+%             obj.hor.y_kink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_kink
+%             obj.hor_b         = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor.y_tip     = obj.hor_b * 0.5;
+%             obj.hor_S         = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_sweepLE   = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_sweep025  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_dihedral  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_AR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_TR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor.toc_root  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor.toc_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor.toc_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor.toc_avg   = fscanf(f_id, '%f '); temp = fgetl(f_id); %sarebbe t/c_avg
+%             obj.hor_mac       = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_L         = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_ShoS      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_VolRat    = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_cel       = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.hor_ceoc      = fscanf(f_id, '%f '); temp = fgetl(f_id);
             
             %- Dimensioni Piano Verticale
             temp = fgetl(f_id);
@@ -317,35 +318,36 @@ classdef AirData_class
             if ~strcmp(temp,tag_vert)
                 error('Expected Vertical fields');
             end
-            obj.vert.croot     = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
-            obj.vert.croot_exp = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
-            obj.vert.ckink     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
-            obj.vert.ctip      = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
-            obj.vert.x_apex    = nan;
-            obj.vert.xle_exp   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_exp
-            obj.vert.xle_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_kink
-            obj.vert.xle_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_tip
-            obj.vert.y_root    = 0;
-            obj.vert.y_rootexp = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_root_exp
-            obj.vert.y_kink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_kink
-            obj.vert_b         = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert.y_tip     = obj.vert_b * 0.5;
-            obj.vert_S         = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_sweepLE   = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_sweep025  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_dihedral  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_AR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_TR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert.toc_root  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert.toc_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert.toc_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert.toc_avg   = fscanf(f_id, '%f '); temp = fgetl(f_id); %sarebbe t/c_avg
-            obj.vert_mac       = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_L         = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_ShoS      = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_VolRat    = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_crud      = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.vert_croc      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            obj.vertical = obj.readVals(f_id);
+%             obj.vert.croot     = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot
+%             obj.vert.croot_exp = fscanf(f_id, '%f '); temp = fgetl(f_id); %croot_exp
+%             obj.vert.ckink     = fscanf(f_id, '%f '); temp = fgetl(f_id); %ckink
+%             obj.vert.ctip      = fscanf(f_id, '%f '); temp = fgetl(f_id); %ctip
+%             obj.vert.x_apex    = nan;
+%             obj.vert.xle_exp   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_exp
+%             obj.vert.xle_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_kink
+%             obj.vert.xle_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id); %xle_tip
+%             obj.vert.y_root    = 0;
+%             obj.vert.y_rootexp = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_root_exp
+%             obj.vert.y_kink    = fscanf(f_id, '%f '); temp = fgetl(f_id); %y_kink
+%             obj.vert_b         = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert.y_tip     = obj.vert_b * 0.5;
+%             obj.vert_S         = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_sweepLE   = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_sweep025  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_dihedral  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_AR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_TR        = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert.toc_root  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert.toc_kink  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert.toc_tip   = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert.toc_avg   = fscanf(f_id, '%f '); temp = fgetl(f_id); %sarebbe t/c_avg
+%             obj.vert_mac       = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_L         = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_ShoS      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_VolRat    = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_crud      = fscanf(f_id, '%f '); temp = fgetl(f_id);
+%             obj.vert_croc      = fscanf(f_id, '%f '); temp = fgetl(f_id);
             
             %- Dimensioni: Undercarriage
             temp = fgetl(f_id);
@@ -385,10 +387,10 @@ classdef AirData_class
             if ~strcmp(temp,tag_nac)
                 error('Expected Take-Off Performances fields');
             end
-            obj.TO_ISA_ST_SL = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.TO_ISA_15_SL  = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            obj.TO_ISA_ST_SL   = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            obj.TO_ISA_15_SL   = fscanf(f_id, '%f '); temp = fgetl(f_id);
             obj.TO_ISA_ST_5000 = fscanf(f_id, '%f '); temp = fgetl(f_id);
-            obj.TO_ISA_15_5000    = fscanf(f_id, '%f '); temp = fgetl(f_id);
+            obj.TO_ISA_15_5000 = fscanf(f_id, '%f '); temp = fgetl(f_id);
             obj.V2 = fscanf(f_id, '%f '); temp = fgetl(f_id); 
             %- LND
             temp = fgetl(f_id);
@@ -458,27 +460,27 @@ classdef AirData_class
             %_Pesi
             obj = obj.weightEst;
             %- Geometria delle Superfici Portanti
-            try
-                [obj.wing,obj.wing_S,obj.wing_AR,obj.wing_TR,obj.wing_sweepLE,obj.wing_025sweep,obj.wing_mac] = ...
-                    obj.surfGeom( obj.wing,obj.wing_b,obj.wing_S,obj.wing_AR,obj.wing_TR,obj.wing_sweepLE );
-                obj.WoS = obj.MTOM/obj.wing_S;
-            catch ERR_1
-                warning( ' Error Calculating Wing Geomtery ' )
-            end
-            
-            try
-            [obj.hor,obj.hor_S,obj.hor_AR,obj.hor_TR,obj.hor_sweepLE,obj.hor_sweep025,obj.hor_mac] = ...
-                obj.surfGeom( obj.hor,obj.hor_b,obj.hor_S,obj.hor_AR,obj.hor_TR,obj.hor_sweepLE );
-            catch ERR_2
-                warning( ' Error Calculating Horizontal Geomtery ' )
-            end
-            
-            try
-            [obj.vert,obj.vert_S,obj.vert_AR,obj.vert_TR,obj.vert_sweepLE,obj.vert_sweep025,obj.vert_mac] = ...
-                obj.surfGeom( obj.vert,obj.vert_b,obj.vert_S,obj.vert_AR,obj.vert_TR,obj.vert_sweepLE );
-            catch ERR_3
-                warning( ' Error Calculating Verical Geomtery ' )
-            end
+%             try
+%                 [obj.wing,obj.wing_S,obj.wing_AR,obj.wing_TR,obj.wing_sweepLE,obj.wing_025sweep,obj.wing_mac] = ...
+%                     obj.surfGeom( obj.wing,obj.wing_b,obj.wing_S,obj.wing_AR,obj.wing_TR,obj.wing_sweepLE );
+%                 obj.WoS = obj.MTOM/obj.wing_S;
+%             catch ERR_1
+%                 warning( ' Error Calculating Wing Geomtery ' )
+%             end
+%             
+%             try
+%             [obj.hor,obj.hor_S,obj.hor_AR,obj.hor_TR,obj.hor_sweepLE,obj.hor_sweep025,obj.hor_mac] = ...
+%                 obj.surfGeom( obj.hor,obj.hor_b,obj.hor_S,obj.hor_AR,obj.hor_TR,obj.hor_sweepLE );
+%             catch ERR_2
+%                 warning( ' Error Calculating Horizontal Geomtery ' )
+%             end
+%             
+%             try
+%             [obj.vert,obj.vert_S,obj.vert_AR,obj.vert_TR,obj.vert_sweepLE,obj.vert_sweep025,obj.vert_mac] = ...
+%                 obj.surfGeom( obj.vert,obj.vert_b,obj.vert_S,obj.vert_AR,obj.vert_TR,obj.vert_sweepLE );
+%             catch ERR_3
+%                 warning( ' Error Calculating Verical Geomtery ' )
+%             end
             
             %Estrazione Aerodinamica
             obj.W_cr = 0.992*0.996*0.996*0.990*obj.MTOM*9.81; % Peso inizio crociera
@@ -732,15 +734,16 @@ classdef AirData_class
             end
         end
         
-        function readVals(obj)
-
+        function ls_obj = readVals(obj,d_fus,f_id)
+            %readVals: function that reads from a txt file the geometric
+            %parametres for a lifting surface
+            temp_sects = nan(3,4); %geom_sects_aus = nan(2,1);
             for i = 1:2
                 % i = 1
                 % Reads c_root, c_root_exp c_kink c_tip
                 % i = 2
                 % Reads x_apex, xLE_root_exp xLE_kink xLE_tip
                 for j = 1:4
-                    
                     temp = fscanf(f_id, '%f ');
                     if isempty( temp )
                         temp = nan;
@@ -749,17 +752,19 @@ classdef AirData_class
                     temp = fgetl(f_id);
                 end
             end
-            temp_sects = temp_sects';
-            geom_sects_aus(1) = dfus;
+            temp_sects      = temp_sects';
+            temp_sects(2,3) = d_fus;            % 2*y_cexp
             for i = 1:2
                 % Reads y_kink y_tip
-                temp = fscanf(f_id, '%f '); temp = fgetl(f_id);
+                temp = fscanf(f_id, '%f '); 
                 if isempty( temp )
                     temp = nan;
                 end
-                geom_sects_aus(i+1) = temp;
+                temp_sects(i+2,3) = temp;
+                temp = fgetl(f_id);
             end
-            geom_sects_aus = geom_sects_aus(:)';
+            temp_sects(3,3) = 2*temp_sects(3,3); % 2*y_kink
+            %geom_sects_aus = geom_sects_aus(:)';
             %S        = fscanf(f_id, '%f '); 
             temp = fgetl(f_id);
             
@@ -771,12 +776,13 @@ classdef AirData_class
             temp = fgetl(f_id);
             %TR       = fscanf(f_id, '%f ');
             temp = fgetl(f_id);
-            
+            % Max thickness distribution
+            toc_vett = nan(4,1);
             for i=1:4
                 % Reads toc root,kink,tip and avg
                 temp = fscanf(f_id, '%f ');
                 if isempty( temp)
-                    temp = nan
+                    temp = nan;
                 end
                 toc_vett(i) =  temp;
                 temp = fgetl(f_id);
@@ -784,9 +790,13 @@ classdef AirData_class
 
             mac      = fscanf(f_id, '%f '); temp = fgetl(f_id);
             
+            [bs,sweeps,apexC,sectsGeom] = obj.checkGeom(temp_sects,toc_vett);
+            % Definition of Lifting Surface Class Object
+            ls_obj = WingClass(bs,sweeps,dihedrals,iang,apexC,M,...
+                sectsGeom, sectsAero);
         end
 
-        function [sect_vec,apexC,sweep_vect] = checkGeom(obj,temp_sects,toc_vec)
+        function [bvet,sweep_vect,apexC,sect_vec] = checkGeom(obj,temp_sects,toc_vec)
             %checkGeom: function that checks if there are enough
             %geometrical data to define the wing and prepares the input
             %variables for the wingClass constructor
@@ -802,16 +812,18 @@ classdef AirData_class
                 if xor( isnan(temp_sects(3,1)),isnan(temp_sects(3,2)) ) % XOR( c_kink,2*y_kink )
                     warning('Incomplete kink data, cannot proceed');
                 else
+                    apexC = zeros(3,1); % Init. wing apex vector
+                    
                     if isnan( temp_sects(3,1) ) % isnan ckink
-                        sect_vec = nan(2,1);
+                        sect_vec = nan(2,8);    % Init. the geometric params. for the profile class
                         % single panel wing
                         if isnan( temp_sects(1,1) ) % isnan croot
                             % defined using cexp_root
                             [temp1,temp2,sweep_vect] = obj.extrapolate_root( temp_sects(2,1),temp_sects(2,2),0.5*temp_sects(2,3),...
                                 temp_sects(4,1),temp_sects(4,2),0.5*temp_sects(4,3) );
                             
-                            sect_vec(1,1) = temp1;
-                            apexC(1)      = temp2;
+                            sect_vec(1,1) = temp1;  % Assign croot
+                            apexC(1)      = temp2;  % ssign wing apex (croot xLE)
                             
                         else
                             % defined using croot
@@ -821,6 +833,7 @@ classdef AirData_class
                             apexC(1)      = temp_sects(1,2);
                         end
                         sect_vec(2,1) = temp_sects(4,1);
+                        bvet          = 0.5*temp_sects(4,3); % Assign panel span
                         j = 1;
                         for i = [1,3]
                             if isnan( toc_vec(i) )
@@ -837,9 +850,10 @@ classdef AirData_class
                         
                     else
                         %double paneled wing
+                        sect_vec      = nan(3,8); % Init. the geometric params. for the profile class
                         sweep_vect    = nan(2,1);
                         sweep_vect(2) = atan( 2*(temp_sects(4,2)-temp_sects(3,2)) / ( temp_sects(4,3)-temp_sects(3,3) ) ); %Sweep_out = atan( (x_tip-x_kink)/( b/2 - y_kink) )
-                        sect_vec      = nan(3,1);
+                        bvet          = nan(2,1); % Init. panel span vector
                         if isnan( temp_sects(1,1) ) % isnan croot
                             % defined using cexp_root
                             [temp1,temp2,temp3] = obj.extrapolate_root( temp_sects(2,1),temp_sects(2,2),0.5*temp_sects(2,3),...
@@ -850,16 +864,17 @@ classdef AirData_class
                         else
                             % defined using c_root
                             sweep_vect(1) = 2*(temp_sects(3,2)-temp_sects(1,2)) / ( temp_sects(3,3)-temp_sects(1,3)); %atan( (x_kink-x_apex)/( y_kink) )
-                            apexC(1)      = temp_sects(1,2); % x_apex
-                            sect_vec(1,1) = temp_sects(1,1); % croot
-                            sweep_vect(1) = atan( sweep_vect(1) ); %Sweep in [rad]
+                            apexC(1)      = temp_sects(1,2);        % x_apex
+                            sect_vec(1,1) = temp_sects(1,1);        % croot
+                            sweep_vect(1) = atan( sweep_vect(1) );  % Sweep in [rad]
                         end
-                        sect_vec(2:3,1) = temp_sects(3:4,1); % ckink ctip
-                        
+                        sect_vec(2:3,1) = temp_sects(3:4,1);        % ckink ctip
+                        bvet(1,1)       = 0.5*temp_sects(3,3);      % assign inner panel span
+                        bvet(2,1)       = 0.5*temp_sects(4,3);      % assign outer panel span
                         j = 1;
                         for i = 1:3
                             if isnan( toc_vec(i) )
-                                if isnan( ~toc_vec(4) )
+                                if ~isnan( toc_vec(4) )
                                     % assign t/c_avg to every section
                                     sect_vec(1:3,3) = toc_vec(4)*ones(2,1);
                                 end
@@ -874,27 +889,24 @@ classdef AirData_class
                 end
             end
             
-            
-            if toc_vec
-            end
         end
         
-            function [croot,x_apex,tan_sweep] = extrapolate_root(~,c1,x1,y1,c2,x2,y2)
-                %extrapolate_root: function that given two sections
-                %extrapolates the coordinates and chord of the root
-                %INPUT
-                %   c1,x1,y1: chord and coordinates of the most inboard
-                %       section
-                %   c2,x2,y2: chord and coordinates of the most outboard
-                %       section
-                tan_sweep = 2*(x2-x1) / ( y2-y1 ) ; % (x_tip-xLE_exp) / (b/2 - df/2) )
-                x_apex    = x1 - tan_sweep*y1; %x_apex = xLE_croot_ecp - tan(sweep_in)*df/2
-                tan_TE    = (x2+c2-x1-c1) / ( y2-y1 );
-                temp      = x1+c1 - tan_TE*y1; %x_apex = xTE_croot_ecp - tan(sweep_in)*df/2
-                croot = temp - x_apex;
-                tan_sweep = atan( tan_sweep )*180/pi;
-            end
-            
+        function [croot,x_apex,tan_sweep] = extrapolate_root(~,c1,x1,y1,c2,x2,y2)
+            %extrapolate_root: function that given two sections
+            %extrapolates the coordinates and chord of the root
+            %INPUT
+            %   c1,x1,y1: chord and coordinates of the most inboard
+            %       section
+            %   c2,x2,y2: chord and coordinates of the most outboard
+            %       section
+            tan_sweep = 2*(x2-x1) / ( y2-y1 ) ; % (x_tip-xLE_exp) / (b/2 - df/2) )
+            x_apex    = x1 - tan_sweep*y1; %x_apex = xLE_croot_ecp - tan(sweep_in)*df/2
+            tan_TE    = (x2+c2-x1-c1) / ( y2-y1 );
+            temp      = x1+c1 - tan_TE*y1; %x_apex = xTE_croot_ecp - tan(sweep_in)*df/2
+            croot = temp - x_apex;
+            tan_sweep = atan( tan_sweep )*180/pi;
+        end
+        
         function [sweepLE_equiv,croot_equiv] = eqsurf( ~,lsurf_str,S,kinkFLG )
             
             sweepLE_equiv = 2*lsurf_str.y_tip*(lsurf_str.xle_tip - lsurf_str.x_apex);
@@ -984,33 +996,6 @@ classdef AirData_class
                 error('Expected Fuselage fields');
             end
         end
-        
-%         function [Cd0,e] = aero_finda(obj)
-%             x0(1)    = 0.9; x0(2) = 0.00180;
-%             x0(3:10) = [ obj.MTOM,obj.T0,obj.rho_cr, 0.75, obj.wing_b, obj.wing_AR,obj.wing_S,obj.V_cr ];
-%             nROCs    = length(obj.ROC.roc(:));
-%             x0(11)   = nROCs;
-%             x0(12:11+nROCs) = obj.ROC.roc(:)';  x0(11+nROCs+1:11+2*nROCs) = obj.ROC.h(:)';
-%             options = optimoptions('fsolve','algorithm','levenberg-marquardt');
-%             x        = fsolve(@cruise_eq_sys_fun,x0,options);
-%             Cd0      = x(2); e = x(1);
-%         end
-        
-%         function y = cruise_eq_sys(x)
-%             % x(1) = e
-%             % x(2) = Cd0
-%             % x(3) = MTOM,Vcr,T0,rho_cr,throttle_cr,b,AR,S,V_cr
-%             MTOM = x(3);  T0 = x(4); rho_cr = x(5); throttle_cr = x(6);
-%             b = x(7); AR = x(8); S = x(9); V_cr = x(10);
-%             
-%             sig = rho_cr/1.225; % rho_cr/rho_0
-%             W_cr = 0.992*0.996*0.996*0.990*MTOM*9.81; % cruise weight [N]
-%             T_cr = T0*sig*throttle_cr; % Spinta in crociera [N]
-%             CL   = obj.W_cr*2/( rho_cr*V_cr^2*S ); % CL di cruise
-%             K    = 1/( pi*AR*x(1) ); f = x(2)*S; be = b*sqrt(x(1));
-%             y(1) = 0.5*rho_cr*V_cr*S*( x(2) + K*CL^2 ) - T_cr; % T = D
-%             y(2) = 1.54*(T_cr/W_cr)*sqrt(T_cr/f)/sig - 2.2*(W_cr/9.81)/(be^2) / ( sqrt( T_cr/9.81 * sig/f ) ); % RC_max -> CONTROLLA
-%         end
         
         function mark = marker_assign( obj )
         %marker_assign: assegna un marker in base alla famiglia di aereo

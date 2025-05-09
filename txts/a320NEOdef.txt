@@ -40,6 +40,7 @@ Wing:
 6.07	Exp Root Chord (m)
 4.01	Kink Chord (m)
 1.64	Tip. Chord (m)
+	x_apex (m)
 	x Leading Edge c_exp (m)
 	x Leading Edge kink(m)
 	x Leading Edge tip (m)
