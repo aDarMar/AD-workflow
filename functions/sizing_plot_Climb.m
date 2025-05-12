@@ -41,7 +41,7 @@ e_vet(2)      = e+de_TO;
 eng_w(2)      = (neng-1) / neng;    % OEI
 WoWTO(2)      = 1;                  % MTOM
 CL = [CL,CLmaxes_TO(:)];            % T/O 
-% 3 - transitio to climb
+% 3 - second segment
 CGD_norm(3)   = 0.024;              % Req. Climb Gradient
 VoVmin(3)     = 1.2;                % Req V in terms of V/V_stall_L
 dCD0_flaps(3) = dCD0_f_TO;          % CD0 increment due to flaps
@@ -78,7 +78,7 @@ eng_w(6)      = 1;                  % AEI
 WoWTO(6)      = WlandoMTOM;         % Max. Landing Weight
 CL = [CL,CLmaxes_LND(:)];          % LND 
 
-COND = {'First Segment CL$_{max,TO}$ = ','Transition CL$_{max,TO}$ = ',' PISS','En-Route CL$_{max}$ = ',...
+COND = {'First Segment CL$_{max,TO}$ = ','Transition CL$_{max,TO}$ = ','Second Segment CL$_{max,TO}$ = ','En-Route CL$_{max}$ = ',...
     'Approach CL$_{max,LND}$ = ','Balked CL$_{max,app}$ = '};
 for i = 1:nCLs
     %CL = CLmaxes(i)/(1.2^2);
@@ -103,47 +103,6 @@ for i = 1:nCLs
         LEG{i,j} = [ COND{j},num2str(CL(i,j)) ];
         
     end
-    
-% %     % Condition 1: first segment of climb
-% %     CD = CD0 + K*CL^2; % Parabolic Drag Polar
-% %     E = CL/CD;         % Efficiency
-% %     ToW = CGD_norm + 1/E;
-% %     ToW = ToW/T0oTmc * TisaoT50 / ( (neng-1)/neng );
-% % 
-% %     % Condition 2: transition to climb
-% %     CL = CLmaxes(i)/(1.1^2);
-% %     CD = CD0+dCD0_LG + K*CL^2; % Parabolic Drag Polar
-% %     E = CL/CD;          % Efficiency
-% %     ToW = CGD_norm + 1/E;
-% %     ToW = ToW/T0oTmc * TisaoT50 / ( (neng-1)/neng );
-% %     % Condition 3: second climb segment
-% %     CL = CLmaxes(i)/(1.2^2);
-% %     CD = CD0 + K*CL^2; % Parabolic Drag Polar
-% %     E = CL/CD;          % Efficiency
-% %     ToW = CGD_norm + 1/E;
-% %     ToW = ToW/T0oTmc * TisaoT50 / ( (neng-1)/neng );
-% %     % Condition 4: en-route Climb
-% %     CL = CLmaxes(i)/(1.25^2);
-% %     CD = CD0 + K*CL^2; % Parabolic Drag Polar
-% %     E = CL/CD;          % Efficiency
-% %     ToW = CGD_norm + 1/E;
-% %     ToW = ToW/T0oTmc * TisaoT50 / ( (neng-1)/neng );
-% %     % Condition 5: balked landing OEI
-% %     CL = CLmaxes(i)/(1.5^2);
-% %     CD = CD0 + K*CL^2; % Parabolic Drag Polar
-% %     E = CL/CD;          % Efficiency
-% %     ToW = CGD_norm + 1/E;
-% %     ToW = ToW/T0oTmc * TisaoT50 / ( (neng-1)/neng );
-% %     % Condition 6: balked landing AEI
-% %     CL = CLmaxes(i)/(1.5^2);
-% %     CD = CD0 + K*CL^2; % Parabolic Drag Polar
-% %     E = CL/CD;          % Efficiency
-% %     ToW = CGD_norm + 1/E;
-% %     ToW = ToW/T0oTmc * TisaoT50;
-% % 
-% %     
-% % 
-% % outputArg1 = inputArg1;
-% % outputArg2 = inputArg2;
+
 end
 end

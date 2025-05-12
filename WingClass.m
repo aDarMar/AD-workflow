@@ -54,10 +54,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             else
                 obj.TST = 1;
                 nM = length(M); % Numero di condizioni di volo
-                % Assegnazione Coordinate Apice Superficie
-                obj.Xapex = apexC(1);
-                obj.Yapex = apexC(2);
-                obj.Zapex = apexC(3);
+%                 % Assegnazione Coordinate Apice Superficie
+%                 obj.Xapex = apexC(1);
+%                 obj.Yapex = apexC(2);
+%                 obj.Zapex = apexC(3);
                 % Assegnazione Angolo di Calettamento
                 obj.iAng = iang;
                 % Inizializzazione Pannelli
@@ -78,12 +78,26 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             % Inizializzazione dei Dati di Downwash
             obj.eps0 = NaN; obj.depsda = NaN; obj.tau = 1;
             % Assegnazione delle coordinate ai profili
+            % Assign rhe coordinates of the wing apex to the innermost
+            % profile
             i = 1;
-            obj.panels(i).globalCoords( obj.Xapex,obj.Yapex,obj.Zapex ); 
-            obj.panels(i).
+            obj.panels(i).root.xglob = apexC(1);
+            obj.panels(i).root.yglob = apexC(2);
+            obj.panels(i).root.zglob = apexC(3);
+            
+            [obj.panels(i).tip.xglob,obj.panels(i).tip.yglob,obj.panels(i).tip.zglob] ...
+                = obj.panels(i).globalCoords( obj.panels(i).root.xglob,...
+                    obj.panels(i).root.yglob,obj.panels(i).root.zglob );  
+                
             for i=2:obj.npanels
-                obj.panels(i).globalCoords( obj.panels(i-1).tip.xglob,...
-                    obj.panels(i-1).tip.yglob,obj.panels(i-1).tip.zglob )                
+                % Assign to outer's root the values of inner's tip
+                obj.panels(i).root.xglob = obj.panels(i-1).tip.xglob;
+                obj.panels(i).root.yglob = obj.panels(i-1).tip.yglob;
+                obj.panels(i).root.zglob = obj.panels(i-1).tip.zglob;
+                % Calculate the values of tip
+                [obj.panels(i).tip.xglob,obj.panels(i).tip.yglob,obj.panels(i).tip.zglob] ...
+                    = obj.panels(i).globalCoords( obj.panels(i-1).tip.xglob,...
+                    obj.panels(i-1).tip.yglob,obj.panels(i-1).tip.zglob );
             end
 
             % Calcolo Grandezze Ala
@@ -149,9 +163,9 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             end
 
             %Creazione del Profilo Medio
-            [tmp1,tmp2] = meanProfileMod(obj);
+            [tmp1,tmp2] = obj.meanProfileMod;
             obj.meanprofile = ProfileClass(tmp1,tmp2,M);
-            [~,xm,ym,zm] = macCalc(obj);
+            [~,xm,ym,zm]          = obj.macCalc;
             obj.meanprofile.xglob = xm;
             obj.meanprofile.yglob = ym;
             obj.meanprofile.zglob = zm;

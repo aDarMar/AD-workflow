@@ -55,16 +55,16 @@ classdef PanelClass < handle%< ProfileClass
             %of the profile sections
             %INPUT
             %   Xg,Yg,Zg: global coordinate (ie in the costructive
-            %       reference frame) of the wing apex
+            %       reference frame) of the inner LE section
             %OUTPUT
             %   xroot,ysec,zsec: global coordinates (ie in the costructive
             %       reference frame) of the section
-            xroot = Xg;
-            obj.tip.xglob  = obj.root.xglob + obj.b*tan(obj.sweep*pi/180);
-            yroot = Yg;
-            obj.tip.yglob  = obj.root.yglob + obj.b;
-            zroot = Zg;
-            obj.tip.zglob  = obj.root.zglob + obj.b*tan(obj.dihedral*pi/180);
+            %xroot = Xg;
+            xroot  = Xg + obj.b*tan(obj.sweep*pi/180);
+            %yroot = Yg;
+            yroot  = Yg + obj.b;
+            %zroot = Zg;
+            zroot  = Zg + obj.b*tan(obj.dihedral*pi/180);
 
         end
         function S = areaFun(obj)

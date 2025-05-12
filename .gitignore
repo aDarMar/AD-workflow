@@ -1,5 +1,5 @@
 # Matlab backup files
-*.asv
+**/*.asv
 # Input text files
 txts/**/*.txt
 statistical_data/**/*.txt

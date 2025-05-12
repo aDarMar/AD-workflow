@@ -6,8 +6,6 @@ function  MTOMvsEM_plot(aero_obj,nAero,lin_reg,lin_reg_cfr)
 
 figure()
 
-
-
 i = 1;
 subplot(1,2,1)
 fig(1,i) = plot( aero_obj(i).EM,aero_obj(i).MTOM ); hold on
@@ -19,12 +17,23 @@ fig(2,i).LineStyle = 'none'; fig(2,i).Marker = aero_obj(i).Mark; fig(2,i).Marker
 leg{1,i} = [ aero_obj(i).Family,' ',aero_obj(i).Name,'-',aero_obj(i).Code] ;
 grid minor; xlabel( 'MTOM [Kg]' ); ylabel( 'EM [Kg]' )
 
+max_MTOM = aero_obj(i).MTOM; min_MTOM = aero_obj(i).MTOM;
 for i = 2:nAero
+    % Find Maximum and Minimum MTOM for sizing the axes
+    if max_MTOM < aero_obj(i).MTOM
+       max_MTOM = aero_obj(i).MTOM; 
+    end
+    if min_MTOM > aero_obj(i).MTOM
+        min_MTOM = aero_obj(i).MTOM;
+    end
+    % Plotting the Aircrafts
     subplot(1,2,1)
+    % Linear Scale
     fig(1,i) = plot( aero_obj(i).EM,aero_obj(i).MTOM );
     fig(1,i).LineStyle = 'none'; fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4; fig(1,i).LineWidth = 2;
     col = rand(1,3); fig(1,i).MarkerEdgeColor = col;
     subplot(1,2,2)
+    % Logarithmic Scale
     fig(2,i) = loglog( aero_obj(i).MTOM,aero_obj(i).EM );
     fig(2,i).LineStyle = 'none'; fig(2,i).Marker = aero_obj(i).Mark; fig(2,i).MarkerSize = 4; fig(2,i).LineWidth = 2;
     fig(2,i).MarkerEdgeColor = col;
@@ -32,9 +41,10 @@ for i = 2:nAero
 end
 
 if nargin > 2
-    Wmtom_reg  = (2:20)*1e4; Wmtom_reg = Wmtom_reg*2.2046;              % da [Kg] -> [lb]
-    Wempty_reg = 10.^( ( log10(Wmtom_reg) - lin_reg(1) )./lin_reg(2) ); % in [lb]
-    Wempty_reg = Wempty_reg/2.2046; Wmtom_reg = Wmtom_reg/2.2046;       % da [lb] -> [Kg]
+    % Plots the linear regression made with the input aircrafts
+    Wmtom_reg  = linspace(min_MTOM,max_MTOM,10); Wmtom_reg = Wmtom_reg*2.2046;  % from [Kg] -> [lb]
+    Wempty_reg = 10.^( ( log10(Wmtom_reg) - lin_reg(1) )./lin_reg(2) );         % in [lb]
+    Wempty_reg = Wempty_reg/2.2046; Wmtom_reg = Wmtom_reg/2.2046;               % from [lb] -> [Kg]
 
     i = nAero+1;
     subplot(1,2,1)
@@ -45,12 +55,16 @@ if nargin > 2
     fig(2,i) = plot( Wmtom_reg,Wempty_reg );
     fig(2,i).LineStyle = '-'; fig(2,i).LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
     col = rand(1,3); fig(2,i).MarkerEdgeColor = col;
-    leg{1,i} =  ['log_{10}(W_{MTOM}) = ',num2str( lin_reg(2) ),'log_{10}(W_{E})  ',num2str( lin_reg(1) )] ;
-    
+    % Legend
+    if lin_reg(1)>0
+        leg{1,i} =  ['log_{10}(W_{MTOM}) = ',num2str( lin_reg(2) ),'log_{10}(W_{E})  + ',num2str( lin_reg(1) )] ;
+    else
+        leg{1,i} =  ['log_{10}(W_{MTOM}) = ',num2str( lin_reg(2) ),'log_{10}(W_{E})  - ',num2str( -lin_reg(1) )] ;
+    end
     if nargin == 4
         n_cases = length( lin_reg_cfr(:,1) );
         for j = 1:n_cases
-            Wmtom_reg  = (2:20)*1e4; Wmtom_reg = Wmtom_reg*2.2046;              % da [Kg] -> [lb]
+            Wmtom_reg  = linspace(min_MTOM,max_MTOM,10); Wmtom_reg = Wmtom_reg*2.2046;              % da [Kg] -> [lb]
             Wempty_reg = 10.^( ( log10(Wmtom_reg) - lin_reg_cfr(j,1) )./lin_reg_cfr(j,2) ); % in [lb]
             Wempty_reg = Wempty_reg/2.2046; Wmtom_reg = Wmtom_reg/2.2046;       % da [lb] -> [Kg]
             i = nAero+1+j;
@@ -62,8 +76,12 @@ if nargin > 2
             fig(2,i) = plot( Wmtom_reg,Wempty_reg );
             fig(2,i).LineStyle = '-'; fig(2,i).LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
             col = rand(1,3); fig(2,i).MarkerEdgeColor = col;
-            leg{1,i} =  ['log_{10}(W_{MTOM}) = ',num2str( lin_reg_cfr(j,2) ),'log_{10}(W_{E})  ',num2str( lin_reg_cfr(j,1) )] ;
-            
+            % Legend
+            if lin_reg_cfr(j,1) < 0
+                leg{1,i} =  ['log_{10}(W_{MTOM}) = ',num2str( lin_reg_cfr(j,2) ),'log_{10}(W_{E}) - ',num2str( -lin_reg_cfr(j,1) )] ;
+            else
+                leg{1,i} =  ['log_{10}(W_{MTOM}) = ',num2str( lin_reg_cfr(j,2) ),'log_{10}(W_{E}) + ',num2str( lin_reg_cfr(j,1) )] ;
+            end
         end
     end
     

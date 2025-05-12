@@ -2,13 +2,6 @@ close all; clear; clc;
 
 global main_fold
 
-% nm = 'TestFuel_read.txt';
-% nm = 'TestWeights_est.txt';
-% nm1 = 'A321XLR_PW.txt';
-% nm2 = 'Sukoj_SJ100.txt';
-% nm3 = 'Yakovlev_MS_21.txt';
-% 
-% name_list = { nm1,nm2,nm3 };
 main_fold = cd;
 addpath('functions')
 %% Lettura Nomi Aerei da File
@@ -48,7 +41,7 @@ MTOM_it0    = fzero( find_W,x0 );
 % = Wempty_reg/2.2046; Wmtom_reg = Wmtom_reg/2.2046;       % da [lb] -> [Kg]
 
 % DEBUGGGG 
-MTOM_it0 = 95000;
+%MTOM_it0 = 95000;
 
 figure()
 plot( Wmtom_reg,Wempty_reg( Wmtom_reg ),'--r' ); hold on
@@ -87,7 +80,7 @@ fig_ri  = figure(); %axis([0,1000,0,1]);
 %hold on;
 
 fig_aux = figure();
-ch_idxs = sizing_plot(TLARS,CLmax_TO_vett,...
+[ch_idxs,ax_siz,Leg_siz] = sizing_plot(TLARS,CLmax_TO_vett,...
     CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,CD0,TisaoT50,WcroWTO,V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux);
 
 iS = 2;
@@ -98,9 +91,9 @@ while flag
 
     if iS > 2
     clf( fig_ri )    
-    sizing_plot(TLARS,CLmax_TO_vett,...
+    [~,ax_siz,Leg_siz] = sizing_plot(TLARS,CLmax_TO_vett,...
         CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,CD0,TisaoT50,WcroWTO,...
-        V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,ch_idxs)       
+        V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,ch_idxs);       
     end
     figure(fig_ri.Number);
     %subplot 211
@@ -108,6 +101,10 @@ while flag
     fig_it = plot(Sizing(iS-1).WoS*[1,1],[0,1]);
     fig_it.LineStyle = '--'; fig_it.LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
     col = rand(1,3); fig_it.MarkerEdgeColor = col;
+    %axes
+    %legend( fig_it,['(W/S)_{it ',num2str(iS-1),'} = ',num2str(Sizing(iS-1).WoS)],'Interpreter','Latex' );
+    %legend( [ax_siz,fig_it],{Leg_siz{1:end},['(W/S)_{it ',num2str(iS-1),'} = ',num2str(Sizing(iS-1).WoS)]},'Interpreter','Latex' );
+    
     tmp = input('Choose W/T');
     if tmp == -1 && iS > 2
         Sizing(iS-1).WoT = Sizing(iS-2).WoT;
@@ -118,8 +115,8 @@ while flag
     fig_pt = plot( Sizing(iS-1).WoS,Sizing(iS-1).WoT );
     fig_pt.LineStyle = 'none';  fig_pt.Marker = 'o'; fig_pt.MarkerSize = 6;
     col = rand(1,3); fig_pt.MarkerEdgeColor = col;
-    
-    
+    %legend( [ax_siz,fig_it,fig_pt],{Leg_siz,['(W/S)_{it ',num2str(iS-1),'} = ',num2str(Sizing(iS).WoS)],'Sizing Point'},'Interpreter','Latex' );
+
     tmp = input('Choose W/S');
     if tmp == -1
         Sizing(iS).WoS = Sizing(iS-1).WoS;
@@ -136,3 +133,5 @@ while flag
     %hold off
     
 end
+
+sizing_plot_cfr(Airl,nAero,fig_ri,ax_siz,Leg_siz,fig_pt)

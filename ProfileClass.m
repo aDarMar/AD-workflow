@@ -111,16 +111,19 @@ classdef ProfileClass %<handle
                                 obj.flaptype = '2-slotted';
                         end
                     case 'slats'
-                        obj.flag = 'Slat Profile';
-                        obj.yglob = HLvals(1);
-                        obj.yob = HLvals(2);
-                        obj.cfoc = HLvals(3);
+                        obj.flag   = 'Slat Profile';
+                        obj.yglob  = HLvals(1);
+                        obj.yob    = HLvals(2);
+                        obj.cfoc   = HLvals(3);
                         obj.cextoc = HLvals(4);
                     case 'elevator'
-                        obj.flag = 'Horizontal Tail';
-                        obj.tauE = HLvals(1);
-                        obj.eps0 = HLvals(2);
+                        obj.flag   = 'Horizontal Tail';
+                        % Aerodynamics
+                        obj.tauE   = HLvals(1);
+                        obj.eps0   = HLvals(2);
                         obj.depsda = HLvals(3);
+                        % Geometry
+                        obj.cfoc   = HLvals(4); % ce/c
                 end
             end
         end
