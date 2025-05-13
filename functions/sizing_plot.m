@@ -1,6 +1,6 @@
 function [rem_ch,tmp,LEGin] = sizing_plot(TLARS,CLmax_TO_vett,...
     CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,...
-    CD0,TisaoT50,...
+    CD0,dCD0_wave,TisaoT50,...
     WcroWTO,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,rem_ch)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
@@ -20,13 +20,13 @@ ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
     TLARS.e,TLARS.de_TO,TLARS.de_LND,...
     CD0,TLARS.dCD0_f_TO,TLARS.dCD0_f_LND,TLARS.dCD0_f_App,TLARS.dCD0_lgs,...
     TLARS.AR,TLARS.nengine,WLNDoWTO,TLARS.T0oTmc,TisaoT50 );
-[fig_CR,LEG_CR]   = sizing_plot_Cruise( CD0,V_cr_vett,h_cr_vett,WcroWTO,TLARS.e,TLARS.AR,phi_v );
+[fig_CR,LEG_CR]   = sizing_plot_Cruise( CD0,dCD0_wave,V_cr_vett,h_cr_vett,WcroWTO,TLARS.e,TLARS.AR,phi_v );
 
 % figure
 % hold on
 %% Take-Off
 nTO = length(CLmax_TO_vett);
-if nargin <15
+if nargin <16
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% TAKE-OFF %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose CL max at TO to display' );
@@ -51,7 +51,7 @@ end
 n_v(1) = j-1;
 %% Landing
 nTO = length(CLmax_LND_vett);
-if nargin <15
+if nargin <16
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% LANDING %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose CL max at LANDING to display' );
@@ -71,7 +71,7 @@ n_v(2) = j-1;
 
 %% CLIMB
 nTO = length(CLmax_LND_vett);
-if nargin<15
+if nargin<16
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% CLIMB %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose the combination of CL maxes at each Climb phase: ' );
@@ -95,7 +95,7 @@ n_v(3) = j-1;
 
 %% CRUISE
 nTO = length(h_cr_vett);
-if nargin <15
+if nargin <16
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% CRUISE %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose the h-V-phi combination in CRUISE to display' );

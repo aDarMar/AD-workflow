@@ -72,7 +72,7 @@ Sizing(iS).WoS = 550;   % First Guess WoS [Kg/m^2]
 
 Sizing(iS).S = MTOM_it0/Sizing(iS).WoS;
 [CD0,Swet] = polar_est(Sizing(iS).S,MTOM_it0);
-
+dCD0_wave = 0.0015;
 fig_ri  = figure(); %axis([0,1000,0,1]); 
 %ax_fig = axes('Parent', fig_ri); %axis([0,1000,0,1]); hold on;  
 % grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
@@ -81,7 +81,7 @@ fig_ri  = figure(); %axis([0,1000,0,1]);
 
 fig_aux = figure();
 [ch_idxs,ax_siz,Leg_siz] = sizing_plot(TLARS,CLmax_TO_vett,...
-    CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,CD0,TisaoT50,WcroWTO,V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux);
+    CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,CD0,dCD0_wave,TisaoT50,WcroWTO,V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux);
 
 iS = 2;
 
@@ -92,7 +92,7 @@ while flag
     if iS > 2
     clf( fig_ri )    
     [~,ax_siz,Leg_siz] = sizing_plot(TLARS,CLmax_TO_vett,...
-        CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,CD0,TisaoT50,WcroWTO,...
+        CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,CD0,dCD0_wave,TisaoT50,WcroWTO,...
         V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,ch_idxs);       
     end
     figure(fig_ri.Number);

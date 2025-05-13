@@ -1,8 +1,9 @@
-function [fig,LEG] = sizing_plot_Cruise(CD0,Vcr,h_cruise,WcroWTO,e,AR,phi_v,T0oTcr)
+function [fig,LEG] = sizing_plot_Cruise(CD0,dCD0_wave,Vcr,h_cruise,WcroWTO,e,AR,phi_v,T0oTcr)
 %sizing_plot_Cruise Function that draws the cruise limitation for a jet
 %airplane. Inputs can be vector and in such case, every element corresponds
 %to a specific flight condition
 %   CD0: zero-lift drag coefficie in cruise (clean config)
+%   dCD0_wave: wave drag addition
 %   Vcr: cruise speed in [m/s]
 %   h_cruise : cruise altitude in [m]
 %   WTOoWcr: vector containing weigth ratios between [end of climb (4), end
@@ -26,13 +27,13 @@ for j = 1:nConds
     [T, a, P, rho] = atmosisa(h_cruise(j));
     
     sigma = rho/1.225;
-    if nargin < 8
+    if nargin < 9
         T0oTcr = 1/(0.71*sigma*phi_v(j));
     end
     q = 0.5*sigma*1.225*Vcr(j)^2;
 
     for i = 1:nW
-        ToW = ( CD0*q./(WoS*9.81)/WcroWTO(i) + K/q .* (WoS*9.81)*WcroWTO(i) )*WcroWTO(i)*T0oTcr; %WoS in [Kgf]
+        ToW = ( (CD0+dCD0_wave)*q./(WoS*9.81)/WcroWTO(i) + K/q .* (WoS*9.81)*WcroWTO(i) )*WcroWTO(i)*T0oTcr; %WoS in [Kgf]
         
         subplot 211; hold on
         fig(2*i-1,j) = plot( WoS,ToW );
