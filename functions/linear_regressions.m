@@ -19,25 +19,6 @@ end
 sol = pinv(A)*b;
 a_coeff = sol(1) ; b_coeff = sol(2);
 
-% for i=1:rows
-%     for k=1:column
-%         if k==1
-%             A(i,k)=1;
-%         else
-%             A(i,k)=log10(WE(i));
-%         end %close if
-%     end     % close i for
-% end         % close k for
-% 
-% % Known vector b
-% b=log10(WTO)';
-% 
-% % Pseudoinverse matrix calculation and solution of the system
-%  solution = pinv(A)*b;
-%  a=solution(1);
-%  b=solution(2);
-
-
 
 end
 
