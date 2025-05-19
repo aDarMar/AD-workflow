@@ -2,6 +2,7 @@ classdef PaneledWing
    properties
        m
        M
+       input_geom_sect
        geom_sect
        int_sect
        b
@@ -16,12 +17,19 @@ classdef PaneledWing
            %m: number of sections
            %M: number of integration points
            %geom_vec: vector of geometric sections 
-           %    c,eps,t/c,LER/c,x@max(t/c),xtr_Up,xtr_Low,dY
+           %    2y/b,c,eps,t/c,LER/c,x@max(t/c),xtr_Up,xtr_Low,dY
            %aero_vec: vector of aerodynamic data for profiles:
            %    Mach,cla,cl0,cl*,clmax,alphamax,alpha0l,alpha*,cm_ac
            %    b: wing span
            %    sweep: leading edge sweep in degs
            % TODO: given c_vec, interpolate at y
+           m_inp = length( geom_vec(:,1) );
+           if m < length( geom_vec(:,1) )
+               warning( 'Defined stations are more than m' );
+           elseif m > length( geom_vec(:,1) )
+               disp('WIP')
+           end
+           
            if mod( m,2 ) == 0
                warning( 'Inserted even numer of points, added one point to make it odd' );
                m = m+1;
@@ -32,23 +40,40 @@ classdef PaneledWing
            obj.b = b;
            obj.sweep = sweep;
            phi   = obj.phi_funct(obj.m);
-           % Defines the wing sections
-           obj.geom_sect  = ProfilelLass.empty; % Costruisce un array di oggetti panels
+           % Stores the input wing sections
+           obj.input_geom_sect  = ProfileClass.empty; % Costruisce un array di oggetti panels
+           for i=1:m_inp
+               obj.input_geom_sect(i) = ProfileClass( geom_vec(i,2:9),aero_vec(i,2:end),aero_vec(i,1) );
+               obj.input_geom_sect(i).yglob = geom_vec(i,1)*obj.b/2;
+           end
+           % Defines the wing sections employed in calculations
+           [geom_prep,aero_prep] = obj.interpSects(geom_vec,aero_vec,phi);
+           obj.geom_sect  = panelSection.empty; % Costruisce un array di oggetti panels
            for i=1:obj.m
-               obj.geom_sect(i) = panelSection( geom_vec(i,:),aero_vec(i,2:end),aero_vec(i,1),phi(i),b );
+               obj.geom_sect(i) = panelSection( geom_prep(i,:),aero_prep(i,2:end),aero_prep(i,1),phi(i),b );
            end
            % Defines the integration points sections
-           obj.int_sect  = ProfilelLass.empty; % Costruisce un array di oggetti panels
+           obj.int_sect  = panelSection.empty; % Costruisce un array di oggetti panels
            temp = nan(1,8);
            phi   = obj.phi_funct(obj.M);
            for i=1:obj.m
                obj.int_sect(i) = panelSection( temp,temp,temp(1),phi(i),b );
            end
            % Plantform wing parameters
-           obj.TR    = obj.geom_sect(1).c/obj.geom_sect( (obj.m+1)*0.5 ).c;
+           obj.TR    = obj.input_geom_sect(1).c/obj.input_geom_sect( end ).c;
            obj.S     = obj.areacalc;
            obj.AR    = obj.b^2/obj.S;
-           obj.sweep = sweepChange(obj.sweepLE,0,0.25,obj.AR,obj.TR);
+           obj.sweepLE = obj.sweepChange(obj.sweep,0.25,0,obj.AR,obj.TR);
+       end
+       
+       function [geom_prep,aero_prep] = interpSects( obj,geom_vec,aero_vec,phi )
+           geom_prep = nan( obj.m,8 ); aero_prep = nan( obj.m,9 );
+           for n = 1:obj.m
+               for l = 1:8
+                  geom_prep(n,l) = interp1( geom_vec(:,1),geom_vec(:,l+1),cos( phi(n) ) );
+                  aero_prep(n,l) = interp1( geom_vec(:,1),aero_vec(:,l),cos( phi(n) ) );
+               end
+           end
        end
        
        function Sw2 = sweepChange(~,Sw1,c1,c2,AR,TR)
@@ -67,9 +92,10 @@ classdef PaneledWing
        
        function Sw = areacalc(obj)
            %areacalc: calculates wing area from wing slices
+           m_inp = length( obj.input_geom_sect );
            Sw = 0;
-          for i = 2:(obj.m+1)*0.5 
-              Sw =  Sw + (obj.geom_sect(i-1).c+obj.geom_sect(i).c)*0.5*obj.b*(obj.geom_sect(i-1).eta-obj.geom_sect(i).eta);
+          for i = 2:m_inp
+              Sw =  Sw + (obj.input_geom_sect(i-1).c+obj.input_geom_sect(i).c)*(obj.input_geom_sect(i-1).yglob-obj.input_geom_sect(i).yglob);
           end
        end
        
@@ -78,8 +104,8 @@ classdef PaneledWing
            %Multhopp quadrature method
            %   m: number of points
            phi_n = nan(m,1);
-           for i = 1:m
-               phi_n(i) = n*pi/(m+1);
+           for n = 1:m
+               phi_n(n) = n*pi/(m+1);
            end
        end
        
@@ -99,15 +125,14 @@ classdef PaneledWing
            %--------------------------------------------------
            %    nu: index of the control point
            %    n: index of the other point
-           
            % Case mu = 0 and n =/= (m+1)/2
            gval = obj.ffun( obj.geom_sect(n).phi,0 )*...
-               obj.L_funsymm( obj.geom_sect(nu).eta,1 );
+               obj.L_funsymm( nu,1 );
            Mred = (obj.M-1)/2;
            for mu = 1:Mred
                % Case mu =/= 0 and n =/= (m+1)/2
                gval = gval + 2*obj.ffun( obj.geom_sect(n).phi,obj.int_sect(mu).phi )...
-                   *obj.L_funsymm( obj.geom_sect(nu).eta,obj.int_sect(mu).eta );
+                   *obj.L_funsymm( nu,obj.int_sect(mu).eta );
            end
            gval = gval*(-1)/(2*(obj.M+1));
        end
@@ -124,12 +149,12 @@ classdef PaneledWing
            
            % Case mu = 0 and n == (m+1)/2
            gval = 0.5*obj.ffun( obj.geom_sect(n).phi,0 )*...
-               obj.L_funsymm( obj.geom_sect(nu).eta,1 );
+               obj.L_funsymm( nu,1 );
            Mred = (obj.M-1)/2;
            for mu = 1:Mred
                % Case mu =/= 0 and n == (m+1)/2
                gval = gval + obj.ffun( obj.geom_sect(n).phi,obj.int_sect(mu).phi )...
-                   *obj.L_funsymm( obj.geom_sect(nu).eta,obj.int_sect(mu).eta );
+                   *obj.L_funsymm( nu,obj.int_sect(mu).eta );
            end
            gval = gval*(-1)/(2*(obj.M+1));
        end
@@ -137,21 +162,31 @@ classdef PaneledWing
        function fnm = ffun( obj,phi_n,phi_mu )
            %    phi_n: geometrical section index
            %    phi_mu: integration point index
-           for mu1 = 1:obj.m
+           fnm = 0;
+           idx = 1:2:obj.m;
+           for mu1 = idx
                fnm = fnm + mu1*sin( mu1*phi_n )*cos( mu1*phi_mu );
            end
            fnm = fnm*2/(obj.m+1);
        end
        
-       function L = L_funsymm( obj,eta,b_eta ) % CONTROLLA LE CHIAMATEEEEEEE
-           %L_funsymm: Weissner influence function for a symmetric load
-           %distribution.
-           %    eta: non-dimensional position of control point nu
+       function L = L_funsymm( obj,nu,b_eta ) % CONTROLLA LE CHIAMATEEEEEEE
+           %L_funsymm: Weissner's influence function for a symmetric load 
+           %distribution. The reason the function requires the index for the 
+           %control point and the actual position for the integration point 
+           %is that the second index can be 0, while the first cant.
+           %    nu: index of control point nu
            %    b_eta: non-dimensional position of intehration point mu
-           boc = obj.b/obj.c; tS4 = tan(bj.sweep*pi/180);
-           L = 1/( boc*(eta-b_eta) )*( sqrt( (1+boc*(eta-b_eta)*tS4)^2 + (boc*(eta-b_eta)^2) ) - 1 ) -...
-               1/( boc*(eta-b_eta) )*( sqrt( (1+boc*(eta-b_eta)*tS4)^2 + (boc*(eta-b_eta)^2) )/( 1+2*boc*eta*tS4 ) - 1 ) -...
-               ( 2*tS4*sqrt( (1+boc*eta*tS4)^2+(boc*eta)^2 ) )/(1+2*boc*eta*tS4);
+           boc = obj.b/obj.geom_sect(nu).c; tS4 = tan(obj.sweep*pi/180);
+           eta = obj.geom_sect(nu).eta;
+           if abs(eta-b_eta) < 1e-4
+               %If eta = b_eta it can be shown that L 
+               L = tS4;
+           else
+               L = 1/( boc*(eta-b_eta) )*( sqrt( (1+boc*(eta-b_eta)*tS4)^2 + (boc*(eta-b_eta))^2 ) - 1 );
+           end
+           L = L - 1/( boc*(eta+b_eta) )*( sqrt( (1+boc*(eta-b_eta)*tS4)^2 + (boc*(eta+b_eta))^2 )/( 1+2*boc*eta*tS4 ) - 1 ) -...
+                   ( 2*tS4*sqrt( (1+boc*eta*tS4)^2+(boc*eta)^2 ) )/(1+2*boc*eta*tS4);
        end
        
    end
