@@ -198,21 +198,21 @@ classdef PaneledWing < WingClass
            for n = n_idxs
                % Eq. (A37) case n =/= nu
                B(n)    = obj.littlebfun( nu,n ) + obj.littlebfun( nu,obj.m+1-n );
-               a_nu(n) = -2*B(n) + obj.b/obj.geom_sect(nu).c*obj.gbarfun( nu,n );
+               a_nu(n) = -2*B(n) + obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi )*obj.gbarfun( nu,n );
            end
            % Adding (m+1)/2 point: this step is made outside the for cycle because the
            % functions gbar and B assume  different values for n = (m+1)/2
            B(obj.m_red)    = obj.littlebfun( nu,obj.m_red );
-           a_nu(obj.m_red) = -2*B(obj.m_red) + obj.b/obj.geom_sect(nu).c*obj.gbarfun_special( nu,obj.m_red );
+           a_nu(obj.m_red) = -2*B(obj.m_red) + obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi )*obj.gbarfun_special( nu,obj.m_red );
            % Adding nu point
            B(nu)       = (obj.m+1)/( 4*sin(obj.geom_sect(nu).phi) ); % b(nu,nu)
            a_nu(nu)    = 2*B(nu);    %2*b_nu,nu expression
            if nu == obj.m_red
                % case nu = n = (m+1)/2
-               a_nu(nu) = a_nu(nu) + obj.b/obj.geom_sect(nu).c*obj.gbarfun_special( nu,nu );
+               a_nu(nu) = a_nu(nu) + obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi )*obj.gbarfun_special( nu,nu );
            else
                % case nu = n =/= (m+1)/2
-               a_nu(nu) = a_nu(nu) + obj.b/obj.geom_sect(nu).c*obj.gbarfun( nu,nu );
+               a_nu(nu) = a_nu(nu) + obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi )*obj.gbarfun( nu,nu );
            end
            
            
@@ -286,7 +286,7 @@ classdef PaneledWing < WingClass
            %is that the second index can be 0, while the first cant.
            %    nu: index of control point nu
            %    b_eta: non-dimensional position of intehration point mu
-           boc = obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi ); tS4 = tan(obj.sweep*pi/180);
+           boc = obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi ); tS4 = tan(obj.sweep*pi/180)/obj.geom_sect(nu).beta;
            eta = obj.geom_sect(nu).eta;
            if abs(eta-b_eta) < 1e-4
                %If eta = b_eta it can be shown that L 

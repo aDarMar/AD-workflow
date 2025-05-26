@@ -30,7 +30,7 @@ TLARS = read_TLARs( TLARs_path );
 M_pay  = TLARS.npax*215/2.2046; %[Kg]
 M_crew = (TLARS.ncrew+TLARS.npil)*205/2.2046; %[Kg]
 Mres = 0; Mfo = 0;
-c = 1 - (1+Mres)*(1-Mff_b) - Mfo; d = M_pay + M_crew;
+c = 1 - (1+Mres)*(1-Mff) - Mfo; d = M_pay + M_crew;
 
 Wmtom_reg   = (2:20)*1e4; %Wmtom_reg = Wmtom_reg*2.2046;                          % da [Kg] -> [lb]
 Wempty_reg  = @(Wmtom_reg) ( 10.^( ( log10(Wmtom_reg*2.2046) - a )./b )/2.2046 ) ;      % in [kg]
