@@ -1,49 +1,84 @@
-classdef PaneledWing
+classdef PaneledWing < WingClass
    properties
-       m
-       M
+       m        % number of spanwise sections
+       m_red    % (m+1)/2
+       M        % number of integration sections
        input_geom_sect
        geom_sect
        int_sect
        b
        sweep    % c/4 sweep [deg]
-       sweepLE  % LE sweep
-       TR
-       S
-       AR
+       % Global Profiles
+       a_coeffs
+       b_coeffs
+       
+
    end
    methods
-       function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep)
+       function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach)
            %m: number of sections
            %M: number of integration points
-           %geom_vec: vector of geometric sections 
+           %geom_vec: vector of half-wing geometric sections 
            %    2y/b,c,eps,t/c,LER/c,x@max(t/c),xtr_Up,xtr_Low,dY
            %aero_vec: vector of aerodynamic data for profiles:
            %    Mach,cla,cl0,cl*,clmax,alphamax,alpha0l,alpha*,cm_ac
            %    b: wing span
            %    sweep: leading edge sweep in degs
            % TODO: given c_vec, interpolate at y
-           m_inp = length( geom_vec(:,1) );
-           if m < length( geom_vec(:,1) )
-               warning( 'Defined stations are more than m' );
-           elseif m > length( geom_vec(:,1) )
-               disp('WIP')
-           end
            
+           %% Superclass Construction 
+           % Identification of Kink Section: checks at which station the
+           % chord distribution is discontinous
+           m_inp = length( geom_vec(:,1) );
+           j = 1; kink_idx = nan( m_inp-1,1 );
+           k = 1;
+           % Calculates the slope of c - y for k = 1, k = 2
+           % tg_old = c(2) - c(1) / y(2) - y(1)
+           tg_old = ( geom_vec(k+1,2) - geom_vec(k,2) )/( geom_vec(k+1,1) - geom_vec(k,1) )/(0.5*b);
+           for k = 2:m_inp-1
+               tg_k = ( geom_vec(k+1,2) - geom_vec(k,2) )/( geom_vec(k+1,1) - geom_vec(k,1) )/(0.5*b);
+               if abs( tg_k - tg_old ) > 1e-2
+                   % if two consecutive tangents are discontinous then
+                   % there is a kink at k station
+                  kink_idx(j) = k;
+                  j = j+1;
+               end
+               tg_old = tg_k;
+           end
+           kink_idx = kink_idx( ~isnan(kink_idx) ); % saves index of kink positions
+           n_pan = length( kink_idx ) + 1; % number of panels = n_kink + 1
+           kink_idx = [1;kink_idx;m_inp]; % indexes of sections of interest [ root, kink_1,kink_2,..,tip]
+           %Semi-span evaluation
+           bs = nan(n_pan,1);
+           for k = 1:n_pan
+               bs(k) = ( geom_vec( kink_idx(k+1),1 ) - ...
+                   geom_vec( kink_idx(k),1 ) )*b/2;
+           end
+           % WARNING: only one dihedral and sweep for the entire wing
+           obj@WingClass( bs,ones(n_pan)*sweep,ones(n_pan)*dihedral,iang,apexC,Mach,...
+               geom_vec(kink_idx,2:end),aero_vec(kink_idx,2:end) ); % call superclass constructor
+           
+           %% Sections Definition
+
            if mod( m,2 ) == 0
                warning( 'Inserted even numer of points, added one point to make it odd' );
                m = m+1;
-               % FINIREEEEEEEEEE: aggiungere sezione mancante
            end
-           obj.m = m;
-           obj.M = M;
-           obj.b = b;
-           obj.sweep = sweep;
-           phi   = obj.phi_funct(obj.m);
+           % Wing Sections
+           % x -- o -- o -- |o| -- o -- o -- x
+           % |    m       (m+1)/2  2    1    |
+           % |                               |
+           % |<------------- b ------------->|
+           obj.m     = m; obj.m_red = ( obj.m + 1 ) *0.5; % Half points
+           obj.M     = M;
+           obj.b     = b;
+           obj.sweep = obj.sweepChange( sweep,0,0.25,obj.AR,obj.TR );
+           phi       = obj.phi_funct(obj.m);
            % Stores the input wing sections
            obj.input_geom_sect  = ProfileClass.empty; % Costruisce un array di oggetti panels
            for i=1:m_inp
-               obj.input_geom_sect(i) = ProfileClass( geom_vec(i,2:9),aero_vec(i,2:end),aero_vec(i,1) );
+               obj.input_geom_sect(i)       = ProfileClass( geom_vec(i,2:9),...
+                   aero_vec(i,2:end),aero_vec(i,1) );
                obj.input_geom_sect(i).yglob = geom_vec(i,1)*obj.b/2;
            end
            % Defines the wing sections employed in calculations
@@ -60,10 +95,18 @@ classdef PaneledWing
                obj.int_sect(i) = panelSection( temp,temp,temp(1),phi(i),b );
            end
            % Plantform wing parameters
-           obj.TR    = obj.input_geom_sect(1).c/obj.input_geom_sect( end ).c;
-           obj.S     = obj.areacalc;
-           obj.AR    = obj.b^2/obj.S;
-           obj.sweepLE = obj.sweepChange(obj.sweep,0.25,0,obj.AR,obj.TR);
+%            obj.TR    = obj.input_geom_sect(1).c/obj.input_geom_sect( end ).c;
+%            obj.S     = obj.areacalc;
+%            obj.AR    = obj.b^2/obj.S;
+%            obj.sweepLE = obj.sweepChange(obj.sweep,0.25,0,obj.AR,obj.TR);
+           % Calculates Wing Loading
+           [obj.a_coeffs,obj.b_coeffs] = obj.aeroDef; % Defines influence ad geometric coefficients
+           [ Gb,a0L,CDi_basic,CM0_basic ] = obj.loadsEval;
+           for n = 1:obj.m_red-1
+               % Symmetric Loadings
+              obj.geom_sect(n).Gb = Gb(n); obj.geom_sect(obj.m+1-n).Gb = Gb(n);
+              
+           end
        end
        
        function [geom_prep,aero_prep] = interpSects( obj,geom_vec,aero_vec,phi )
@@ -109,6 +152,72 @@ classdef PaneledWing
            end
        end
        
+       function eps = eps_calc(obj,nu_r)
+           %eps_calc: calculates geometric and aerodynamic twist for all
+           %the sections in relation to the reference (root) section
+           %INPUT
+           %    nu_r: index of reference station
+           %OUTPUT
+           %    eps: vector of combined twist, given from (looking towards 
+           %        the wing's apex) right tip to root to left tip
+          eps = nan( obj.m_red,1 ); 
+          for n = 1:obj.m_red
+              eps(n) = obj.geom_sect(n).eps - obj.geom_sect(nu_r).eps; %+ % FINIREEEEEEEEE
+          end
+          
+       end
+       %% Aerodynamic Estimation
+       function [a_cfs,b_cfs] = aeroDef(obj)
+           a_cfs        = nan(obj.m_red);       %Matrix of symmetric influence coefficients
+           b_cfs        = nan(obj.m_red);
+           for nu = 1:obj.m_red
+               % Builds the matrix of coefficients row by row
+               [a_cfs(nu,:),b_cfs(nu,:)] = obj.aerosymmbuilder( nu );
+           end
+       end
+       
+       %% Influence Coefficients Definition
+       function [a_nu,B] = aerosymmbuilder( obj,nu )
+           %aerosymmbuilder: function that builds the equation for circulation in case of
+           %symmetric load. In other words, it builds the nu-th row of the influence
+           %coefficients matrix.
+           %INPUT
+           %   nu: nu-th row of equation. In physical terms it represents the index of
+           %       the nu-th control point in which we are imposing the no flow
+           %       through condition. NU IS A SCALAR
+           %OUTPUT
+           %    a_nu: matrix of influence coefficients: 
+           %            [a_nu]{Gs} = {alpha_nu}
+           %    B: matrix of geometric coefficients
+           
+           a_nu    = nan( 1,obj.m_red );
+           n_idxs  = 1:obj.m_red-1;
+           n_idxs  = n_idxs( n_idxs~=nu );
+           B       = nan( 1,obj.m_red);
+           % For-cycle from 1 to (m+1)/2 - 1 excluding nu
+           for n = n_idxs
+               % Eq. (A37) case n =/= nu
+               B(n)    = obj.littlebfun( nu,n ) + obj.littlebfun( nu,obj.m+1-n );
+               a_nu(n) = -2*B(n) + obj.b/obj.geom_sect(nu).c*obj.gbarfun( nu,n );
+           end
+           % Adding (m+1)/2 point: this step is made outside the for cycle because the
+           % functions gbar and B assume  different values for n = (m+1)/2
+           B(obj.m_red)    = obj.littlebfun( nu,obj.m_red );
+           a_nu(obj.m_red) = -2*B(obj.m_red) + obj.b/obj.geom_sect(nu).c*obj.gbarfun_special( nu,obj.m_red );
+           % Adding nu point
+           B(nu)       = (obj.m+1)/( 4*sin(obj.geom_sect(nu).phi) ); % b(nu,nu)
+           a_nu(nu)    = 2*B(nu);    %2*b_nu,nu expression
+           if nu == obj.m_red
+               % case nu = n = (m+1)/2
+               a_nu(nu) = a_nu(nu) + obj.b/obj.geom_sect(nu).c*obj.gbarfun_special( nu,nu );
+           else
+               % case nu = n =/= (m+1)/2
+               a_nu(nu) = a_nu(nu) + obj.b/obj.geom_sect(nu).c*obj.gbarfun( nu,nu );
+           end
+           
+           
+       end
+
        function b_ij = littlebfun( obj,nu,n )
            %littlebfun: function that evaluates the coefficient b(nu,n)
            %   nu: index of the control point
@@ -177,7 +286,7 @@ classdef PaneledWing
            %is that the second index can be 0, while the first cant.
            %    nu: index of control point nu
            %    b_eta: non-dimensional position of intehration point mu
-           boc = obj.b/obj.geom_sect(nu).c; tS4 = tan(obj.sweep*pi/180);
+           boc = obj.b/( obj.geom_sect(nu).c*obj.geom_sect(nu).cor_2pi ); tS4 = tan(obj.sweep*pi/180);
            eta = obj.geom_sect(nu).eta;
            if abs(eta-b_eta) < 1e-4
                %If eta = b_eta it can be shown that L 
@@ -189,5 +298,120 @@ classdef PaneledWing
                    ( 2*tS4*sqrt( (1+boc*eta*tS4)^2+(boc*eta)^2 ) )/(1+2*boc*eta*tS4);
        end
        
+       %% Loads Calculation
+       function [ Gb,a0L,CDi_basic,CM0_basic ] = loadsEval(obj)
+           [Gb, a0L] = obj.basicLoad; % Basic load distribution
+           CDi_basic = obj.induced_drag( Gb );  % Induced drag due to Basic Loads
+           CM0_basic = obj.pitchCoeff_basic( Gb ); % Pitching Moment Coeff. due to Basic load
+           
+           [Ga,CLa] = obj.additionalLoad;
+           CDi_add = obj.induced_drag( Ga );  % Induced drag due to Basic Loads
+       
+            Gtot = Ga + Gb;
+            CDi_tot = obj.induced_drag( Gtot );
+       end
+       
+       function CDi = induced_drag( obj,Gs )
+           %induced_Drag: function that evaluates partial induced drag 
+           %coefficient (only basic or additional)
+           %INPUT
+           %    Gs: circulation along stations from root to centerline
+           CDi = 0;
+           m_rd = obj.m_red - 1; idx_b = 1:obj.m_red; 
+           for nu = 1:m_rd
+               temp = 0;
+               idx = idx_b( idx_b ~= nu );
+               for n = idx
+                   % Summing the B(nu,n)G(n)
+                   temp = temp + obj.b_coeffs(nu,n)*Gs(n);
+               end
+               CDi = CDi + 2*( obj.b_coeffs(nu,nu)*Gs(nu) - temp )*sin( obj.geom_sect(nu).phi )*Gs(nu);
+           end
+           nu = idx_b(end); temp = 0;
+           idx = idx_b( idx_b ~= nu );
+           for n = idx
+               temp = temp + obj.b_coeffs(nu,n)*Gs(n);
+           end
+           CDi = CDi + ( obj.b_coeffs(nu,nu)*Gs(nu) - temp )*sin( obj.geom_sect(nu).phi )*Gs(nu);
+           CDi = CDi*pi*obj.AR/(obj.m+1);
+       end
+       
+       function CL = liftCoeff( obj,G )
+           CL = 0; m_rd = obj.m_red-1;
+           for n = 1:m_rd
+              CL = CL + 2*G(n)*sin( obj.geom_sect(n).phi );
+           end
+           CL = CL + G(obj.m_red); CL = CL*obj.AR*pi/8;
+       end
+       % Basic Load
+       function [Gs,a0L_ref] = basicLoad( obj,nu_r )
+           %basicLoad: function that evaluates the circulation due to the
+           %basic load
+           %INPUT
+           %    nu_r: station chosen as reference
+           if nargin < 2
+               nu_r   = obj.m_red; % reference station is the root chord
+           end
+           eps = obj.eps_calc( nu_r );
+           % Reduced Matrix for Basic Loading
+           % i: i-th control point (nu in reference)
+           % j: j-th element
+           % r: index of reference point. IT IS ASSUMED THIS IS THE ROOT, otherwise
+           % the equation below is no longer valid
+           % A(i,j) = a(i,j)-a(r,j)-( a(i,r)-a(r,r) )*2*sin( phi(j) )
+           
+           nu_idx = 1:obj.m_red; nu_idx_red = nu_idx( nu_idx ~= nu_r);
+           A      = nan( obj.m_red - 1 );
+           for nu = nu_idx_red
+               % Twist in radiants
+               eps(nu) = ( obj.geom_sect(nu).eps + obj.geom_sect(nu).alpha0l - obj.geom_sect(nu_r).alpha0l )*pi/180;
+               for n = nu_idx_red
+                   A(nu,n) = obj.a_coeffs(nu,n)-obj.a_coeffs(nu_r,n)-...
+                       ( obj.a_coeffs(nu,nu_r)-obj.a_coeffs(nu_r,nu_r) )*2*sin( obj.geom_sect(n).phi );
+               end
+           end
+           Gs      = A\eps(nu_idx_red);
+           if nu_r > 1
+               Gs  = [Gs(1:nu_r-1);0;Gs(nu_r:end)];
+           else
+               Gs  = [0;Gs];
+           end
+           a0L_ref = 0;
+           for n = nu_idx_red
+               % Equation for total CL = 0
+               Gs(nu_r) = Gs(nu_r) - Gs(n)*2*sin( obj.geom_sect(n).phi );
+               % Equation for circulation at Reference Station
+               a0L_ref  = a0L_ref + ( obj.a_coeffs(nu_r,n) - obj.a_coeffs(nu_r,nu_r)...
+                   *2*sin( obj.geom_sect(n).phi ) )*Gs(n);
+           end
+       end
+       
+       function Cm0 = pitchCoeff_basic( obj,Gs )
+           %basicLoad_coeffs: function that evaluates the pitching moment
+           %due to the basic load using eq (10) of NACA TR921. For details
+           %about the formulas see the doc.
+           %INPUT
+           %    Gs: vector of spanwise circulations, from b/2 to 0
+           A = zeros( 1,obj.m_red );
+           oddx = 1:2:obj.m;	 %odd indices for mu_1 because of the integral sin(mu*phi)sin(phi)
+           j = 1;
+           for n = 1:obj.m_red
+              for mu = oddx
+                  A(j) = A(j) + sin(mu*pi/2)*sin( mu*obj.geom_sect(n).phi )*2/(4-mu^2);
+              end
+              j = j + 1;
+           end
+           A(1:obj.m_red-1) = 2*A(1:obj.m_red-1); % Coefficients for stations 1 to the first before ceter span are doubled
+           A = A/(obj.m+1);
+           %cm0_basic = A*obj
+           Cm0 = -obj.AR*obj.b*tan(obj.sweep*pi/180)/obj.meanprofile.c*A*Gs; %FINIREEEEEE
+       end
+       % Additional Load
+       function [Ga,CLa] = additionalLoad( obj )
+           RHS = ones( (obj.m+1)*0.5,1 );
+           Ga = obj.a_coeffs\RHS;
+           CLa = obj.liftCoeff( Ga );
+       end
    end
+   
 end

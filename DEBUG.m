@@ -1,5 +1,6 @@
 close all; clear; clc
 
+addpath('functions')
 
 M = 7; m_in = 2; m = 7;
 geom_vec = nan(m_in,9); aero_vec = nan(m_in,9);
@@ -8,5 +9,43 @@ aero_vec(:,1) = 0; aero_vec(:,2) = 2*pi;
 %geom_vec(:,1) = [ temp;flip(temp(1:end-1)) ];
 geom_vec(:,1) = [1,0]; geom_vec(:,2) = [3,5];
 
-b = 32; sweep = 20;
-aero_influence_coeffs( m,M,geom_vec,aero_vec,b,sweep )
+
+% OLD
+%wing_d = aero_influence_coeffs( m,M,geom_vec,aero_vec,b,sweep );
+%wing_d.basicLoad_coeffs
+% NEW
+CHS = 4;
+switch CHS
+    case 1
+        b = 36; sweep = 20; dihedral = 4; iang = 0; apexC = [0,0,0]; Mach = 0.1;
+        n_in = 5;
+        geom_vec = nan( n_in,9 ); aero_vec = nan( n_in,9 );
+        geom_vec( :,1 ) = [0,0.111111111,0.444444444,0.777777778,1]';
+        geom_vec( :,2 ) = [6,5.272059531,3.969873029,2.844013508,2.093440494]';
+    case 2
+        n_in = 6;
+        geom_vec = nan( n_in,9 ); aero_vec = nan( n_in,9 );
+        geom_vec( :,1 ) = [0,2,8,10,14,16]';
+        geom_vec( :,2 ) = [5,4.75,4,3.75,3.25,3]';
+        b = geom_vec( end,1 )*2; sweep = 21.5649; dihedral = 4; iang = 0; apexC = [0,0,0]; Mach = 0.1;
+        geom_vec( :,1 ) = geom_vec( :,1 )/geom_vec( end,1 );
+    case 3
+        n_in = 5;
+        geom_vec = nan( n_in,9 ); aero_vec = zeros( n_in,9 );
+        geom_vec( :,1 ) = [0,2,3,6,9]';
+        geom_vec( :,2 ) = [4,3.555555556,3.333333333,2.666666667,2]';
+        geom_vec( :,3 ) = [0,-0.222222222,-0.333333333,-0.666666667,-1]';
+        b = geom_vec( end,1 )*2; sweep = 46.5482; dihedral = 4; iang = 0; apexC = [0,0,0]; Mach = 0.1;
+        geom_vec( :,1 ) = geom_vec( :,1 )/geom_vec( end,1 );
+    case 4
+        n_in = 5;
+        geom_vec = nan( n_in,9 ); aero_vec = zeros( n_in,9 );
+        geom_vec( :,1 ) = [0,2,3,6,9]';
+        geom_vec( :,2 ) = 6/(2*pi)*[4,3.555555556,3.333333333,2.666666667,2]';
+        geom_vec( :,3 ) = [0,-0.222222222,-0.333333333,-0.666666667,-1]';
+        %aero_vec( :,2 ) = [6,6,6,6,6]';%[6,5.9,5.9,5.9,5.9]';
+        b = geom_vec( end,1 )*2; sweep = 46.5482; dihedral = 4; iang = 0; apexC = [0,0,0]; Mach = 0.1;
+        geom_vec( :,1 ) = geom_vec( :,1 )/geom_vec( end,1 );
+end
+des_wing = PaneledWing( m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach );
+%des_wing = des_wing.aeroDef;

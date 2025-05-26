@@ -1,7 +1,7 @@
 classdef WingClass %< handle %<WingClass è una sottoclassed della classe predefinita handle
     properties
-        % Geometry
-            % Wing
+        %% Geometry
+        % Wing
         bw {mustBeNumeric, mustBePositive}              %apertura [m]
         Sw {mustBeNumeric, mustBePositive}              %Superficie (m^2)
         TR {mustBeNumeric, mustBePositive}              %Taper Ratio [-]
@@ -11,8 +11,8 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         hwglt {mustBeNumeric}                           %altezza winglet [m]
         npanels
         panels
-            % High-Lifting
-        nflaps {mustBeNumeric} 
+        % High-Lifting
+        nflaps {mustBeNumeric}
         flaps
         cfocAvg {mustBeNumeric} %cf/c medio
         Sflaps {mustBeNumeric, mustBePositive} %Area Totale dei Flaps
@@ -20,25 +20,25 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         Sslats {mustBeNumeric, mustBePositive} %Area Totale degli Slats
         slats
         csocAvg {mustBeNumeric}  %cs/c medio
-            % Elevator
-            commandSurf
+        % Elevator
+        commandSurf
         % Dati Intermedi
         meanprofile
         tau {mustBeNumeric, mustBePositive} % rAPPORTO SPESSORI
         % Dati per Calcolo Resistenza
         
         liftSurfFlag % flag che specifica il tipo di superficie
-        % Aerodynamic Data
+        %% Aerodynamic Data
         wing3Ddata
         prf3DClean
-        % Dati Aggiuntivi Piano di Coda 
+        % Dati Aggiuntivi Piano di Coda
         eps0 {mustBeNumeric}    %angolo di downwash per alpha = 0
         depsda {mustBeNumeric}  %Gradiente di downwash
         % High Lift Devices
         prf3Dflaps
         prf3Dflapslat
 
-        % Global Coordinates 
+        %% Global Coordinates 
         Xapex {mustBeNumeric}
         Yapex {mustBeNumeric}
         Zapex {mustBeNumeric}
