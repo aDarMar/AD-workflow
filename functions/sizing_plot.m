@@ -1,10 +1,11 @@
-function [rem_ch,tmp,LEGin] = sizing_plot(TLARS,CLmax_TO_vett,...
+function [rem_ch,tmp,LEGin,s_idx] = sizing_plot(TLARS,CLmax_TO_vett,...
     CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,...
     CD0,dCD0_wave,TisaoT50,...
     WcroWTO,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,rem_ch)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-
+%OUTPUT
+%   s_idx: vector containing the indices of the choices made 
 %%
 figure(fig_aux.Number)
 subplot 211; hold on
@@ -35,6 +36,7 @@ if nargin <16
 else
     scelte = rem_ch.idxs( 1:rem_ch.n(1) );
 end
+i = 1; s_idx(i) = scelte(1); % if more than one value is chosen, the program saves only the first
 % scelte = listdlg( ...
 %     'PromptString', 'Scegli quali grafici visualizzare:', ...
 %     'SelectionMode', 'multiple', ...
@@ -60,6 +62,7 @@ if nargin <16
 else
     scelte = rem_ch.idxs( rem_ch.n(1)+1:rem_ch.n(2) );
 end
+i = 2; s_idx(i) = scelte(1);
 for i =1:nTO
     if ismember(i,scelte)
         set(fig_LND(i,1), 'Visible','on');
@@ -83,6 +86,7 @@ if nargin<16
 else
     scelte = rem_ch.idxs( rem_ch.n(2)+1:rem_ch.n(3) );
 end
+i = 3; s_idx(i) = scelte(1);
 for i =1:nTO
     if ismember(i,scelte)
         subplot 211
@@ -107,6 +111,7 @@ if nargin <16
 else
     scelte = rem_ch.idxs( rem_ch.n(3)+1:rem_ch.n(4) );
 end
+i = 4; s_idx(i) = scelte(1);
 for i =1:nTO
     if ismember(i,scelte)
         set(fig_CR([1,3,5],i), 'Visible','on');
