@@ -4,6 +4,10 @@ global main_fold
 
 main_fold = cd;
 addpath('functions')
+addpath('functions\Wing_Design');
+addpath('functions\Weight_estimation');
+addpath('functions\Sizing_Plot');
+addpath('functions\Classes');
 %% Lettura Nomi Aerei da File
 
 name_list = dir('statistical_data/aircrafts');

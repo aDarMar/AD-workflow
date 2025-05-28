@@ -163,8 +163,15 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             end
 
             %Creazione del Profilo Medio
-            [tmp1,tmp2] = obj.meanProfileMod;
-            obj.meanprofile = ProfileClass(tmp1,tmp2,M);
+            % Specifies which method shall be used to evaluate Alpha0L and
+            % CM of the mean profile
+            if length( sectsAero(1,:) ) > 8
+                met_flg = 2;
+            else
+                met_flg = 1;
+            end
+            [tmp1,tmp2]           = obj.meanProfileMod(met_flg);
+            obj.meanprofile       = ProfileClass(tmp1,tmp2,M);
             [~,xm,ym,zm]          = obj.macCalc;
             obj.meanprofile.xglob = xm;
             obj.meanprofile.yglob = ym;
@@ -202,7 +209,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             ymac = 0;
             zmac = 0;
             for i = 1:obj.npanels
-                mac = mac + obj.panels(i).mac * 2*obj.panels(i).S/obj.Sw; %il 2 sta perchè panel.S è l'area del pannello e wing.S è l'area totale dell'ala
+                mac  = mac + obj.panels(i).mac * 2*obj.panels(i).S/obj.Sw; %il 2 sta perchè panel.S è l'area del pannello e wing.S è l'area totale dell'ala
                 xmac = xmac + (obj.panels(i).xmac + obj.panels(i).root.xglob) * 2*obj.panels(i).S/obj.Sw;
                 % CONTROLLARE: sono ottenuti come medie pesate, vedere se è
                 % vero.
@@ -224,9 +231,18 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             avg = avg + grand(:,i+1).*2*obj.panels(i).b.*obj.panels(i).tip.c*0.5./obj.Sw;
         end
         
-        function [vout,vout2] = meanProfileMod(obj)
+        function [vout,vout2] = meanProfileMod(obj,method)
             %meanProfile: calcola le grandezze medie dell'ala.
-            % Funzione che calcola il profilo medio
+            % Funzione che calcola il profilo medio. It can employ two
+            % methods:
+            %   1. Weightned averanges with chords
+            %   2. Trapezoidal Integration
+            %INPUT
+            %   method: flag that specifies the method for obtaining the
+            %       alpha0L and CM
+            %OUTPUT:
+            %   vout2: aerodynamic data of mean profile. Angles and
+            %       derivatives are in [deg] and [1/deg] respectively
             av = NaN(1,obj.npanels+1);
             dYv = av;xrtcv = av; xtrUpv = av; xrtLowv = av; tcv = av;
             nM = length(obj.panels(1).root.a);
@@ -235,20 +251,20 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             cl0v = av; clstarv = av; clmaxv = av;
             
             for i = 1:obj.npanels
-                tcv(i) = obj.panels(i).root.tc;
-                xrtcv(i) = obj.panels(i).root.xtc;
-                xtrUpv(i) = obj.panels(i).root.xtrUp;
-                xrtLowv(i) = obj.panels(i).root.xtrLow;
-                dYv(i) = obj.panels(i).root.dY;
+                tcv(i)         = obj.panels(i).root.tc;
+                xrtcv(i)       = obj.panels(i).root.xtc;
+                xtrUpv(i)      = obj.panels(i).root.xtrUp;
+                xrtLowv(i)     = obj.panels(i).root.xtrLow;
+                dYv(i)         = obj.panels(i).root.dY;
                 
-                av(:,i) = obj.panels(i).root.a(:);
-                cl0v(:,i) = obj.panels(i).root.cl0(:);
-                clstarv(:,i) = obj.panels(i).root.clstar(:);
-                clmaxv(:,i) = obj.panels(i).root.clmax(:);
+                av(:,i)        = obj.panels(i).root.a(:);
+                cl0v(:,i)      = obj.panels(i).root.cl0(:);
+                clstarv(:,i)   = obj.panels(i).root.clstar(:);
+                clmaxv(:,i)    = obj.panels(i).root.clmax(:);
                 alphamaxv(:,i) = obj.panels(i).root.alphamax - obj.panels(i).root.eps(:);
-                alpha0lv(:,i) = obj.panels(i).root.alpha0l - obj.panels(i).root.eps(:);
-                alphastarv(:,i) = (obj.panels(i).root.clstar(:) -  obj.panels(i).root.cl0(:))./obj.panels(i).root.a(:);
-                cmacv(:,i) = obj.panels(i).root.cmac(:);
+                %alpha0lv(:,i) = obj.panels(i).root.alpha0l - obj.panels(i).root.eps(:);
+                alphastarv(:,i)= (obj.panels(i).root.clstar(:) -  obj.panels(i).root.cl0(:))./obj.panels(i).root.a(:);
+                %cmacv(:,i) = obj.panels(i).root.cmac(:);
             end
             i = obj.npanels;
             tcv(i+1) = obj.panels(i).tip.tc;
@@ -256,23 +272,87 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             xtrUpv(i+1) = obj.panels(i).tip.xtrUp;
             xrtLowv(i+1) = obj.panels(i).tip.xtrLow;
             dYv(i+1) = obj.panels(i).tip.dY;
-
+            
             av(:,i+1) = obj.panels(i).tip.a;
             cl0v(:,i+1) = obj.panels(i).tip.cl0;
             clstarv(:,i+1) = obj.panels(i).tip.clstar;
             clmaxv(:,i+1) = obj.panels(i).tip.clmax;
             alphamaxv(:,i+1) = obj.panels(i).tip.alphamax - obj.panels(i).tip.eps;
-            alpha0lv(:,i+1) = obj.panels(i).tip.alpha0l - obj.panels(i).tip.eps;
+            %alpha0lv(:,i+1) = obj.panels(i).tip.alpha0l - obj.panels(i).tip.eps;
             alphastarv(:,i+1) = (obj.panels(i).tip.clstar -  obj.panels(i).tip.cl0)./obj.panels(i).tip.a;
-            cmacv(:,i+1) = obj.panels(i).tip.cmac;
-
-            [cm,~,~,~] = macCalc(obj);
+            %cmacv(:,i+1) = obj.panels(i).tip.cmac;
+            [cm,xLE_MAC,~,~] = macCalc(obj);
+            
+            
+            if nargin <2 || method == 1
+                % Weightned averanges.
+                for i = 1:obj.npanels
+                    alpha0lv(:,i) = obj.panels(i).root.alpha0l - obj.panels(i).root.eps(:);
+                    cmacv(:,i)    = obj.panels(i).root.cmac(:);
+                end
+                i = obj.npanels;
+                alpha0lv(:,i+1) = obj.panels(i).tip.alpha0l - obj.panels(i).tip.eps;
+                cmacv(:,i+1)    = obj.panels(i).tip.cmac;
+                vout2 = [obj.weightAvg(av),...
+                    obj.weightAvg(cl0v),obj.weightAvg(clstarv),obj.weightAvg(clmaxv),...
+                    obj.weightAvg(alphamaxv),obj.weightAvg(alpha0lv),...
+                    obj.weightAvg(alphastarv),obj.weightAvg(cmacv)];
+            else
+                % Trapezoidal Integration: changes only alpha_0L and CM
+                %% Definition of Spanwise Sections
+                dy = 0.5; %dy = floor(0.5*obj.bw/dy);
+                yvec  = 0:dy:obj.panels(1).tip.yglob;
+                yvec2 = obj.panels(2).root.yglob:dy:obj.panels(2).tip.yglob;
+                yvec  = [yvec(1:end-1),yvec2(1:end-1),obj.panels(2).tip.yglob];
+                %yvec = [0,1,2,3,4,4.333458599,5,6,7,8,9,10,11,12,13,14,15,16,17,17.33383439];
+                n_stats = length(yvec);
+                %% Building Interpolation Vectors
+                cvet    = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.c,obj.panels(2).root.c,obj.panels(2).tip.c],yvec );
+                eps_vet = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.eps,obj.panels(2).root.eps,obj.panels(2).tip.eps],yvec );
+                azl_vet = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.alpha0l,obj.panels(2).root.alpha0l,obj.panels(2).tip.alpha0l], yvec );
+                CMac_vet = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.cmac,obj.panels(2).root.cmac,obj.panels(2).tip.cmac],yvec );
+                Cla_vet = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.a,obj.panels(2).root.a,obj.panels(2).tip.a],yvec );
+                Xle_vec = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.xglob,obj.panels(2).root.xglob,obj.panels(2).tip.xglob],yvec );
+                Xac_vet = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.x_ac,obj.panels(2).root.x_ac,obj.panels(2).tip.x_ac],yvec );
+                %% Wing Alpha-Zero Lift
+                azl_mean = 0;           %Zero-Lift Angle [deg]
+                azl_int  =  cvet.*( azl_vet-eps_vet );
+                for i=2:n_stats
+                    azl_mean    = azl_mean + 0.5*( azl_int(i)+azl_int(i-1) )/( yvec(i)-yvec(i-1) );
+                end
+                azl_mean = azl_mean*2/obj.Sw;
+                %% Moments
+                % Vector of coordinates of wing aerodynamic centers
+                % xc_4 = X_le + xac,p(y)/c(y)* c(y)
+                xc_4    =  Xac_vet.*cvet + Xle_vec;       
+                % Distance between wing and profiles aerodynamic center
+                x1      = ( xLE_MAC + cm*0.25 ) - xc_4; 
+                Cm1_int = CMac_vet.*cvet.^2;
+                Cm2_int = ( azl_mean+eps_vet-azl_vet ).*Cla_vet.*cvet.*x1;
+                Cm1_trap = 0; Cm2_trap = 0;
+                for i = 2:n_stats
+                    Cm1_trap = Cm1_trap + 0.5*(Cm1_int(i)+Cm1_int(i-1))*(yvec(i)-yvec(i-1));
+                    Cm2_trap = Cm2_trap + 0.5*(Cm2_int(i)+Cm2_int(i-1))*(yvec(i)-yvec(i-1));
+                end
+                Cm1 = 2*Cm1_trap/(obj.Sw*cm);
+                Cm2 = 2*Cm2_trap/(obj.Sw*cm);
+                
+                
+                vout2 = [obj.weightAvg(av),...
+                    obj.weightAvg(cl0v),obj.weightAvg(clstarv),obj.weightAvg(clmaxv),...
+                    obj.weightAvg(alphamaxv),azl_mean,...
+                    obj.weightAvg(alphastarv),Cm1+Cm2,0.25,0];
+            end
             vout = [cm,1,obj.weightAvg(tcv),1,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
-                obj.weightAvg(xrtLowv),obj.weightAvg(dYv)];
-            vout2 = [obj.weightAvg(av),...
-                obj.weightAvg(cl0v),obj.weightAvg(clstarv),obj.weightAvg(clmaxv),...
-                obj.weightAvg(alphamaxv),obj.weightAvg(alpha0lv),...
-                obj.weightAvg(alphastarv),obj.weightAvg(cmacv)];
+                    obj.weightAvg(xrtLowv),obj.weightAvg(dYv)];
+            
 
         end
         
@@ -534,9 +614,9 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 obProf.clmax(Midx(n)) = CL_max_fun(...
                     obj.meanprofile.clmax(Midx(n)),obj.panels(1).sweep,obj.meanprofile.dY,obj.meanprofile.c,M(n)); % dCLMaxFun ha problemi nell'estrapolare
 
-                obProf.clstar(Midx(n)) = obj.meanprofile.clstar(Midx(n));
+                obProf.clstar(Midx(n))  = obj.meanprofile.clstar(Midx(n));
                 obProf.alpha0l(Midx(n)) = obj.meanprofile.alpha0l(Midx(n));
-                obProf.cl0(Midx(n)) = obProf.a(Midx(n)) * (-obProf.alpha0l(Midx(n)));
+                obProf.cl0(Midx(n))     = obProf.a(Midx(n)) * (-obProf.alpha0l(Midx(n)));
 
                 %Alfa_max 3D: clmax,a,alpha0l,dY,sweep
                 obProf.alphamax(Midx(n)) = AlphaMaxFun(obProf.clmax(Midx(n)),obProf.a(Midx(n)),...

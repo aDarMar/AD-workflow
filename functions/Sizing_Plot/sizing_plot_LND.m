@@ -1,0 +1,52 @@
+function [fig,LEG] = sizing_plot_LND( Smax_LND,CLmaxes,sigma,WLND2WTO )
+%sizing_plot_LND Function that draws the Landing limitation for a jet
+%airplane
+%   Smax_LND: design (not FAR25) length  in [m]
+%   CLmaxes: vector of selected CLmaxes in Landing
+%   sigma : rho/rhoSL for the given airport
+%   WLND2WTO: Landing weight as a fraction of Take-Off Weight
+nCLmaxes = length( CLmaxes );
+
+%cf = 0.3/3.281 * (1/0.5144)^2;
+i = 1;
+
+%WoS = @(CLmax) WLND2WTO*3.281^2/2.205*0.5*1.225*sigma*( Smax_LND/(cf*1.3^2) )*CLmax;
+subplot 211
+fig(i,1) = plot( [1,1]*WoS_fun(Smax_LND,CLmaxes(i),sigma,WLND2WTO),[0,1] ); hold on
+fig(i,1).LineStyle = ':'; fig(i,1).LineWidth = 1.5;
+%set(fig(i,1), 'Visible','off');
+LEG{1} = ['Landing with $CL_{max,LND}$ = ', num2str(CLmaxes(i))];
+subplot 212
+fig(i,2) = plot( [1,1]*WoS_fun(Smax_LND,CLmaxes(i),sigma,WLND2WTO)*2.204623/(3.28084^2),[0,1] ); hold on
+fig(i,2).LineStyle = ':'; fig(i,2).LineWidth = 1.5;
+%set(fig(i,2), 'Visible','off');
+
+if nCLmaxes > 1
+    for i = 2:nCLmaxes
+        subplot 211
+        fig(i,1) = plot( WoS_fun(Smax_LND,CLmaxes(i),sigma,WLND2WTO)*[1,1],[0,1] );
+        fig(i,1).LineStyle = ':'; fig(i,1).LineWidth = 1.5;
+        %set(fig(i,1), 'Visible','off');
+        subplot 212
+        fig(i,2) = plot( [1,1]*WoS_fun(Smax_LND,CLmaxes(i),sigma,WLND2WTO)*2.204623/(3.28084^2),[0,1] ); hold on
+        fig(i,2).LineStyle = ':'; fig(i,2).LineWidth = 1.5;
+        %set(fig(i,2), 'Visible','off');
+        LEG{i} = ['Landing with $CL_{max,LND}$ = ', num2str(CLmaxes(i))];
+    end
+end
+subplot 211
+legend( fig(:,1),LEG,'Interpreter','latex','FontSize',16 );
+subplot 212
+legend( fig(:,2),LEG,'Interpreter','latex','FontSize',16 );
+end
+
+function WoS = WoS_fun(SLand,CLmax,sigma,WLND2WTO)
+    % WoS in Kg/m^2
+    Va_sq = (SLand/0.6)*3.281/0.3; % Approach Speed [kts^2]
+    Va_sq = Va_sq/1.3^2;    % Vstall [kts^2]
+    Va_sq = Va_sq/(1.944)^2; %Vstall [m/s]^2
+    WoS = 0.5*1.225*sigma*Va_sq*CLmax/WLND2WTO; %[N/m^2]
+    WoS = WoS/9.81; %[kg/m^2]
+    %WoS*2.205/(3.281^2);
+    %WLND2WTO*3.281^2/2.205*0.5*1.225*sigma*( Va_sq/1.3^2 )*CLmax;
+end

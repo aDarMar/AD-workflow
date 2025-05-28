@@ -20,8 +20,9 @@ classdef ProfileClass %<handle
         clmax 
         alphamax 
         alpha0l 
-        alphastar 
-        cmac 
+        alphastar
+        cmac
+        x_ac                        % Position of the a.c. as % of chord
             % Drag: non sono assegnati da fuori ma calcolati
         K
         FF
@@ -53,7 +54,9 @@ classdef ProfileClass %<handle
             %   della sezione
             %   aeroV: array che contiene le informazioni aerodinamiche
             %       delal sezione organizzate per righe: una riga corrisponde
-            %   a   d una condiziopne di volo.
+            %       a   d una condiziopne di volo.
+            %   M,Cla,cl0,cl*,clmax,apha_max,alphaol,alpha*,cm@Cl0,x_ref,Cm_a@x_ref
+            %   Values must be in [deg] and [1/deg]
             %   M: mach di volo al quale sono definite le proprietà
             %       aerodinamiche
             %   HLflag: variabile che assume 1: se il dato di HLvalòs si
@@ -71,15 +74,28 @@ classdef ProfileClass %<handle
             obj.xtrLow = geomV(7);
             obj.dY     = geomV(8);
             if length(M) == length(aeroV(:,1))
-                obj.M = M;
-                obj.a = aeroV(:,1);
-                obj.cl0 = aeroV(:,2);
-                obj.clstar = aeroV(:,3);
-                obj.clmax = aeroV(:,4);
+                obj.M        = M;
+                obj.a        = aeroV(:,1);
+                obj.cl0      = aeroV(:,2);
+                obj.clstar   = aeroV(:,3);
+                obj.clmax    = aeroV(:,4);
                 obj.alphamax = aeroV(:,5);
-                obj.alpha0l = aeroV(:,6);
-                obj.alphastar = aeroV(:,7);
-                obj.cmac = aeroV(:,8);
+                obj.alpha0l  = aeroV(:,6);
+                obj.alphastar= aeroV(:,7);
+                obj.cmac     = aeroV(:,8);
+                %% Profile aerodynamic centre
+                if length( aeroV(1,:) ) > 8
+                    
+                    if abs( aeroV(:,10) ) < 1e-2
+                        obj.x_ac = aeroV(:,9);
+                    else
+                        % x_ac = x_pole + Cm_a@c_pole / Cla
+                        obj.x_ac = aeroV(:,9) + aeroV(:,10)/obj.a;
+                    end
+                else
+                    obj.x_ac = nan;
+                end
+                
             else
                 error("Numero di variabili aerodinamiche diverso dal numero di mach dati")
             end
@@ -93,6 +109,7 @@ classdef ProfileClass %<handle
             obj.cextoc = NaN; obj.tauE = NaN;
             obj.eps0 = NaN; obj.depsda = NaN;
             obj.auxvals = NaN(10,1);
+            %% High Lift
             if nargin == 5
                 switch HLflag
                     case 'flaps'

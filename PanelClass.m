@@ -74,7 +74,7 @@ classdef PanelClass < handle%< ProfileClass
             mac =  2/3 * obj.root.c * (1+obj.TR+obj.TR^2)/(1 + obj.TR);
         end
         function [Xle , Yle, Zle] = macCoordinates(obj)
-            Yle = obj.b/6 * (1 + 2*obj.TR)/(1 + obj.TR);
+            Yle = obj.b/3 * (1 + 2*obj.TR)/(1 + obj.TR);
             Xle = Yle * tan(obj.sweep * pi/180);
             Zle = Yle * tan(obj.dihedral * pi/180);
         end

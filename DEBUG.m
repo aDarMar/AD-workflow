@@ -1,7 +1,9 @@
 close all; clear; clc
 
 addpath('functions')
-
+addpath('functions\Wing_Design')
+addpath('functions\Wing_Design\Wing_Functions')
+addpath('functions\Wing_Design\Wing_Functions\grafici')
 M = 7; m_in = 2; m = 7;
 geom_vec = nan(m_in,9); aero_vec = nan(m_in,9);
 aero_vec(:,1) = 0; aero_vec(:,2) = 2*pi;
@@ -60,3 +62,13 @@ switch CHS
 end
 des_wing = PaneledWing( m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach );
 %des_wing = des_wing.aeroDef;
+
+%% Wing_Design Debug
+main_fold = cd;
+TLARs_path = [main_fold,'\tlars\TLARs.txt'];
+Des_Air = Air_Design( TLARs_path,main_fold );
+
+Des_Air.bw = 34.67; Des_Air.Sw = 133.54;
+Des_Air.TLARs.cruise.M = 0.785;
+Des_Air.CL_cr = 0.32; Des_Air.CLmax_cr = 1.50;
+Wing_Design( Des_Air );
