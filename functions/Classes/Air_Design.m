@@ -382,6 +382,49 @@ classdef Air_Design
             obj.equiv_wing = WingClass(obj.bw*0.5,obj.sweepw,obj.dihedralw,nan,apexC,nan,...
                 sectsGeom, sectsAero); %Costruttore
         end
+        
+        function CDlow = CDlow_Mach(obj,alpha,CL,alpha_v,cds)
+            % CDSTALL Calcola il drag totale a basso Mach (senza drag d’onda)
+            %
+            % INPUT:
+            %   alpha_v  - Vettore angoli d'attacco per il profilo 2D
+            %   cds      - Vettore corrispondente dei cd 2D ordinati per
+            %               [ cd(root,alpha_i),cd(kink,alpha_i),cd_kink,alpha_i) ]
+            %   alpha    - Input alpha
+            %   CL       - Portanza dell’ala in low Mach
+            %
+            % OUTPUT:
+            %   CDstall  - Coefficiente di drag totale a low Mach
+            
+            if isnan( obj.low_speed.meanprofile.poly_drag )
+                % If poly_drag object is not initialized, it initializes
+                % it.
+                obj.low_speed.meanprofile.poly_drag = obj.low_speed.poly_drag( alpha_v,cds );
+            end
+
+            % erroreMAX = 0.05; % imposto il minimo errore
+            % for n=1:5
+            %     p     = polyfit(a,cd_mean,n);
+            cdfit = polyval( obj.low_speed.meanprofile.poly_drag,alpha ); % cd del profilo 2d ottenuto con il polinomio
+            %     err   = norm(cd_mean-cdfit);
+            %     if err<erroreMAX
+            %         break;
+            %     end
+            % end
+            u = interpolateFromCSV('AR*.csv', obj.TRw, obj.ARw);
+            v = interpolateFromCSV('TR*.csv', obj.ARw, obj.TRw);
+            w = interpolateFromCSV('ctcr*.csv', obj.ARw, obj.TRw);
+
+
+            t1 = CL^2/(pi*obj.ARw*u);%c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
+            t2 = v*CLw_s*obj.low_speed.meanprofile.eps_ae*obj.low_speed.meanprofile.a;
+            t3 = ( obj.low_speed.meanprofile.eps_ae+obj.low_speed.meanprofile.a )^2*w; % eps_ae + Cla
+
+            CDi = t1+t2+t3;
+
+            CDlow = cdfit+ CDi; %non c'è contributo di wave perchè siamo a basso mach
+
+        end
     end
 end
 

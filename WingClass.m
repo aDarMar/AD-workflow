@@ -170,12 +170,12 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             else
                 met_flg = 1;
             end
-            [tmp1,tmp2]           = obj.meanProfileMod(met_flg);
-            obj.meanprofile       = ProfileClass(tmp1,tmp2,M);
-            [~,xm,ym,zm]          = obj.macCalc;
-            obj.meanprofile.xglob = xm;
-            obj.meanprofile.yglob = ym;
-            obj.meanprofile.zglob = zm;
+            [tmp1,tmp2]     = obj.meanProfileMod(met_flg);
+            obj.meanprofile           = ProfileClass(tmp1,tmp2,M);
+            [~,xm,ym,zm]              = obj.macCalc;
+            obj.meanprofile.xglob     = xm;
+            obj.meanprofile.yglob     = ym;
+            obj.meanprofile.zglob     = zm;
 
 
         end
@@ -243,10 +243,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             %OUTPUT:
             %   vout2: aerodynamic data of mean profile. Angles and
             %       derivatives are in [deg] and [1/deg] respectively
-            av = NaN(1,obj.npanels+1);
+            av  = NaN(1,obj.npanels+1);
             dYv = av;xrtcv = av; xtrUpv = av; xrtLowv = av; tcv = av;
-            nM = length(obj.panels(1).root.a);
-            av = NaN(nM,obj.npanels+1);
+            nM  = length(obj.panels(1).root.a);
+            av  = NaN(nM,obj.npanels+1);
             alphamaxv = av; alpha0lv = av; cmacv = av; alphastarv = av;
             cl0v = av; clstarv = av; clmaxv = av;
             
@@ -267,11 +267,11 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 %cmacv(:,i) = obj.panels(i).root.cmac(:);
             end
             i = obj.npanels;
-            tcv(i+1) = obj.panels(i).tip.tc;
-            xrtcv(i+1) = obj.panels(i).tip.xtc;
-            xtrUpv(i+1) = obj.panels(i).tip.xtrUp;
+            tcv(i+1)     = obj.panels(i).tip.tc;
+            xrtcv(i+1)   = obj.panels(i).tip.xtc;
+            xtrUpv(i+1)  = obj.panels(i).tip.xtrUp;
             xrtLowv(i+1) = obj.panels(i).tip.xtrLow;
-            dYv(i+1) = obj.panels(i).tip.dY;
+            dYv(i+1)     = obj.panels(i).tip.dY;
             
             av(:,i+1) = obj.panels(i).tip.a;
             cl0v(:,i+1) = obj.panels(i).tip.cl0;
@@ -324,10 +324,15 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 %% Wing Alpha-Zero Lift
                 azl_mean = 0;           %Zero-Lift Angle [deg]
                 azl_int  =  cvet.*( azl_vet-eps_vet );
+                eps_int  =  ( -azl_vet(:) + azl_vet(1) ).*Cla_vet(:).*cvet(:);
+                eps_a    = 0;           % MEan Aerodynamic Twist
                 for i=2:n_stats
                     azl_mean    = azl_mean + 0.5*( azl_int(i)+azl_int(i-1) )/( yvec(i)-yvec(i-1) );
+                    eps_a       = eps_a + 0.5*( eps_int(i)+eps_int(i-1) )/( yvec(i)-yvec(i-1) );
                 end
                 azl_mean = azl_mean*2/obj.Sw;
+                %% Mean Aerodynamic Twist
+                
                 %% Moments
                 % Vector of coordinates of wing aerodynamic centers
                 % xc_4 = X_le + xac,p(y)/c(y)* c(y)
@@ -349,13 +354,34 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     obj.weightAvg(cl0v),obj.weightAvg(clstarv),obj.weightAvg(clmaxv),...
                     obj.weightAvg(alphamaxv),azl_mean,...
                     obj.weightAvg(alphastarv),Cm1+Cm2,0.25,0];
+                eps_a = eps_a/( vout2(1)*obj.panels(end).tip.c*obj.panels(end).tip.yglob ); % eps_a = sum/( Cla_avg*c_tip*b/2 )
+                vout2 = [vout2,eps_a];
             end
             vout = [cm,1,obj.weightAvg(tcv),1,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
-                    obj.weightAvg(xrtLowv),obj.weightAvg(dYv)];
-            
+                obj.weightAvg(xrtLowv),obj.weightAvg(dYv)];
 
         end
-        
+
+        function polydrag = poly_drag( ~,alpha,cds )
+            %poly_drag: function that calculates the mean cd for each alpha
+            % and interpolates Cd - alpha values giving back a polyfit object
+            %INPUT:
+            %   alpha: column vector of alphas at which the cd are
+            %       calculated;
+            %   cds: vector containing for each row the values of cd for
+            %       root kinik and tip at a given alpha
+
+            % Regression to find the experimental Cd-alpha values
+            n_alpha = alpha( : );
+            cd_av = nan(n_alpha,1);
+            for i = 1:n_alpha
+                cd_av = weightAvg( cds(i,:) );
+            end
+            % Curve fitting of drag
+            n = 5;
+            polydrag = polyfit( alpha,cd_av,n );
+        end
+
         function [varG,varA,coords] = HLAssign(obj,varG,nM)
             %HLAssign: ricava per interpolazione i valori delle
             %caratteristiche geometriche e aerodinamiche dei profili che
@@ -390,7 +416,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             end
 
         end
-        
+
         function obc = tridProfInit(obj)
             %tridProfInit: funzione che inizializza un oggetto della classe
             %profilo per renderlo adattop al calcolo delle grandezze 2D

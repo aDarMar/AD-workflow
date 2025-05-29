@@ -31,17 +31,18 @@ for i = 5:n_inp_geom
     %[2y/b,c,eps,t/c,] LER/c,x@max(t/c),xtr_Up,xtr_Low,dY
     geom_vec(:,i) = fscanf(f_id,'%f '); fgetl(f_id);
 end
+temp = fgetl(f_id);
 % Secions Aerodynamics
 tag = 'Aerodynamics';
-while ~strcmp(temp,tag)
-    temp = fgetl(f_id);
+if ~strcmp(temp,tag)
+    error(['Error Reading ',tag])
 end
 ka   = fscanf(f_id,'%f '); fgetl(f_id);
-
+temp = fgetl(f_id);
 %Low Speed Data
 tag = 'Low Speed';
-while ~strcmp(temp,tag)
-    temp = fgetl(f_id);
+if ~strcmp(temp,tag)
+    error(['Error Reading ',tag, 'Aerodynamic'])
 end
 n_inp_aero = 11;
 aero_vec_low = nan(3,n_inp_aero);
@@ -49,10 +50,24 @@ for i = 1:n_inp_aero
     % Mach,cla,cl0,cl*,clmax,alphamax,alpha0l,alpha*,cm_ac
     aero_vec_low(:,i) = fscanf(f_id,'%f '); fgetl(f_id);
 end
+temp = fgetl(f_id);
+% Low Speed Drag
+tag = 'Low Speed Drag';
+if ~strcmp(temp,tag)
+    error('Error Reading Low Speed Drag')
+end
+fgetl(f_id);
+tag = 'DRAGEND'; i = 1; temp = [0,0,0,0];
+while ~isempty(temp)
+    low_speed_drag(i,:) = temp(:)'; fgetl(f_id);
+    temp = fscanf(f_id,'%f ');
+    i = i+1;
+end
+fgetl(f_id);
 %High Speed Data
 tag = 'High Speed';
-while ~strcmp(temp,tag)
-    temp = fgetl(f_id);
+if ~strcmp(temp,tag)
+    error('Error Reading High Speed Data')
 end
 fclose(f_id);
 

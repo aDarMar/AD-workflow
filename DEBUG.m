@@ -4,6 +4,9 @@ addpath('functions')
 addpath('functions\Wing_Design')
 addpath('functions\Wing_Design\Wing_Functions')
 addpath('functions\Wing_Design\Wing_Functions\grafici')
+addpath('functions\Weight_estimation');
+addpath('functions\Sizing_Plot');
+addpath('functions\Classes');
 M = 7; m_in = 2; m = 7;
 geom_vec = nan(m_in,9); aero_vec = nan(m_in,9);
 aero_vec(:,1) = 0; aero_vec(:,2) = 2*pi;

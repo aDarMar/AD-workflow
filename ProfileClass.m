@@ -12,8 +12,8 @@ classdef ProfileClass %<handle
         dY                           % Altezza tra i punti a 0.005c e 0.1c
         %Aerodynamics
             % Lift
-        h                            % Quote di Volo [m]
-        M                           % Mach di volo a cui sono riferite le grandezze aerodinamiche
+        h                   % Quote di Volo [m]
+        M                   % Mach di volo a cui sono riferite le grandezze aerodinamiche
         a 
         cl0 
         clstar 
@@ -22,7 +22,9 @@ classdef ProfileClass %<handle
         alpha0l 
         alphastar
         cmac
-        x_ac                        % Position of the a.c. as % of chord
+        x_ac                % Position of the a.c. as % of chord
+        eps_ae              % Averange Aerodynamic twist [deg]
+        poly_drag           % polyfit object containing regression of cd-alpha values
             % Drag: non sono assegnati da fuori ma calcolati
         K
         FF
@@ -95,16 +97,21 @@ classdef ProfileClass %<handle
                 else
                     obj.x_ac = nan;
                 end
-                
+                if length( aeroV(1,:) ) == 11
+                    obj.eps_ae = aeroV(:,11); % Assigns eps_ae only if given in input
+                else
+                    obj.eps_ae = nan;
+                end
             else
                 error("Numero di variabili aerodinamiche diverso dal numero di mach dati")
             end
             % Inizializza con NaN tutte le variabili non assegnate
             % dall'esterno
-            obj.deltaF = NaN; obj.deltaS = NaN;
-            obj.xglob = NaN; obj.yglob = NaN;
-            obj.zglob = NaN; obj.yob = NaN;
-            obj.flag = 'Panel Profile';
+            obj.poly_drag = nan;
+            obj.deltaF    = NaN; obj.deltaS = NaN;
+            obj.xglob     = NaN; obj.yglob  = NaN;
+            obj.zglob     = NaN; obj.yob    = NaN;
+            obj.flag      = 'Panel Profile';
             obj.cfoc = NaN; obj.flaptype = NaN;
             obj.cextoc = NaN; obj.tauE = NaN;
             obj.eps0 = NaN; obj.depsda = NaN;

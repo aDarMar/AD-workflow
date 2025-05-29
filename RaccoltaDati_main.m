@@ -5,6 +5,7 @@ global main_fold
 main_fold = cd;
 addpath('functions')
 addpath('functions\Wing_Design');
+addpath('functions\Wing_Design\Wing_Functions');
 addpath('functions\Weight_estimation');
 addpath('functions\Sizing_Plot');
 addpath('functions\Classes');
@@ -70,8 +71,8 @@ CLmax_CR_vett = [ 1.4,1.5,1.6 ];
 CLmax_LND_vett = [ 2.1, 2.3, 2.5 ]; sigma = 1;
 
 TisaoT50 = 1/0.8; phi_v = [1,0.85];
-V_cr_vet = [Des_Air.TLARs.cruise.V,229.82];
-h_cr_vet = [Des_Air.TLARs.cruise.h,Des_Air.TLARs.cruise.h];
+V_cr_vet = [Des_Air.TLARs.cruise.V,236];
+h_cr_vet = [Des_Air.TLARs.cruise.h,11277];
 
 % Initialization
 iS = 1;
