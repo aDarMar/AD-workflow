@@ -382,7 +382,7 @@ classdef Air_Design
             obj.equiv_wing = WingClass(obj.bw*0.5,obj.sweepw,obj.dihedralw,nan,apexC,nan,...
                 sectsGeom, sectsAero); %Costruttore
         end
-        
+        % Preliminary Drag Estimation
         function CDlow = CDlow_Mach(obj,alpha,CL,alpha_v,cds)
             % CDSTALL Calcola il drag totale a basso Mach (senza drag d’onda)
             %
@@ -425,6 +425,7 @@ classdef Air_Design
             CDlow = cdfit+ CDi; %non c'è contributo di wave perchè siamo a basso mach
 
         end
+
     end
 end
 

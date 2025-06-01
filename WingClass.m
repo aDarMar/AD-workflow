@@ -362,20 +362,25 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
 
         end
 
-        function polydrag = poly_drag( ~,alpha,cds )
+        function polydrag = poly_drag( obj,alpha,cds )
             %poly_drag: function that calculates the mean cd for each alpha
             % and interpolates Cd - alpha values giving back a polyfit object
             %INPUT:
             %   alpha: column vector of alphas at which the cd are
             %       calculated;
             %   cds: vector containing for each row the values of cd for
-            %       root kinik and tip at a given alpha
+            %       root kinik and tip at a given alpha.
 
             % Regression to find the experimental Cd-alpha values
-            n_alpha = alpha( : );
+            n_alpha = length( alpha( : ) );
             cd_av = nan(n_alpha,1);
+            if log10( cds(1,1) ) > 0
+                % Check to see if Cds are given as drag numbers or
+                % naturally
+                cds = cds*1e-4; % fromt drag count to normal scale
+            end
             for i = 1:n_alpha
-                cd_av = weightAvg( cds(i,:) );
+                cd_av(i) = obj.weightAvg( cds(i,:) );
             end
             % Curve fitting of drag
             n = 5;

@@ -45,7 +45,7 @@ Wing:
 6.24	Exp Root Chord (m)
 4.03	Kink Chord (m)
 1.46	Tip. Chord (m)
-	x Apex (m)
+	x_Apex (m)
 17.0	x Leading Edge c_exp (m)
 23.3	x Leading Edge kink(m)
 26.3	x Leading Edge tip (m)
@@ -61,16 +61,17 @@ Wing:
 	(t/c)_kink
 	(t/c)_tip
 	Average (t/c) %
-	MAC (m)
+	i_wing (deg)
 Horizontal:	
+2.55	Y Exp. Root (m)
 	Root Chord (m)
 3.44	Exp Root Chord (m)
 	Kink Chord (m)
 1.17	Tip. Chord (m)
+	x_Apex(m)
 39.1	x Leading Edge c_exp (m)
 	x Leading Edge kink(m)
 42.5	x Leading Edge tip (m)
-2.55	Y Exp. Root (m)
 	Y kink (m)
 4.91	Span (m)
 	Area (m²)
@@ -83,34 +84,35 @@ Horizontal:
 	(t/c)_kink
 	(t/c)_tip
 	Average (t/c) %
-	MAC (m)
+0	i_hor (deg)
 	Arm (m)
 	Sh/S
 	ShLh/Sc
 	Elevator Chord (m)
 	ce/c
 Vertical:	
+	Y Exp. Root (m)
 5.577	Root Chord (m)
 	Exp Root Chord (m)
 	Kink Chord (m)
 1.521	Tip. Chord (m)
+	x_Apex(m)
 36.8	x Leading Edge c_exp (m)
 	x Leading Edge kink(m)
 41.9	x Leading Edge tip (m)
-	Y Exp. Root (m)
 	Y kink (m)
 5.9	Span (m)
 	Area (m²)
 	L.E. Sweep (º)
 	Chord 1/4 Sweep (º)
-	Dihedral (°)
+0	Dihedral (°)
 	Aspect Ratio
 	Taper Ratio
 	(t/c)_root
 	(t/c)_kink
 	(t/c)_tip
 	Average (t/c) %
-	MAC (m)
+0	i_ver (deg)
 	Arm (m)
 	Sv/S
 	SvLv/Sb
@@ -155,8 +157,12 @@ Range
 4000	Max. fuel (+ payload)
 5100	Ferry range
 ROCs	
--1	h_1 (ft)
--1	RC_1 (ft/min)
+5000	h_1 (ft)
+2000	RC_1 (ft/min)
+15000	h_2 (ft)
+1500	RC_2 (ft/min)
+24000	h_3 (ft)
+1200	RC_3 (ft/min)
 Thrust	
 143050	Static Thrust (N)
 110540	Max Continous (N)

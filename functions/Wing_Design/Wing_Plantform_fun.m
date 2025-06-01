@@ -54,7 +54,7 @@ while ( diff > tol ) && A1_Sw > 0
     % Wing Aerea Check
     A1   = .5*(ckink+croot)*(ykink-yroot);
     A2   = .5*(ckink+ctip)*(ytip-ykink);
-    Atot = 2*(A1+A2);   diff = 1+abs( 1-Atot/Sw );
+    Atot = 2*(A1+A2);   diff = abs( 1-Atot/Sw );
     fprintf("La differenza tra Sw scelta nel Sizing e la Sw calcolata con il" + ...
         "metodo delle aeree è: %.3f\n",diff*100);
     if cnt > 1 || diff > tol

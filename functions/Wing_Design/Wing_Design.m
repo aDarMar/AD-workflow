@@ -56,14 +56,15 @@ tag = 'Low Speed Drag';
 if ~strcmp(temp,tag)
     error('Error Reading Low Speed Drag')
 end
-fgetl(f_id);
+%fgetl(f_id);
 tag = 'DRAGEND'; i = 1; temp = [0,0,0,0];
 while ~isempty(temp)
     low_speed_drag(i,:) = temp(:)'; fgetl(f_id);
     temp = fscanf(f_id,'%f ');
     i = i+1;
 end
-fgetl(f_id);
+low_speed_drag = low_speed_drag(2:end,:); % Excludes firt row of all zeros
+fgetl(f_id); temp = fgetl(f_id);
 %High Speed Data
 tag = 'High Speed';
 if ~strcmp(temp,tag)
@@ -97,10 +98,11 @@ geom_vec(1,i) = croot; geom_vec(2,i)   = ckink; geom_vec(3,i) = ctip;
 i = 3; geom_vec(:,i) = eps(:)'; 
 
 %% Airfoil Selection
-toc = Airfoil_Selection( aero_des,0.05,ka(1),toc,...
+toc = Airfoil_Selection( aero_des,0.02,ka(1),toc,...
     geom_vec(:,2),geom_vec(:,1) ); % Temporary ka solution
 i = 1; geom_vec(:,i) = geom_vec(:,i)./geom_vec(end,i);
 i = 4; geom_vec(:,i) = toc(:)';
+
 
 %% Wing Circulation
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
@@ -109,6 +111,8 @@ m = 7; M = 7;
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
 aero_des.low_speed.prf3DClean = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
+aero_des.CDlow_Mach( 1,0.1,low_speed_drag(:,1),low_speed_drag(:,2:4) );
+
 % High Speed
 aero_des.high_speed = PaneledWing( m,M,geom_vec,aero_vec_high(:,2:end),aero_des.bw,...
     sweep,dihedral,iang,apexC,Mach );

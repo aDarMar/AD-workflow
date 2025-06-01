@@ -77,6 +77,8 @@ while err_tc
     chs = input('>>');
     if chs == 1
         err_tc = 0;
+    else
+        err_tc = 1;
     end
     end
 end
