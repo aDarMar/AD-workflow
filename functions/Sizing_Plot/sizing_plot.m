@@ -1,105 +1,118 @@
-function [rem_ch,tmp,LEGin,s_idx] = sizing_plot(TLARS,CLmax_TO_vett,...
-    CLmax_LND_vett,CLmax_CR_vett,WLNDoWTO,sigma,...
-    CD0,dCD0_wave,TisaoT50,...
-    WcroWTO,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,rem_ch)
+function [ siz_ax,rem_ch,Roc_s ] = sizing_plot( da_c,iS,CLmax_TO_vett,...
+    CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,Roc_s,rem_ch )
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+%INPUT
+%   rem_ch: vector with indices of choices made for plotting
+%   Roc_s: vector whose rows are RoCs desidered ( in [ft7min at given height [m])
 %OUTPUT
 %   s_idx: vector containing the indices of the choices made 
-%%
-figure(fig_aux.Number)
-subplot 211; hold on
-grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
-ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
-subplot 212; hold on
-grid minor; xlabel('W$_{TO}$ / S [lb/ft$^2$]','Interpreter','latex','FontSize',16);
-ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
+%% Input Data
+CD0 = da_c.SizHis(iS).CD0; dCD0_wave = da_c.dCD0_wave; 
+WLNDoWTO = da_c.MLndoMTo; WcroWTO = da_c.MCroMTo;
+%% Graphics
+% Initializzation
+aus_ax_1 = subplot(2,1,1,'Parent',fig_aux); aus_ax_2 = subplot(2,1,2,'Parent',fig_aux);
+% Plotting
+%[ aus_ax_1,aus_ax_2 ] = sizing_plot_TO( aus_ax_1,aus_ax_2,da_c.TLARs.TO.fieldmax,CLmax_TO_vett,sigma );
+% [ aus_ax_1,aus_ax_2 ] = sizing_plot_LND( aus_ax_1,aus_ax_2,da_c.TLARs.LND.SGmax,CLmax_LND_vett,sigma,WLNDoWTO );
+% [ aus_ax_1,aus_ax_2 ] = sizing_plot_Climb( aus_ax_1,aus_ax_2,CLmax_TO_vett,CLmax_LND_vett,CLmax_CR_vett,...
+%                             da_c,CD0,TisaoT50 );
+% [ aus_ax_1,aus_ax_2 ]   = sizing_plot_Cruise( aus_ax_1,aus_ax_2,CD0,dCD0_wave,V_cr_vett,h_cr_vett,WcroWTO,da_c.TLARs.e,da_c.ARw,phi_v );
 
-[fig_TO,LEG_TO]   = sizing_plot_TO( TLARS.TO.fieldmax,CLmax_TO_vett,sigma );
-[fig_LND,LEG_LND] = sizing_plot_LND( TLARS.LND.SGmax,CLmax_LND_vett,sigma,WLNDoWTO );
-[fig_CL,LEG_CL]   = sizing_plot_Climb( CLmax_TO_vett,CLmax_LND_vett,CLmax_CR_vett,...
-    TLARS.e,TLARS.de_TO,TLARS.de_LND,...
-    CD0,TLARS.dCD0_f_TO,TLARS.dCD0_f_LND,TLARS.dCD0_f_App,TLARS.dCD0_lgs,...
-    TLARS.AR,TLARS.nengine,WLNDoWTO,TLARS.T0oTmc,TisaoT50 );
-[fig_CR,LEG_CR]   = sizing_plot_Cruise( CD0,dCD0_wave,V_cr_vett,h_cr_vett,WcroWTO,TLARS.e,TLARS.AR,phi_v );
-
-% figure
-% hold on
-%% Take-Off
+%% Plot Choices
+% Take-Off
 nTO = length(CLmax_TO_vett);
-if nargin <16
+n_inp = 14; % excludes the last input rem_ch
+if nargin < n_inp
+    rem_ch = nan(1,2); % Initializes rem_ch
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% TAKE-OFF %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose CL max at TO to display' );
     disp( CLmax_TO_vett );
     scelte = scelta_fun(nTO);
-else
-    scelte = rem_ch.idxs( 1:rem_ch.n(1) );
+    rem_ch = idx_fun( rem_ch,scelte,'T/O' );
 end
-i = 1; s_idx(i) = scelte(1); % if more than one value is chosen, the program saves only the first
-% scelte = listdlg( ...
-%     'PromptString', 'Scegli quali grafici visualizzare:', ...
-%     'SelectionMode', 'multiple', ...
-%     'ListString', {num2str(CLmax_TO_vett)}, ...
-%     'InitialValue', 1:nTO );
-j = 1;
-for i =1:nTO
-    if ismember(i,scelte)
-        set(fig_TO(i,1), 'Visible','on');
-        i_G(j) = i;
-        j = j+1;
-    end
-end
-n_v(1) = j-1;
-%% Landing
+vet_idx = rem_ch(end,1)*ones(nTO,1);
+
+% Landing
 nTO = length(CLmax_LND_vett);
-if nargin <16
+if nargin < n_inp
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% LANDING %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose CL max at LANDING to display' );
     disp( CLmax_LND_vett );
     scelte = scelta_fun(nTO);
-else
-    scelte = rem_ch.idxs( rem_ch.n(1)+1:rem_ch.n(2) );
+    rem_ch = idx_fun( rem_ch,scelte,'LND' );
 end
-i = 2; s_idx(i) = scelte(1);
-for i =1:nTO
-    if ismember(i,scelte)
-        set(fig_LND(i,1), 'Visible','on');
-        i_G(j) = i;
-        j = j+1;
-    end
-end
-n_v(2) = j-1;
+vet_idx = [vet_idx;rem_ch(end,1)*ones(nTO,1)];
 
-%% CLIMB
-nTO = length(CLmax_LND_vett);
-if nargin<16
-    disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-    disp( '%%%%%%%%%%%%%%%%%%%%%% CLIMB %%%%%%%%%%%%%%%%%%%%%%%%')
+% CLIMB
+nTO = length(CLmax_LND_vett)*length(CLmax_CR_vett)*length(CLmax_TO_vett); % max possible iterations
+CLi = {'CL@T/O','CL@Cr','CL@LND'};
+temp = [CLmax_TO_vett;CLmax_CR_vett;CLmax_LND_vett]; ct = 1;
+if nargin < n_inp
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%% CLIMB %%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose the combination of CL maxes at each Climb phase: ' );
-    disp( 1:nTO )
-    disp( [' TO     >> ',num2str(CLmax_TO_vett)] );
-    disp( [' Cruise >> ',num2str(CLmax_CR_vett)] );
-    disp( [' LND    >> ',num2str(CLmax_LND_vett)] );
-    scelte = scelta_fun(nTO);
-else
-    scelte = rem_ch.idxs( rem_ch.n(2)+1:rem_ch.n(3) );
-end
-i = 3; s_idx(i) = scelte(1);
-for i =1:nTO
-    if ismember(i,scelte)
-        subplot 211
-        set(fig_CL(i,1:6), 'Visible','on');
-        i_G(j) = i;
-        j = j+1;
+    while ct < nTO+1
+        disp(['---- Condtion: ',num2str(ct),' ----'] )
+        k = 1; tpm = nan(4,1); % Vector that stores all the input coices
+        scelte = 1*nTO;
+        while k < 4 && scelte > 0
+            tpm(k) = scelte;
+            disp( [CLi{k},'>> ',num2str(temp(k,:)) ] );
+            scelte = scelta_fun(1);
+            k = k +1;
+        end
+        tpm(end) = scelte;
+        tpm = tpm(2:4); % excluding the first element that is nTO by definition
+        if length( tpm( tpm>0 ) ) < 3
+            % This means that an invalid number has been inserted to
+            % terminate the sequence
+            break
+        else
+            rem_ch = idx_fun( rem_ch,tpm,'Climb' );
+            ct = ct + 1;
+        end
     end
 end
-n_v(3) = j-1;
+climb_idxs = rem_ch( rem_ch(:,1) == 3,2 ); % Indices associated to Climb
+climb_idxs = reshape( climb_idxs,3, length( climb_idxs )/3 )'; % reshapes climb_idxs as a n_connd x 3 matrix
+% In this way climb_idxs will be:
+%   [idx_CL_TO,idx_CL_cruise,idx_CL_LAND]
+vet_idx = [ vet_idx;rem_ch(end,1)*ones( 6*length(climb_idxs(:,1)),1 ) ];
+% CLIMB PT. 2
+if nargin < n_inp-1
+    disp( '%%%%%%%%%%%%%%%%%%%%%%%% CLIMB %%%%%%%%%%%%%%%%%%%%%%%%%%')
+    disp(' Choose the ROC required at a fixed height: ' );
+    j = 1; tmp = 1; Roc_s = [];
+    while tmp > 0
+        disp('ROC [ft/min]')
+        tmp = input('>>');
+        if tmp > -0.01
+            Roc_s(j,1)  = tmp;
+            disp('h [ft]')
+            tmp = input('>>');
+            if tmp > 0
+                Roc_s(j,2) = tmp*0.3048;
+                j = j + 1;
+            else
+                Roc_s = Roc_s(1:end-1,:);
+                break
+            end
+        else
+            break
+        end
+    end
+end
+if ~isempty( Roc_s )
+    vet_idx = [ vet_idx;rem_ch(end,1)*ones( 3*length(Roc_s(:,1)),1 ) ];
+end
 
-%% CRUISE
+% CRUISE
 nTO = length(h_cr_vett);
-if nargin <16
+if nargin < n_inp
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
     disp( '%%%%%%%%%%%%%%%%%%%%%% CRUISE %%%%%%%%%%%%%%%%%%%%%%%%')
     disp(' Choose the h-V-phi combination in CRUISE to display' );
@@ -108,75 +121,141 @@ if nargin <16
     disp( [' Speed    [m/s] >> ',num2str(V_cr_vett)] );
     disp( [' Admission [%]  >> ',num2str(phi_v)] );
     scelte = scelta_fun(nTO);
-else
-    scelte = rem_ch.idxs( rem_ch.n(3)+1:rem_ch.n(4) );
+    rem_ch = idx_fun( rem_ch,scelte,'Cruise' );
+    rem_ch = rem_ch(2:end,:); % Removes the first row as it is a nan row
 end
-i = 4; s_idx(i) = scelte(1);
-for i =1:nTO
-    if ismember(i,scelte)
-        set(fig_CR([1,3,5],i), 'Visible','on');
-        i_G(j) = i;
-        j = j+1;
-    end
-end
+vet_idx = [vet_idx;rem_ch(end,1)*ones(nTO*3,1)];
+
 disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-n_v(4) = j-1;
 
-temp = fig_CR( [1,3,5],i_G(n_v(3)+1:n_v(4)) ); temp=temp(:);
+%% Plot
 
-idx_t = 0; idx_n = n_v(3)+1:n_v(4);
-for k = 1:( n_v(4) - n_v(3) )
-    idx_t = [idx_t,1+3*( i_G(idx_n(k))-1 ):3*( i_G(idx_n(k)) )];
+[ aus_ax_1,aus_ax_2 ] = sizing_plot_TO( aus_ax_1,aus_ax_2,da_c.TLARs.TO.fieldmax,CLmax_TO_vett,sigma );
+[ aus_ax_1,aus_ax_2 ] = sizing_plot_LND( aus_ax_1,aus_ax_2,da_c.TLARs.LND.SGmax,CLmax_LND_vett,sigma,WLNDoWTO );
+[ aus_ax_1,aus_ax_2 ] = sizing_plot_Climb( aus_ax_1,aus_ax_2,...
+    CLmax_TO_vett( climb_idxs(:,1) ),CLmax_LND_vett( climb_idxs(:,1) ),CLmax_CR_vett( climb_idxs(:,1) ),...
+                            da_c,CD0,TisaoT50,Roc_s );
+[ aus_ax_1,aus_ax_2 ] = sizing_plot_Cruise( aus_ax_1,aus_ax_2,CD0,dCD0_wave,V_cr_vett,h_cr_vett,WcroWTO,da_c.TLARs.e,da_c.ARw,phi_v );
+
+
+siz_ax = copyobj( aus_ax_1,fig_ri ); lin_pl = siz_ax.Children;
+siz_ax.XLim = [0,1000]; siz_ax.YLim = [0,1]; legend( siz_ax,'Interpreter','Latex' );
+
+chs_UI( vet_idx ,lin_pl,rem_ch )
+
+
 end
-idx_t = idx_t(2:end);
-%temp2 = LEG_CR{ i_G( n_v(3)+1:n_v(4) ) }; temp2 = temp2{:}';
-legend( [ fig_TO( i_G(1:n_v(1) ),1 );fig_LND( i_G(n_v(1)+1:n_v(2) ),1 );...
-    fig_CL( i_G( n_v(2)+1:n_v(3) ),1:6 )'; temp ]  ,...
-    { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
-     LEG_CR{idx_t} } );
-subplot 212
-%set(gca, 'Visible', 'off');  % Nasconde gli assi (ma lascia la trama)
 
-rem_ch.idxs = i_G; rem_ch.n = n_v;
-
-
-%% Grafica
-%fig_ri = figure(fig_ri.Number);
-figure(fig_ri.Number)
-ax_fig = axes('Parent', fig_ri); axis([0,1000,0,1]); hold on;  
-grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
-ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
-tmp = [ fig_TO( i_G(1:n_v(1) ),1 );fig_LND( i_G(n_v(1)+1:n_v(2) ),1 );...
-    fig_CL( i_G( n_v(2)+1:n_v(3) ),1:6 )'; temp ];
-n_tmp = length(tmp);
-for i = 1:n_tmp
-    copyobj(tmp(i),ax_fig);
+function chs = idx_fun( chs,scelte,cond )
+%idx_fun: function that returns a struct with indices of chosen conditions
+%to plot
+%INPUT
+%   chs: struct of chosen conditions to plot 
+%       chs.idxs = index chosen to plot
+%       chs.cond = flight condition associated
+%       scelte: vector of idices given in input
+switch cond
+    case 'T/O'
+        cond = 1;
+    case 'LND'
+        cond = 2;
+    case 'Climb'
+        cond = 3;
+    case 'Cruise'
+        cond = 4;
+    otherwise
+        error('Condition given not recognised')
 end
-legend( ax_fig, { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
-     LEG_CR{idx_t} },'Interpreter','latex','FontSize',16 )
-% copyobj( [ fig_TO( i_G(1:n_v(1) ),1 );fig_LND( i_G(n_v(1)+1:n_v(2) ),1 );...
-%     fig_CL( i_G( n_v(2)+1:n_v(3) ),1:6 )'; temp ],ax_fig );
-% legend( ax_fig  ,...
-%     { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
-%      LEG_CR{idx_t} },'Interpreter','latex','FontSize',16 );
 
-% if CHS == 1
-LEGin = { LEG_TO{i_G(1:n_v(1) )},LEG_LND{i_G(n_v(1)+1:n_v(2) )},LEG_CL{ i_G( n_v(2)+1:n_v(3) ),1:6 },...
- LEG_CR{idx_t} };
-%     sizing_plot_cfr( ax_fig,LEGin )
-% end
+len = length( scelte );
+len2 = length( chs(:,1) );
+for i = 1:len
+    chs( len2+i,2 ) = scelte(i);
+    chs( len2+i,1 ) = cond;
+end
 
 end
 
 function scelta = scelta_fun(nTO)
-scelta = zeros(nTO,1);
-disp('-1 to end');
-i = 1; temp = 1;
+    scelta = nan(nTO,1);
+    disp('0 to end');
+    i = 1; temp = 1;
     while i<nTO+1 && temp>0
         scelta(i) = temp;
-        temp = input('>>');
-       i = i+1;
+        temp      = input('>>');
+        i = i+1;
     end
-    scelta(i) = temp;
-    scelta = scelta(2:end);
+    
+    if nTO > 1
+        scelta(i) = temp;
+        scelta    = scelta(2:end-1);
+    else
+        scelta = temp;
+    end
+end
+
+function chs_UI(vet_idx,lin,rem_chs)
+nCH = length(vet_idx); chs = 0.1; 
+if nargin == 3
+    n_cond = nan(5,1); sum = 0; n = 1; n_inp = length( rem_chs(:,1) )+1;
+    k = 1;
+    while k < 5
+        n_cond(k) = length ( vet_idx(vet_idx == k) );
+        sum       = sum + n_cond(k);
+        while n < n_inp && rem_chs(n,1) == k
+            rem_chs(n,2) = rem_chs(n,2)+sum;
+            chs = nCH - rem_chs(n,2) + 1; % lin is ordered from last plotted to first
+            if  lin(chs).Visible == 0
+                lin(chs).Visible = 1;
+                lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'on';  % Rimuove dalla legenda
+            else
+                lin(chs).Visible = 0;
+                lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'off';  % Rimuove dalla legenda
+            end
+            n = n +1;
+        end
+    end
+
+end
+disp('Show what')
+chs = input('>>');
+chs = nCH - chs + 1; % lin is ordered from last plotted to first
+while chs > 0 && chs < nCH+1
+
+    plot_UI(vet_idx,lin)
+    if  lin(chs).Visible == 1
+        lin(chs).Visible = 0;
+        lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'off';  % Rimuove dalla legenda
+    else
+        lin(chs).Visible = 1;
+        lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'on';  % Rimuove dalla legenda
+    end
+    disp('Show what')
+    chs = input('>>');
+    chs = nCH - chs + 1; % lin is ordered from last plotted to first
+end
+
+end
+
+function plot_UI(vet_idx,lin)
+    k = 1; j = 1; %l = 1; 
+    COND = {'Take-Off','Landing','Climb','Cruise'}; n_cond = length( COND );
+    while k < n_cond+1
+        disp( ['---------',COND{k},'---------'] )
+        while vet_idx(j) == k && j < length( vet_idx )
+            if lin(j).Visible == 1
+                disp([num2str(j),' : S |',lin(j).DisplayName])
+            else
+                disp([num2str(j),' : NS|',lin(j).DisplayName])
+            end
+            % if vet_chs(l,1) == vet_idx(j)
+            %     
+            %     l = l + 1;
+            % else
+            %     disp([num2str(j),' : NS|',lin(j).DisplayName])
+            % end
+            j = j + 1;
+        end
+    k = k + 1;
+    end
 end

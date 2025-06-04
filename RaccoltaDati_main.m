@@ -81,16 +81,11 @@ Des_Air.SizHis(iS).WoS = 550;   % First Guess WoS [Kg/m^2]
 Des_Air.SizHis(iS).S   = Des_Air.MTOM_est0/Des_Air.SizHis(iS).WoS;
 % FINIREEEEE
 [Des_Air.SizHis(iS).CD0,Des_Air.SizHis(iS).Swet]   = Des_Air.polar_est( Des_Air.SizHis(iS).S,Des_Air.MTOM_est0 );
-fig_ri       = figure(); %axis([0,1000,0,1]); 
-%ax_fig = axes('Parent', fig_ri); %axis([0,1000,0,1]); hold on;  
-% grid minor; xlabel('W$_{TO}$ / S [Kg/m$^2$]','Interpreter','latex','FontSize',16);
-% ylabel('T$_{TO}$ / W$_{TO}$ [-]','Interpreter','latex','FontSize',16);
-%hold on;
+fig_ri       = figure();
 
 fig_aux = figure();
-[ch_idxs,ax_siz,Leg_siz,idx_chs] = sizing_plot(Des_Air.TLARs,CLmax_TO_vett,...
-    CLmax_LND_vett,CLmax_CR_vett,Des_Air.MLndoMTo,sigma,...
-    Des_Air.SizHis(iS).CD0,Des_Air.dCD0_wave,TisaoT50,Des_Air.MCroMTo,...
+[ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot(Des_Air,iS,CLmax_TO_vett,...
+    CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
     V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux);
 
 iS = 2;
@@ -100,21 +95,15 @@ flag = 1; tol = 1e-2;
 while flag
 
     if iS > 2
-        clf( fig_ri )
-        [~,ax_siz,Leg_siz,idx_chs] = sizing_plot(Des_Air.TLARs,CLmax_TO_vett,...
-            CLmax_LND_vett,CLmax_CR_vett,Des_Air.MLndoMTo,sigma,...
-            Des_Air.SizHis(iS-1).CD0,Des_Air.dCD0_wave,TisaoT50,Des_Air.MCroMTo,...
-            V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,ch_idxs);
+        [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot(Des_Air,iS,CLmax_TO_vett,...
+            CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
+            V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,RoC_vt,ch_idxs );
     end
-    figure(fig_ri.Number);
-    %subplot 211
     % Plots a line corresponding to the assumed WoS
-    fig_it           = plot(Des_Air.SizHis(iS-1).WoS*[1,1],[0,1]);
-    fig_it.LineStyle = '--'; fig_it.LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
-    col              = rand(1,3); fig_it.MarkerEdgeColor = col;
-    %axes
-    %legend( fig_it,['(W/S)_{it ',num2str(iS-1),'} = ',num2str(Sizing(iS-1).WoS)],'Interpreter','Latex' );
-    %legend( [ax_siz,fig_it],{Leg_siz{1:end},['(W/S)_{it ',num2str(iS-1),'} = ',num2str(Sizing(iS-1).WoS)]},'Interpreter','Latex' );
+    lin           = plot(sizPLT_ax,Des_Air.SizHis(iS-1).WoS*[1,1],[0,1]);
+    lin.LineStyle = '--'; lin.LineWidth = 1.5; lin.DisplayName = ['W/S = ',num2str(Des_Air.SizHis(iS-1).WoS)];
+    col           = rand(1,3); lin.Color = col;
+    legend( sizPLT_ax,'Interpreter','Latex' );
     
     tmp = input('Choose W/T');
     if tmp == -1 && iS > 2
@@ -122,11 +111,10 @@ while flag
     else
         Des_Air.SizHis(iS-1).ToW = tmp;
     end
-    figure(fig_ri.Number)
-    fig_pt = plot( Des_Air.SizHis(iS-1).WoS,Des_Air.SizHis(iS-1).ToW );
-    fig_pt.LineStyle = 'none';  fig_pt.Marker = 'o'; fig_pt.MarkerSize = 6;
-    col = rand(1,3); fig_pt.MarkerEdgeColor = col;
-    %legend( [ax_siz,fig_it,fig_pt],{Leg_siz,['(W/S)_{it ',num2str(iS-1),'} = ',num2str(Sizing(iS).WoS)],'Sizing Point'},'Interpreter','Latex' );
+    lin_pt = plot( Des_Air.SizHis(iS-1).WoS,Des_Air.SizHis(iS-1).ToW );
+    lin_pt.LineStyle   = 'none';  lin_pt.Marker = 'o'; lin_pt.MarkerSize = 6;
+    col                = rand(1,3); lin_pt.MarkerEdgeColor = col;
+    lin_pt.DisplayName = 'Sizing Point';
 
     tmp = input('Choose W/S');
     if tmp == -1
@@ -134,7 +122,7 @@ while flag
     else
         Des_Air.SizHis(iS).WoS = tmp;
     end
-    Des_Air.SizHis(iS).S                    = Des_Air.MTOM_est0/Des_Air.SizHis(iS).WoS;
+    Des_Air.SizHis(iS).S                             = Des_Air.MTOM_est0/Des_Air.SizHis(iS).WoS;
     [Des_Air.SizHis(iS).CD0,Des_Air.SizHis(iS).Swet] = Des_Air.polar_est( Des_Air.SizHis(iS).S,Des_Air.MTOM_est0 ); %polar_est(Sizing(iS).S,MTOM_it0);
     
     err.WoS = abs( (Des_Air.SizHis(iS).WoS - Des_Air.SizHis(iS-1).WoS)/Des_Air.SizHis(iS-1).WoS ) ;
@@ -145,7 +133,7 @@ while flag
 
 end
 
-sizing_plot_cfr(Airl,nAero,fig_ri,ax_siz,Leg_siz,fig_pt)
+sizing_plot_cfr(Airl,nAero,fig_ri,ax_siz,Leg_siz,lin_pt)
 %
 
 %% Wing Design
