@@ -70,6 +70,27 @@ tag = 'High Speed';
 if ~strcmp(temp,tag)
     error('Error Reading High Speed Data')
 end
+n_inp_aero = 11;
+aero_vec_high = nan(3,n_inp_aero);
+for i = 1:n_inp_aero
+    % Mach,cla,cl0,cl*,clmax,alphamax,alpha0l,alpha*,cm_ac
+    aero_vec_high(:,i) = fscanf(f_id,'%f '); fgetl(f_id);
+end
+temp = fgetl(f_id);
+% Low Speed Drag
+tag = 'High Speed Drag';
+if ~strcmp(temp,tag)
+    error('Error Reading High Speed Drag')
+end
+%fgetl(f_id);
+tag = 'DRAGEND'; i = 1; temp = [0,0,0,0];
+while ~isempty(temp)
+    high_speed_drag(i,:) = temp(:)'; fgetl(f_id);
+    temp = fscanf(f_id,'%f ');
+    i = i+1;
+end
+high_speed_drag   = high_speed_drag(2:end,:); % Excludes firt row of all zeros
+fgetl(f_id); temp = fgetl(f_id);
 fclose(f_id);
 
 %% Plantform Definition
@@ -106,14 +127,19 @@ i = 4; geom_vec(:,i) = toc(:)';
 
 %% Wing Circulation
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
+alpha_v = -6:18;
 % Low Speed
 m = 7; M = 7;
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
+% 3D data calculation and estimation
 aero_des.low_speed.prf3DClean = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
-aero_des.CDlow_Mach( 1,0.1,low_speed_drag(:,1),low_speed_drag(:,2:4) );
+CLl = aero_des.CDlow_Mach( alpha_v,low_speed_drag(:,1),low_speed_drag(:,2:4) );
 
 % High Speed
-aero_des.high_speed = PaneledWing( m,M,geom_vec,aero_vec_high(:,2:end),aero_des.bw,...
-    sweep,dihedral,iang,apexC,Mach );
+aero_des.high_speed = PaneledWing( m,M,geom_vec,aero_vec_high,aero_des.bw,...
+    aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_high(1,1) );
+% 3D data calculation and estimation
+aero_des.high_speed.prf3DClean = aero_des.high_speed.aero3Dwing( 'clean', aero_des.high_speed.panels(1).root.M );
+CLh = aero_des.CDtransonic( alpha_v,aero_des.TLARs.cruise.M,high_speed_drag(:,1),high_speed_drag(:,2:4) );
 end

@@ -320,7 +320,7 @@ classdef PaneledWing < WingClass
            CM0_basic = obj.pitchCoeff_basic( Gb ); % Pitching Moment Coeff. due to Basic load
            
            [Ga,CLa] = obj.additionalLoad;
-           CDi_add = obj.induced_drag( Ga );       % Induced drag due to Basic Loads
+           CDi_add  = obj.induced_drag( Ga );       % Induced drag due to Basic Loads
            
            Gtot = Ga + Gb;
            CDi_tot = obj.induced_drag( Gtot );

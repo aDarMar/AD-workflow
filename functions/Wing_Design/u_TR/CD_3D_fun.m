@@ -24,9 +24,9 @@ DeltaCd_wave = 20*(M_cruise-Mcrit)^4;
 
 %calcolo dei coefficienti u,v,z per il CDi con la function
 %interpolatefromcsv fatta a parte
-u = interpolateFromCSV('AR*.csv', TR, AR);
-v = interpolateFromCSV('TR*.csv', AR, TR);
-w = interpolateFromCSV('ctcr*.csv', AR, TR);
+u = interpolateFromCSV('AR',   obj.TRw, obj.ARw);
+v = interpolateFromCSV('TR',   obj.ARw, obj.TRw);
+w = interpolateFromCSV('ctcr', obj.ARw, obj.TRw);
 
 t1 = CLw_c.^2/(pi*AR*u);%c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
 t2 = v*CLw_c*eps_ae*Cl_alpha_m;

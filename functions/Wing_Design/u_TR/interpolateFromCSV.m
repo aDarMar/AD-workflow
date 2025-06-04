@@ -3,7 +3,8 @@ function value = interpolateFromCSV(files, xq, yq)
 %INput:
 %pattern = l'inizio del nome del file csv: può essere AR*(u),TR*(v),ctcr*(w)
 %xq,yq = punto query in cui voglio u,v,w 
-files =dir('*.csv');
+files = dir('*.csv');
+files = 
 X = []; Y = []; Z = [];
     for k = 1:length(files)
         data = load(files(k).name);

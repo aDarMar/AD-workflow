@@ -439,6 +439,37 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             obc.zglob = zm;
         end
         %% Portanza 3D
+        function CL = lift_eval(~,alpha,profile)
+            alpha_n = length( alpha ); CL = nan( alpha_n,1 );
+            cf_mat = [1 profile.alphastar profile.alphastar^2 profile.alphastar^3;...
+                1 profile.alphamax profile.alphamax^2 profile.alphamax^3;...
+                0 1 2*profile.alphastar 3*profile.alphastar^2;...
+                0 1 2*profile.alphamax 3*profile.alphamax^2];
+            RHS   = [profile.clstar;profile.clmax;profile.a;0];
+            cfs = cf_mat\RHS; % Coefficients for polinomial approximation of CL-alpha curve
+            for i = 1:alpha_n
+                if alpha(i) < min( profile.alpha0l,-1 )
+                    % alpha< alpha_0L
+                    % Fixes CL at CL alpha0L-1
+                    CL(i) = profile.cl0 + profile.a*( profile.alpha0l-1 ); 
+                elseif alpha(i) < profile.alphastar
+                    % alpha0l < alpha < alpha*
+                    % Linear section of CL
+                    CL(i) = profile.cl0 + profile.a*alpha(i);
+                elseif alpha(i) < profile.alphamax
+                    % alpha* < alpha < alpha_max
+                    % CL is given as a cubic polinomial
+                    CL(i) = 0;
+                    for k = 1:4
+                        CL(i) = CL(i) + cfs(k)*alpha(i)^(k-1);
+                    end
+                else
+                    % alpha > alpha max
+                    % Fixes CL as CL_max
+                    CL(i) = profile.clmax;
+                end
+            end
+        end
 
         function profClass = aero3Dwing(obj, flg, M, deltaF, deltaS,Fcalc)
             %aero3Dwing calcola le caratteristiche aerodinamiche dell'ala

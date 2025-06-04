@@ -35,12 +35,12 @@ classdef Air_Design
         iw           % Wing Incidence Angle [deg]
         wingapex     % Wing Apex Coordinates [x,y,z] [m]
         % [root,kink,tip]
-        yob_kink      % Positions along span
-        eps         % Twist Distrubution [deg]
-        toc         % t/c distribution
-        c           % chord distribution [m]
+        yob_kink     % Positions along span
+        eps          % Twist Distrubution [deg]
+        toc          % t/c distribution
+        c            % chord distribution [m]
         %% Initial Guess Aerodynamic Data
-        CL_cr       % CL cruise estimated
+        CL_cr        % CL cruise estimated
         CLmax_cr
         CLmax_TO
         CLmax_LND
@@ -383,7 +383,7 @@ classdef Air_Design
                 sectsGeom, sectsAero); %Costruttore
         end
         % Preliminary Drag Estimation
-        function CDlow = CDlow_Mach(obj,alpha,CL,alpha_v,cds)
+        function CDlow = CDlow_Mach(obj,alpha,alpha_v,cds)
             % CDSTALL Calcola il drag totale a basso Mach (senza drag d’onda)
             %
             % INPUT:
@@ -402,28 +402,78 @@ classdef Air_Design
                 obj.low_speed.meanprofile.poly_drag = obj.low_speed.poly_drag( alpha_v,cds );
             end
 
-            % erroreMAX = 0.05; % imposto il minimo errore
-            % for n=1:5
-            %     p     = polyfit(a,cd_mean,n);
             cdfit = polyval( obj.low_speed.meanprofile.poly_drag,alpha ); % cd del profilo 2d ottenuto con il polinomio
-            %     err   = norm(cd_mean-cdfit);
-            %     if err<erroreMAX
-            %         break;
-            %     end
-            % end
-            u = interpolateFromCSV('AR*.csv', obj.TRw, obj.ARw);
-            v = interpolateFromCSV('TR*.csv', obj.ARw, obj.TRw);
-            w = interpolateFromCSV('ctcr*.csv', obj.ARw, obj.TRw);
+            CL    =  obj.low_speed.lift_eval( alpha,obj.low_speed.prf3DClean );
+            u     = obj.interpolateFromCSV('AR', obj.TRw, obj.ARw);
+            v     = obj.interpolateFromCSV('TR', obj.ARw, obj.TRw);
+            w     = obj.interpolateFromCSV('ctcr', obj.ARw, obj.TRw);
 
 
-            t1 = CL^2/(pi*obj.ARw*u);%c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
-            t2 = v*CLw_s*obj.low_speed.meanprofile.eps_ae*obj.low_speed.meanprofile.a;
+            t1 = CL.^2./(pi*obj.ARw*u);%c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
+            t2 = v*CL*obj.low_speed.meanprofile.eps_ae*obj.low_speed.meanprofile.a;
             t3 = ( obj.low_speed.meanprofile.eps_ae+obj.low_speed.meanprofile.a )^2*w; % eps_ae + Cla
 
-            CDi = t1+t2+t3;
+            CDi = t1(:)+t2(:)+t3(:);
 
-            CDlow = cdfit+ CDi; %non c'è contributo di wave perchè siamo a basso mach
+            CDlow = cdfit(:) + CDi(:); %non c'è contributo di wave perchè siamo a basso mach
 
+        end
+        
+        function value = interpolateFromCSV(obj,name,xq, yq)
+            %valuta u, v, w
+            %INput:
+            %pattern = l'inizio del nome del file csv: può essere AR*(u),TR*(v),ctcr*(w)
+            %xq,yq = punto query in cui voglio u,v,w
+            files = [ obj.main_fold,'\functions\Wing_Design\u_TR\',name,'_file.csv'];
+            MAT = readmatrix(files);
+            F = scatteredInterpolant( MAT(:,1),MAT(:,3),MAT(:,2) );
+            value = F(xq,yq);
+        end
+        
+        function CDfun = CDtransonic( obj, alpha, M_cruise, alpha_v, cds )
+            % CDw Calcola il coefficiente di drag totale di un'ala in cruise
+            %
+            % INPUT:
+            %   alpha       - vector of alpha
+            %   M_cruise    - cruise mach
+            %
+            % OUTPUT:
+            %   CDfun       - Drag totale
+            ka = 0.95; % TEMPORARYYYYY
+            sweep_c4 = obj.low_speed.sweep*pi/180; tc_mean = obj.low_speed.meanprofile.tc;
+            if obj.high_speed.meanprofile.M ~= M_cruise
+                warning('M used for calculations is different from Mach at which the aerodynamic data are calculated');
+            end
+            MDD = ka/(cos(sweep_c4)) - ( tc_mean / ( cos(sweep_c4)^2) )-...
+                ( obj.CL_cr/(10*(cos(sweep_c4))^3 ) );
+            Mcrit = MDD-(0.1/80)^(1/3);
+
+            DeltaCd_wave = 20*( M_cruise-Mcrit )^4;
+
+            %calcolo dei coefficienti u,v,z per il CDi con la function
+            %interpolatefromcsv fatta a parte
+            u = obj.interpolateFromCSV('AR',   obj.TRw, obj.ARw);
+            v = obj.interpolateFromCSV('TR',   obj.ARw, obj.TRw);
+            w = obj.interpolateFromCSV('ctcr', obj.ARw, obj.TRw);
+            
+            % Wing Cd, CL
+            
+            
+            if isnan( obj.high_speed.meanprofile.poly_drag )
+                % If poly_drag object is not initialized, it initializes
+                % it.
+                obj.high_speed.meanprofile.poly_drag = obj.high_speed.poly_drag( alpha_v,cds );
+            end
+            CLw_c = obj.high_speed.lift_eval( alpha,obj.high_speed.prf3DClean ); 
+            Cd_avg = polyval( obj.high_speed.meanprofile.poly_drag,alpha );
+
+            t1 = CLw_c.^2 ./ (pi*obj.ARw*u); % c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
+            t2 = v*CLw_c*obj.high_speed.meanprofile.eps_ae*obj.high_speed.meanprofile.a; % Cl_alpha_m;
+            t3 = ( obj.high_speed.meanprofile.eps_ae+obj.high_speed.meanprofile.a )^2*w;
+
+            CDi   = t1+t2+t3;
+
+            CDfun = Cd_avg(:) + CDi(:) + DeltaCd_wave(:);
         end
 
     end

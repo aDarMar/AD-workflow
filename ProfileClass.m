@@ -98,7 +98,7 @@ classdef ProfileClass %<handle
                     obj.x_ac = nan;
                 end
                 if length( aeroV(1,:) ) == 11
-                    obj.eps_ae = aeroV(:,11); % Assigns eps_ae only if given in input
+                    obj.eps_ae = aeroV(:,11); % Assigns eps_ae only if given as input
                 else
                     obj.eps_ae = nan;
                 end
