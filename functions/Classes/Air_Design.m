@@ -476,6 +476,50 @@ classdef Air_Design
             CDfun = Cd_avg(:) + CDi(:) + DeltaCd_wave(:);
         end
 
+        function Mdd(obj)
+            % Mdd_fun Fa il check sulla buffet barrier
+            %
+            % INPUT:
+            %
+            % OUTPUT:
+            %
+            v1 = linspace(0,0.5,11);
+            v2 = linspace(0.52,0.87,9);
+            M_vett = [v1,v2]; % Vettore di mach assunto
+            Cl_max = obj.low_speed.prf3DClean.clmax *0.8;% prende il Clmax 2d e lo moltiplica per 0.8 per ottenere quello 3d
+            tc_mean = obj.low_speed.meanprofile.tc;
+            cosc4 = cos(obj.low_speed.sweep/57.3); %cos dell'angolo di freccia a c/4
+            deltamcc = 0.06; % delta mach critico per profili supercritici(0.06)
+            Cl_d0 = Cl_max./sqrt(1-M_vett.^2);% CL con correzione di prandtl-glauert
+
+            x = (tc_mean/cosc4);
+            K1 = 2.8355*x^2-1.9072*x+0.9499;
+            K2 = 0.2*(1-2.131*x);
+            Cl_mcc = (K1*cosc4^2-(M_vett-deltamcc)*cosc4^3)/K2;
+            diff = Cl_mcc -Cl_d0;
+            jstart = find(diff<0.01,1,"first");
+            Msub = M_vett(jstart:end);
+            for j = 1:length(Msub)
+                Mdd(j) = (Msub(j)-0.06)/(1.02+0.08*(1-cosc4));
+                Cl_mdd(j) = (K1*cosc4^2-Mdd(j)*cosc4^3)/K2;
+            end
+            plot(M_vett(1:jstart),Cl_d0(1:jstart));hold on;
+            plot(Msub,Cl_mcc(jstart:end));hold on;
+            plot(Msub,Cl_mdd);hold on;
+            plot(obj.TLARs.cruise.M,obj.CL_cr,'o'); %current point
+            legend('Cl a M diverso da 0','Cl a Mcc','Cl a MDD','Current point')
+            % Chiedi all'utente se vuole continuare
+            risposta = input('Do you want to go on? (s/n): ', 's');
+            % Controlla la risposta
+            if risposta == 's'
+                disp('It will go on. ');
+            elseif risposta == 'n'
+                disp('It will stop.');
+            else
+                disp('No valid answer.');
+            end
+        end
+
     end
 end
 
