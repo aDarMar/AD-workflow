@@ -111,9 +111,14 @@ m = 7; M = 7;
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
 aero_des.low_speed.prf3DClean = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
-aero_des.CDlow_Mach( 1,0.1,low_speed_drag(:,1),low_speed_drag(:,2:4) );
+%aero_des.CDlow_Mach( 1,0.1,low_speed_drag(:,1),low_speed_drag(:,2:4) );
+
+%Buffet Check
+aero_des.Mdd 
 
 % High Speed
 aero_des.high_speed = PaneledWing( m,M,geom_vec,aero_vec_high(:,2:end),aero_des.bw,...
     sweep,dihedral,iang,apexC,Mach );
+
+
 end
