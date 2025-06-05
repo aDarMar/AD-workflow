@@ -146,7 +146,7 @@ if nargin > 8 && ~isempty( Roc_req )
             % {Kg/m^2]
             lin(i,j) = plot( ax1,WoS,ToW);
             lin(i,j).LineStyle = '-.'; lin(i,j).LineWidth = 2;
-            lin(i,j).DisplayName = [ 'ROC of ',num2str(RoC),' m/s at ',num2str(da_c.TLARs.cruise.h),'m; CL_$E$: ',num2str(CLe),' and ',WEIGHT{j},' Cruise Weight' ];
+            lin(i,j).DisplayName = [ 'ROC of ',num2str(RoC),' m/s at ',num2str(da_c.TLARs.cruise.h),'m; CL$_E$: ',num2str(CLe),' and ',WEIGHT{j},' Cruise Weight' ];
             lin(i,j).Color = colors(i,:);
             % [lb/ft^2]
             lin(i,j) = plot( ax2,WoS*2.204623/(3.28084^2),ToW);

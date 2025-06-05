@@ -335,8 +335,8 @@ classdef Air_Design
 
         end
 
-        function obj = final_out(obj,idxs,CLmax_TO_vett,CLmax_CR_vett,...
-                CLmax_LND_vettiS,V_cr_vet,h_cr,iS)
+        function obj = final_out( obj,idxs,CLmax_TO_vett,CLmax_CR_vett,...
+                CLmax_LND_vettiS,V_cr_vet,h_cr,iS )
             %final_out: saves the values chosen from the Sizing plot inside
             %the design wing object
             if nargin <8
@@ -346,13 +346,17 @@ classdef Air_Design
             obj.bw = sqrt( obj.Sw*obj.ARw );
             obj.T0 = obj.SizHis(iS-1).ToW*obj.MTOM_est0*9.81;
             %% Aerodynamic Data
-            obj.CLmax_TO  = CLmax_TO_vett(idxs(1));
-            obj.CLmax_LND = CLmax_LND_vettiS(idxs(2));
-            obj.CLmax_cr  = CLmax_CR_vett(idxs(3));
-            [T,a,P,rho]   = atmosisa( h_cr( idxs(4) ) );
+            i = 1; ch = idxs( idxs(:,1) == i,2 ); % selects the first choice made for CLmax@T/O
+            obj.CLmax_TO  = CLmax_TO_vett( ch(1) );
+            i = 2; ch = idxs( idxs(:,1) == i,2 ); % selects the first choice made for CLmax@LAND
+            obj.CLmax_LND = CLmax_LND_vettiS( ch(1) );
+            i = 3; ch = idxs( idxs(:,1) == i,2 ); % selects the first choice made for CLmax@cruise ( CL cruise is in the middle )
+            obj.CLmax_cr  = CLmax_CR_vett( ch(2) );
+            i = 4; ch = idxs( idxs(:,1) == i,2 );
+            [T,a,P,rho]   = atmosisa( h_cr( ch(1) ) );
             obj.CL_cr     = 9.81*obj.SizHis(iS).WoS*...
                 0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ...
-            /( V_cr_vet(idxs(4))^2*rho );
+            /( V_cr_vet(ch)^2*rho );
         end
         
         function outputArg = method1(obj,inputArg)

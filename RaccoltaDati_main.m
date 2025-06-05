@@ -92,16 +92,17 @@ iS = 2;
 
 flag = 1; tol = 1e-2;
 
+
 while flag
 
     if iS > 2
-        [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot(Des_Air,iS,CLmax_TO_vett,...
+        [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot( Des_Air,iS-1,CLmax_TO_vett,...
             CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
             V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,RoC_vt,ch_idxs );
     end
     % Plots a line corresponding to the assumed WoS
-    lin           = plot(sizPLT_ax,Des_Air.SizHis(iS-1).WoS*[1,1],[0,1]);
-    lin.LineStyle = '--'; lin.LineWidth = 1.5; lin.DisplayName = ['W/S = ',num2str(Des_Air.SizHis(iS-1).WoS)];
+    lin           = plot( sizPLT_ax,Des_Air.SizHis(iS-1).WoS*[1,1],[0,1] );
+    lin.LineStyle = '-'; lin.LineWidth = 1.0; lin.DisplayName = ['W/S = ',num2str(Des_Air.SizHis(iS-1).WoS)];
     col           = rand(1,3); lin.Color = col;
     legend( sizPLT_ax,'Interpreter','Latex' );
     
@@ -112,9 +113,9 @@ while flag
         Des_Air.SizHis(iS-1).ToW = tmp;
     end
     lin_pt = plot( Des_Air.SizHis(iS-1).WoS,Des_Air.SizHis(iS-1).ToW );
-    lin_pt.LineStyle   = 'none';  lin_pt.Marker = 'o'; lin_pt.MarkerSize = 6;
-    col                = rand(1,3); lin_pt.MarkerEdgeColor = col;
-    lin_pt.DisplayName = 'Sizing Point';
+    lin_pt.LineStyle       = 'none';  lin_pt.Marker = 'o'; lin_pt.MarkerSize = 6;
+    lin_pt.MarkerEdgeColor = [0, 1, 1];
+    lin_pt.DisplayName     = 'Sizing Point';
 
     tmp = input('Choose W/S');
     if tmp == -1
@@ -133,10 +134,10 @@ while flag
 
 end
 
-sizing_plot_cfr(Airl,nAero,fig_ri,ax_siz,Leg_siz,lin_pt)
+sizPLT_ax_cf = sizing_plot_cfr( Airl,nAero,sizPLT_ax );
 %
 
 %% Wing Design
-Des_Air = Des_Air.final_out( idx_chs,CLmax_TO_vett,CLmax_CR_vett,...
+Des_Air = Des_Air.final_out( ch_idxs,CLmax_TO_vett,CLmax_CR_vett,...
     CLmax_LND_vett,V_cr_vet,h_cr_vet );
 Wing_Design( Des_Air );

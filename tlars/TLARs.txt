@@ -4,7 +4,6 @@ General
 	ncrew
 2 npil
 Aerodynamics
-10	AR
 0.85	Oswald Factor in Clean config
 0.01	dCD0 due to flaps in Take-Off config
 0.055	dCD0 due to flaps in landing config

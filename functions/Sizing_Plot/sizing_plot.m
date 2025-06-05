@@ -12,6 +12,7 @@ CD0 = da_c.SizHis(iS).CD0; dCD0_wave = da_c.dCD0_wave;
 WLNDoWTO = da_c.MLndoMTo; WcroWTO = da_c.MCroMTo;
 %% Graphics
 % Initializzation
+delete( fig_aux.Children )
 aus_ax_1 = subplot(2,1,1,'Parent',fig_aux); aus_ax_2 = subplot(2,1,2,'Parent',fig_aux);
 % Plotting
 %[ aus_ax_1,aus_ax_2 ] = sizing_plot_TO( aus_ax_1,aus_ax_2,da_c.TLARs.TO.fieldmax,CLmax_TO_vett,sigma );
@@ -33,7 +34,7 @@ if nargin < n_inp
     scelte = scelta_fun(nTO);
     rem_ch = idx_fun( rem_ch,scelte,'T/O' );
 end
-vet_idx = rem_ch(end,1)*ones(nTO,1);
+vet_idx = 1*ones(nTO,1);
 
 % Landing
 nTO = length(CLmax_LND_vett);
@@ -45,7 +46,7 @@ if nargin < n_inp
     scelte = scelta_fun(nTO);
     rem_ch = idx_fun( rem_ch,scelte,'LND' );
 end
-vet_idx = [vet_idx;rem_ch(end,1)*ones(nTO,1)];
+vet_idx = [vet_idx;2*ones(nTO,1)];
 
 % CLIMB
 nTO = length(CLmax_LND_vett)*length(CLmax_CR_vett)*length(CLmax_TO_vett); % max possible iterations
@@ -81,7 +82,7 @@ climb_idxs = rem_ch( rem_ch(:,1) == 3,2 ); % Indices associated to Climb
 climb_idxs = reshape( climb_idxs,3, length( climb_idxs )/3 )'; % reshapes climb_idxs as a n_connd x 3 matrix
 % In this way climb_idxs will be:
 %   [idx_CL_TO,idx_CL_cruise,idx_CL_LAND]
-vet_idx = [ vet_idx;rem_ch(end,1)*ones( 6*length(climb_idxs(:,1)),1 ) ];
+vet_idx = [ vet_idx;3*ones( 6*length(climb_idxs(:,1)),1 ) ];
 % CLIMB PT. 2
 if nargin < n_inp-1
     disp( '%%%%%%%%%%%%%%%%%%%%%%%% CLIMB %%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -107,7 +108,7 @@ if nargin < n_inp-1
     end
 end
 if ~isempty( Roc_s )
-    vet_idx = [ vet_idx;rem_ch(end,1)*ones( 3*length(Roc_s(:,1)),1 ) ];
+    vet_idx = [ vet_idx;4*ones( 3*length(Roc_s(:,1)),1 ) ];
 end
 
 % CRUISE
@@ -137,12 +138,22 @@ disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
                             da_c,CD0,TisaoT50,Roc_s );
 [ aus_ax_1,aus_ax_2 ] = sizing_plot_Cruise( aus_ax_1,aus_ax_2,CD0,dCD0_wave,V_cr_vett,h_cr_vett,WcroWTO,da_c.TLARs.e,da_c.ARw,phi_v );
 
-
+delete( fig_ri.Children );
 siz_ax = copyobj( aus_ax_1,fig_ri ); lin_pl = siz_ax.Children;
-siz_ax.XLim = [0,1000]; siz_ax.YLim = [0,1]; legend( siz_ax,'Interpreter','Latex' );
 
+
+
+siz_ax.XLim = [0,1000]; siz_ax.YLim = [0,1]; legend( siz_ax,'Interpreter','Latex' );
+siz_ax.Position = [0.1300 0.1100 0.7750 0.8150];
 chs_UI( vet_idx ,lin_pl,rem_ch )
 
+% nCH = length( lin_pl ); j = 1;
+% for i = 1:nCH
+%     if lin_pl(i).Visible == 1
+%         rem_vs(j) = i;
+%         j = j + 1;
+%     end
+% end
 
 end
 
@@ -195,34 +206,36 @@ function scelta = scelta_fun(nTO)
 end
 
 function chs_UI(vet_idx,lin,rem_chs)
-nCH = length(vet_idx); chs = 0.1; 
+nCH = length(vet_idx); %chs = 0.1; 
 if nargin == 3
     n_cond = nan(5,1); sum = 0; n = 1; n_inp = length( rem_chs(:,1) )+1;
     k = 1;
     while k < 5
-        n_cond(k) = length ( vet_idx(vet_idx == k) );
-        sum       = sum + n_cond(k);
-        while n < n_inp && rem_chs(n,1) == k
-            rem_chs(n,2) = rem_chs(n,2)+sum;
-            chs = nCH - rem_chs(n,2) + 1; % lin is ordered from last plotted to first
-            if  lin(chs).Visible == 0
-                lin(chs).Visible = 1;
-                lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'on';  % Rimuove dalla legenda
-            else
-                lin(chs).Visible = 0;
-                lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'off';  % Rimuove dalla legenda
+        n_cond(k)       = length ( vet_idx(vet_idx == k) );
+        compl_idx_range = 1:n_cond(k);
+        hide_idxs       = setdiff( compl_idx_range,rem_chs( rem_chs(:,1) == k,2) );
+        for n = hide_idxs
+            m = n;
+            m = m + sum;
+            m = nCH - m + 1; % lin is ordered from last plotted to first
+            if  lin(m).Visible == 1
+                lin(m).Visible = 0;
+                lin(m).Annotation.LegendInformation.IconDisplayStyle = 'off';  % Rimuove dalla legenda
+            % else
+            %     lin(chs).Visible = 0;
+            %     lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'off';  % Rimuove dalla legenda
             end
-            n = n +1;
         end
+        sum = sum + n_cond(k);
+        k   = k + 1;
     end
 
 end
+plot_UI(vet_idx,lin)
 disp('Show what')
 chs = input('>>');
 chs = nCH - chs + 1; % lin is ordered from last plotted to first
 while chs > 0 && chs < nCH+1
-
-    plot_UI(vet_idx,lin)
     if  lin(chs).Visible == 1
         lin(chs).Visible = 0;
         lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'off';  % Rimuove dalla legenda
@@ -230,6 +243,7 @@ while chs > 0 && chs < nCH+1
         lin(chs).Visible = 1;
         lin(chs).Annotation.LegendInformation.IconDisplayStyle = 'on';  % Rimuove dalla legenda
     end
+    plot_UI(vet_idx,lin)
     disp('Show what')
     chs = input('>>');
     chs = nCH - chs + 1; % lin is ordered from last plotted to first
@@ -239,14 +253,15 @@ end
 
 function plot_UI(vet_idx,lin)
     k = 1; j = 1; %l = 1; 
+    nCH = length(vet_idx);
     COND = {'Take-Off','Landing','Climb','Cruise'}; n_cond = length( COND );
     while k < n_cond+1
         disp( ['---------',COND{k},'---------'] )
-        while vet_idx(j) == k && j < length( vet_idx )
-            if lin(j).Visible == 1
-                disp([num2str(j),' : S |',lin(j).DisplayName])
+        while vet_idx(j) == k && j < nCH
+            if lin(nCH - j +1).Visible == 1
+                disp([num2str(j),' : S |',lin(nCH - j +1).DisplayName])
             else
-                disp([num2str(j),' : NS|',lin(j).DisplayName])
+                disp([num2str(j),' : NS|',lin(nCH - j +1).DisplayName])
             end
             % if vet_chs(l,1) == vet_idx(j)
             %     
@@ -257,5 +272,11 @@ function plot_UI(vet_idx,lin)
             j = j + 1;
         end
     k = k + 1;
+    end
+    j = nCH;
+    if lin(nCH - j +1).Visible == 1
+        disp([num2str(j),' : S |',lin(nCH - j +1).DisplayName])
+    else
+        disp([num2str(j),' : NS|',lin(nCH - j +1).DisplayName])
     end
 end

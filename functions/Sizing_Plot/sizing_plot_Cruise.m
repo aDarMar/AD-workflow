@@ -53,7 +53,7 @@ for j = 1:nConds
         % [kg/m^2]
         lin(2*i-1,j) = plot( ax1,WoS,ToW );
         lin(2*i-1,j).LineStyle = '-'; lin(2*i-1,j).LineWidth = 2;
-        lin(2*i-1,j).Color = colors(2*i-1,:); lin(2*i-1,j).Marker = MARK{i};
+        lin(2*i-1,j).Color = colors(j,:); lin(2*i-1,j).Marker = MARK{i};
         lin(2*i-1,j).MarkerSize = 2.5;
         lin(2*i-1,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
             ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
@@ -61,7 +61,7 @@ for j = 1:nConds
         % [lb/ft^2]
         lin(2*i,j) = plot( ax2,WoS*2.204623/(3.28084^2),ToW );
         lin(2*i,j).LineStyle = '-'; lin(2*i,j).LineWidth = 2;
-        lin(2*i,j).Color = colors(2*i,:); lin(2*i,j).Marker = MARK{i};
+        lin(2*i,j).Color = colors(j,:); lin(2*i,j).Marker = MARK{i};
         lin(2*i,j).MarkerSize = 2.5;
         lin(2*i,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
             ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
