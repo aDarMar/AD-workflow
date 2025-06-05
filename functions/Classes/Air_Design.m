@@ -411,7 +411,7 @@ classdef Air_Design
 
             t1 = CL.^2./(pi*obj.ARw*u);%c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
             t2 = v*CL*obj.low_speed.meanprofile.eps_ae*obj.low_speed.meanprofile.a;
-            t3 = ( obj.low_speed.meanprofile.eps_ae+obj.low_speed.meanprofile.a )^2*w; % eps_ae + Cla
+            t3 = ( obj.low_speed.meanprofile.eps_ae*obj.low_speed.meanprofile.a )^2*w; % eps_ae + Cla
 
             CDi = t1(:)+t2(:)+t3(:);
 
@@ -469,7 +469,7 @@ classdef Air_Design
 
             t1 = CLw_c.^2 ./ (pi*obj.ARw*u); % c'è un fattore s che non sappiamo cosa significa anche nell'excel non viene calcolato
             t2 = v*CLw_c*obj.high_speed.meanprofile.eps_ae*obj.high_speed.meanprofile.a; % Cl_alpha_m;
-            t3 = ( obj.high_speed.meanprofile.eps_ae+obj.high_speed.meanprofile.a )^2*w;
+            t3 = ( obj.high_speed.meanprofile.eps_ae*obj.high_speed.meanprofile.a )^2*w;
 
             CDi   = t1+t2+t3;
 

@@ -127,26 +127,26 @@ i = 4; geom_vec(:,i) = toc(:)';
 
 %% Wing Circulation
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
-alpha_v = -6:18;
+alpha_v = -3:18;
 % Low Speed
 m = 31; M = 31;
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
 % 3D data calculation and estimation
-aero_des.low_speed.prf3DClean = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
-
-CDl = aero_des.CDlow_Mach( alpha_v,low_speed_drag(:,1),low_speed_drag(:,2:4) );
+aero_des.low_speed.prf3DClean             = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
+aero_des.low_speed.meanprofile.poly_drag  = aero_des.low_speed.poly_drag( low_speed_drag(:,1),low_speed_drag(:,2:4) ); % Defines the interpolating function for cd avg
+CDl = aero_des.CDlow_Mach( alpha_v );
 
 % High Speed
 aero_des.high_speed = PaneledWing( m,M,geom_vec,aero_vec_high,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_high(1,1) );
 % 3D data calculation and estimation
-aero_des.high_speed.prf3DClean = aero_des.high_speed.aero3Dwing( 'clean', aero_des.high_speed.panels(1).root.M );
-CDh = aero_des.CDtransonic( alpha_v,aero_des.TLARs.cruise.M,high_speed_drag(:,1),high_speed_drag(:,2:4) );
+aero_des.high_speed.prf3DClean            = aero_des.high_speed.aero3Dwing( 'clean', aero_des.high_speed.panels(1).root.M );
+aero_des.high_speed.meanprofile.poly_drag = aero_des.high_speed.poly_drag( high_speed_drag(:,1),high_speed_drag(:,2:4) );
+CDh = aero_des.CDtransonic( alpha_v,aero_des.TLARs.cruise.M );
 aero_des.Mdd;
 
-
-CL_low= aero_des.low_speed.lift_eval(alpha_v,aero_des.low_speed.prf3DClean);
+CL_low  = aero_des.low_speed.lift_eval(alpha_v,aero_des.low_speed.prf3DClean);
 CL_high = aero_des.high_speed.lift_eval(alpha_v,aero_des.high_speed.prf3DClean );
 aero_des.plot_fun(alpha_v,CL_low,CL_high,CDl, CDh)
 aero_des.low_speed.wing_circ(3)
