@@ -403,7 +403,7 @@ classdef Air_Design
             end
 
             cdfit = polyval( obj.low_speed.meanprofile.poly_drag,alpha ); % cd del profilo 2d ottenuto con il polinomio
-            CL    =  obj.low_speed.lift_eval( alpha,obj.low_speed.prf3DClean );
+            CL    = obj.low_speed.lift_eval( alpha,obj.low_speed.prf3DClean );
             u     = obj.interpolateFromCSV('AR', obj.TRw, obj.ARw);
             v     = obj.interpolateFromCSV('TR', obj.ARw, obj.TRw);
             w     = obj.interpolateFromCSV('ctcr', obj.ARw, obj.TRw);
