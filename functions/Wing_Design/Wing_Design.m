@@ -129,7 +129,7 @@ i = 4; geom_vec(:,i) = toc(:)';
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
 alpha_v = -6:18;
 % Low Speed
-m = 7; M = 7;
+m = 31; M = 31;
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
 % 3D data calculation and estimation
@@ -149,4 +149,5 @@ aero_des.Mdd;
 CL_low= aero_des.low_speed.lift_eval(alpha_v,aero_des.low_speed.prf3DClean);
 CL_high = aero_des.high_speed.lift_eval(alpha_v,aero_des.high_speed.prf3DClean );
 aero_des.plot_fun(alpha_v,CL_low,CL_high,CDl, CDh)
+aero_des.low_speed.wing_circ(3)
 end

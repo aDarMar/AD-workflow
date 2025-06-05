@@ -107,12 +107,15 @@ classdef PaneledWing < WingClass
            %% Weissinger
            % Calculates Wing Loading
            [obj.a_coeffs,obj.b_coeffs] = obj.aeroDef; % Defines influence ad geometric coefficients
-           [ Gb,a0L,CDi_basic,CM0_basic ] = obj.loadsEval;
+           [ Gb,Ga,CLa,a0L,CM0_basic ] = obj.loadsEval;
            for n = 1:obj.m_red-1
                % Symmetric Loadings
                obj.geom_sect(n).Gb = Gb(n); obj.geom_sect(obj.m+1-n).Gb = Gb(n);
-               
+               obj.geom_sect(n).Ga = Ga(n); obj.geom_sect(obj.m+1-n).Ga = Ga(n);
            end
+           n = obj.m_red;
+           obj.geom_sect(n).Gb = Gb(n);
+           obj.geom_sect(n).Ga = Ga(n);
        end
        
        function [geom_prep,aero_prep] = interpSects( obj,geom_vec,aero_vec,phi )
@@ -314,16 +317,16 @@ classdef PaneledWing < WingClass
        end
        
        %% Loads Calculation
-       function [ Gb,a0L,CDi_basic,CM0_basic ] = loadsEval(obj)
+       function [ Gb,Ga,CLa,a0L,CM0_basic ] = loadsEval(obj)
            [Gb, a0L] = obj.basicLoad;              % Basic load distribution
-           CDi_basic = obj.induced_drag( Gb );     % Induced drag due to Basic Loads
+           %CDi_basic = obj.induced_drag( Gb );     % Induced drag due to Basic Loads
            CM0_basic = obj.pitchCoeff_basic( Gb ); % Pitching Moment Coeff. due to Basic load
            
-           [Ga,CLa] = obj.additionalLoad;
-           CDi_add  = obj.induced_drag( Ga );       % Induced drag due to Basic Loads
+           [Ga,CLa] = obj.additionalLoad;           % Gna/alpha, CLa [1/rad]
+           %CDi_add  = obj.induced_drag( Ga );       % Induced drag due to Basic Loads
            
-           Gtot = Ga + Gb;
-           CDi_tot = obj.induced_drag( Gtot );
+           %Gtot = Ga + Gb;
+           %CDi_tot = obj.induced_drag( Gtot );
        end
        
        function CDi = induced_drag( obj,Gs )
@@ -428,6 +431,24 @@ classdef PaneledWing < WingClass
            CLa = obj.liftCoeff( Ga );
        end
        
+       % Plot
+       function wing_circ(obj,alpha)
+           alpha = alpha*pi/180;
+            fig    = figure("Name",'Wing Span Load'); 
+            ax_fig = axes('Parent',fig);hold( ax_fig,'on' );
+            Ga_v = nan(obj.m_red,1); Gb_v = Ga_v; eta = Ga_v; Gtot = Ga_v;
+            for i = 1:obj.m_red
+                Ga_v(i) = obj.geom_sect(i).Ga;
+                Gb_v(i) = obj.geom_sect(i).Gb;
+                eta(i)  = obj.geom_sect(i).eta;
+                Gtot(i) = Ga_v(i)*alpha + Gb_v(i);
+            end
+            Gtot = [0;Gtot]; eta = [1;eta];
+            Gb_v = [0;Gb_v]; Ga_v = [0;Ga_v];
+            lin(1) = plot( ax_fig,eta,Gtot );
+            lin(2) = plot( ax_fig,eta,Gb_v );
+            lin(3) = plot( ax_fig,eta,Ga_v*alpha );
+       end
        % NON-Weissinger
        % CM and Alpha0L
    end
