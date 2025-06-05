@@ -135,14 +135,18 @@ aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
 % 3D data calculation and estimation
 aero_des.low_speed.prf3DClean = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
 
-CLl = aero_des.CDlow_Mach( alpha_v,low_speed_drag(:,1),low_speed_drag(:,2:4) );
+CDl = aero_des.CDlow_Mach( alpha_v,low_speed_drag(:,1),low_speed_drag(:,2:4) );
 
 % High Speed
 aero_des.high_speed = PaneledWing( m,M,geom_vec,aero_vec_high,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_high(1,1) );
 % 3D data calculation and estimation
 aero_des.high_speed.prf3DClean = aero_des.high_speed.aero3Dwing( 'clean', aero_des.high_speed.panels(1).root.M );
-CLh = aero_des.CDtransonic( alpha_v,aero_des.TLARs.cruise.M,high_speed_drag(:,1),high_speed_drag(:,2:4) );
-aero_des.Mdd
+CDh = aero_des.CDtransonic( alpha_v,aero_des.TLARs.cruise.M,high_speed_drag(:,1),high_speed_drag(:,2:4) );
+aero_des.Mdd;
 
+
+CL_low= aero_des.low_speed.lift_eval(alpha_v,aero_des.low_speed.prf3DClean);
+CL_high = aero_des.high_speed.lift_eval(alpha_v,aero_des.high_speed.prf3DClean );
+aero_des.plot_fun(alpha_v,CL_low,CL_high,CDl, CDh)
 end

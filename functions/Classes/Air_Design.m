@@ -520,6 +520,25 @@ classdef Air_Design
             end
         end
 
+        function plot_fun(obj,alfavett,CL_low,CL_high,CD_low,CD_high)
+            %plot effettua i grafici mettendo a confronto CL-alfa, CD-CL
+            %
+            %INPUT:
+            %
+            % alphavett = vettore di alfa
+            % CL_low = CL a basse velocità
+
+            
+            
+            X = {alfavett,alfavett,CL_low,CL_high};
+            Y = {CL_low,CL_high,CD_low,CD_high};
+            
+            for i = 1:4 %1 a 6 se metti CM
+                subplot(2, 2, i);
+                plot(X{i}, Y{i}, 'LineWidth', 1.5);
+            end
+
+        end
     end
 end
 
