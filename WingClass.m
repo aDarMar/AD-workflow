@@ -301,10 +301,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 % Trapezoidal Integration: changes only alpha_0L and CM
                 %% Definition of Spanwise Sections
                 dy = 0.5; %dy = floor(0.5*obj.bw/dy);
-                yvec  = 0:dy:obj.panels(1).tip.yglob;
-                yvec2 = obj.panels(2).root.yglob:dy:obj.panels(2).tip.yglob;
-                yvec  = [yvec(1:end-1),yvec2(1:end-1),obj.panels(2).tip.yglob];
-                %yvec = [0,1,2,3,4,4.333458599,5,6,7,8,9,10,11,12,13,14,15,16,17,17.33383439];
+                % yvec  = 0:dy:obj.panels(1).tip.yglob;
+                % yvec2 = obj.panels(2).root.yglob:dy:obj.panels(2).tip.yglob;
+                % yvec  = [yvec(1:end-1),yvec2(1:end-1),obj.panels(2).tip.yglob];
+                yvec = [0,1,2,3,4,4.333458599,5,6,7,8,9,10,11,12,13,14,15,16,17,17.33383439];
                 n_stats = length(yvec);
                 %% Building Interpolation Vectors
                 cvet    = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
@@ -327,8 +327,8 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 eps_int  =  ( -azl_vet(:) + azl_vet(1) ).*Cla_vet(:).*cvet(:);
                 eps_a    = 0;           % MEan Aerodynamic Twist
                 for i=2:n_stats
-                    azl_mean    = azl_mean + 0.5*( azl_int(i)+azl_int(i-1) )/( yvec(i)-yvec(i-1) );
-                    eps_a       = eps_a + 0.5*( eps_int(i)+eps_int(i-1) )/( yvec(i)-yvec(i-1) );
+                    azl_mean    = azl_mean + 0.5*( azl_int(i)+azl_int(i-1) )*( yvec(i)-yvec(i-1) );
+                    eps_a       = eps_a + 0.5*( eps_int(i)+eps_int(i-1) )*( yvec(i)-yvec(i-1) );
                 end
                 azl_mean = azl_mean*2/obj.Sw;
                 %% Mean Aerodynamic Twist
@@ -354,7 +354,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     obj.weightAvg(cl0v),obj.weightAvg(clstarv),obj.weightAvg(clmaxv),...
                     obj.weightAvg(alphamaxv),azl_mean,...
                     obj.weightAvg(alphastarv),Cm1+Cm2,0.25,0];
-                eps_a = eps_a/( vout2(1)*obj.panels(end).tip.c*obj.panels(end).tip.yglob ); % eps_a = sum/( Cla_avg*c_tip*b/2 )
+                eps_a = 2*eps_a/( vout2(1)*obj.panels(end).tip.c*obj.panels(end).tip.yglob ); % eps_a = sum/( Cla_avg*c_tip*b/2 )
                 vout2 = [vout2,eps_a];
             end
             vout = [cm,1,obj.weightAvg(tcv),1,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
