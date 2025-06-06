@@ -301,10 +301,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 % Trapezoidal Integration: changes only alpha_0L and CM
                 %% Definition of Spanwise Sections
                 dy = 0.5; %dy = floor(0.5*obj.bw/dy);
-                % yvec  = 0:dy:obj.panels(1).tip.yglob;
-                % yvec2 = obj.panels(2).root.yglob:dy:obj.panels(2).tip.yglob;
-                % yvec  = [yvec(1:end-1),yvec2(1:end-1),obj.panels(2).tip.yglob];
-                yvec = [0,1,2,3,4,4.333458599,5,6,7,8,9,10,11,12,13,14,15,16,17,17.33383439];
+                yvec  = 0:dy:obj.panels(1).tip.yglob;
+                yvec2 = obj.panels(2).root.yglob:dy:obj.panels(2).tip.yglob;
+                yvec  = [yvec(1:end-1),yvec2(1:end-1),obj.panels(2).tip.yglob];
+                %yvec = [0,1,2,3,4,4.333458599,5,6,7,8,9,10,11,12,13,14,15,16,17,17.33383439];
                 n_stats = length(yvec);
                 %% Building Interpolation Vectors
                 cvet     = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...

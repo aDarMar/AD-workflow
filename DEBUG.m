@@ -53,13 +53,15 @@ switch CHS
         b = geom_vec( end,1 )*2; sweep = 46.5482; dihedral = 4; iang = 0; apexC = [0,0,0]; Mach = 0.1;
         geom_vec( :,1 ) = geom_vec( :,1 )/geom_vec( end,1 );
     case 5
+        % Wing with sweep_c/4 = 42, Mach = 0.436 and linear twist. Data is
+        % chosen in such a way that sweep_comp = sweep/beta = 45
         n_in = 5;
         geom_vec = nan( n_in,9 ); aero_vec = zeros( n_in,9 );
         geom_vec( :,1 ) = [0,2,3,6,9]'; 
         geom_vec( :,2 ) = [4,3.555555556,3.333333333,2.666666667,2]';
-        geom_vec( :,3 ) = [0,-0.222222222,-0.333333333,-0.666666667,-1]';
+        geom_vec( :,3 ) = 1*[0,-0.222222222,-0.333333333,-0.666666667,-1]';
         aero_vec( :,1 ) = (sqrt(0.19)/6)*[6,6,6,6,6]';
-        aero_vec( :,2 ) = (5.28/6)*[6,6,6,6,6]';
+        aero_vec( :,2 ) = (1/57.4)*(5.28/6)*[6,6,6,6,6]';
         b = geom_vec( end,1 )*2; sweep = 43.698; dihedral = 4; iang = 0; apexC = [0,0,0]; Mach = aero_vec( 1,2 );
         geom_vec( :,1 ) = geom_vec( :,1 )/geom_vec( end,1 );
         

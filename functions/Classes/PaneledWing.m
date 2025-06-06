@@ -381,8 +381,9 @@ classdef PaneledWing < WingClass
            nu_idx = 1:obj.m_red; nu_idx_red = nu_idx( nu_idx ~= nu_r);
            A      = nan( obj.m_red - 1 );
            for nu = nu_idx_red
-               % Twist in radiants
-               eps(nu) = ( obj.geom_sect(nu).eps + obj.geom_sect(nu).alpha0l - obj.geom_sect(nu_r).alpha0l )*pi/180;
+               % Twist in radiants. All angles defined in the class are
+               % always in radiants otherwise specified.
+               eps(nu) = ( obj.geom_sect(nu).eps + obj.geom_sect(nu).alpha0l - obj.geom_sect(nu_r).alpha0l );
                for n = nu_idx_red
                    A(nu,n) = obj.a_coeffs(nu,n)-obj.a_coeffs(nu_r,n)-...
                        ( obj.a_coeffs(nu,nu_r)-obj.a_coeffs(nu_r,nu_r) )*2*sin( obj.geom_sect(n).phi );
@@ -433,21 +434,31 @@ classdef PaneledWing < WingClass
        
        % Plot
        function wing_circ(obj,alpha)
-           alpha = alpha*pi/180;
+           alpha   = alpha*pi/180;
             fig    = figure("Name",'Wing Span Load'); 
             ax_fig = axes('Parent',fig);hold( ax_fig,'on' );
             Ga_v = nan(obj.m_red,1); Gb_v = Ga_v; eta = Ga_v; Gtot = Ga_v;
+            c_v  = Ga_v; cl_max_v = Ga_v;
             for i = 1:obj.m_red
-                Ga_v(i) = obj.geom_sect(i).Ga;
-                Gb_v(i) = obj.geom_sect(i).Gb;
-                eta(i)  = obj.geom_sect(i).eta;
-                Gtot(i) = Ga_v(i)*alpha + Gb_v(i);
+                c_v(i)      = obj.geom_sect(i).c;
+                cl_max_v(i) = obj.geom_sect(i).clmax;
+                Ga_v(i)     = obj.geom_sect(i).Ga;
+                Gb_v(i)     = obj.geom_sect(i).Gb;
+                eta(i)      = obj.geom_sect(i).eta;
+                Gtot(i)     = Ga_v(i)*alpha + Gb_v(i);
             end
             Gtot = [0;Gtot]; eta = [1;eta];
-            Gb_v = [0;Gb_v]; Ga_v = [0;Ga_v];
-            lin(1) = plot( ax_fig,eta,Gtot );
+            Gb_v = [0;Gb_v]; Ga_v = [0;Ga_v]; c_v = [obj.panels(end).tip.c;c_v];
+            lin(1) = plot( ax_fig,eta,Gtot ); cl_max_v = [obj.panels(end).tip.clmax.c;c_v];
             lin(2) = plot( ax_fig,eta,Gb_v );
             lin(3) = plot( ax_fig,eta,Ga_v*alpha );
+            ax_clc = axes('Parent',fig);
+            ccl    = Gtot/(2*obj.b); % Dimensional Load
+            cl_v   = ccl./c_v;
+            lin_ccl(1) = plot( ax_clc,eta,ccl );
+            ax_cl = axes('Parent',fig);
+            lin_cl(1)  = plot( ax_cl,eta,cl_v );
+            lin_cl(2)  = plot( ax_cl,eta,cl_max_v );
        end
        % NON-Weissinger
        % CM and Alpha0L
