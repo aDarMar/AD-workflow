@@ -19,50 +19,15 @@ for iAero = 1:nAero
     Airl(iAero) = AirData_class( [name_list(iAero+2).folder,'\',name_list(iAero+2).name] );
 end
 
-[a,b] = linear_regressions(Airl,nAero);
+[a,b]   = linear_regressions(Airl,nAero);
 reg_cfs = [a,b];
-MTOMvsEM_plot(Airl,nAero,[a,b],[0.0810,1.0730;0.0913,1.0425]);
-%% Aircraft Class 
+fig_W = MTOMvsEM_plot(Airl,nAero,[a,b],[0.0810,1.0730;0.0913,1.0425]);
+%% Aircraft Class & TLARs Definition
 TLARs_path = [main_fold,'\tlars\TLARs.txt'];
 Des_Air = Air_Design( TLARs_path,main_fold );
-%% TLARs Definition
-% % % Definizione TLARS ( da portare in una funzione a parte )
-% % TLARS = read_TLARs( TLARs_path );
 
 %% Weights Estimation
-% Fuel fraction
-% % [Mff,Mff_b,WLNDoWTO,WcroWTO] = fuel_fraction(TLARS);
-% % 
-% % M_pay  = TLARS.npax*215/2.2046; %[Kg]
-% % M_crew = (TLARS.ncrew+TLARS.npil)*205/2.2046; %[Kg]
-% % Mres = 0; Mfo = 0;
-% % c = 1 - (1+Mres)*(1-Mff) - Mfo; d = M_pay + M_crew;
-
-[Des_Air.MTOM_est0,Des_Air.EM_est0] = Class0_MTOM( Des_Air,reg_cfs );
-
-% % Wmtom_reg   = (2:20)*1e4; %Wmtom_reg = Wmtom_reg*2.2046;                          % da [Kg] -> [lb]
-% % Wempty_reg  = @(Wmtom_reg) ( 10.^( ( log10(Wmtom_reg*2.2046) - a )./b )/2.2046 ) ;      % in [kg]
-% % Wempty_stat = @(Wmtom_reg) c*Wmtom_reg-d;
-% % find_W      = @(Wmtom_reg) Wempty_reg(Wmtom_reg) - Wempty_stat(Wmtom_reg);
-% % x0          = 120000; % [Kg]
-% % MTOM_it0    = fzero( find_W,x0 );
-% % % = Wempty_reg/2.2046; Wmtom_reg = Wmtom_reg/2.2046;       % da [lb] -> [Kg]
-% % 
-% % % DEBUGGGG 
-% % %MTOM_it0 = 95000;
-% % 
-% % figure()
-% % plot( Wmtom_reg,Wempty_reg( Wmtom_reg ),'--r' ); hold on
-% % plot( Wmtom_reg,Wempty_stat( Wmtom_reg ),'k' );
-% % 
-% % % plot( Wmtom_reg,Wempty_reg,'--r' ); hold on
-% % % plot( Wmtom_reg,c*Wmtom_reg-d,'k' );
-% % 
-% % axis equal
-% % Polar Estimation
-% WoS_it0 = 550; %[kg/m^2]
-% S_it0 = MTOM_it0/WoS_it0;
-% [CD0,Swet] = polar_est(S_it0,MTOM_it0);
+[Des_Air.MTOM_est0,Des_Air.EM_est0] = Class0_MTOM( Des_Air,reg_cfs,fig_W );
 
 %% Sizing
 % Input Data
@@ -77,13 +42,12 @@ h_cr_vet = [Des_Air.TLARs.cruise.h,11277];
 % Initialization
 iS = 1;
 Des_Air.SizHis(iS).WoS = 550;   % First Guess WoS [Kg/m^2]
-
 Des_Air.SizHis(iS).S   = Des_Air.MTOM_est0/Des_Air.SizHis(iS).WoS;
-% FINIREEEEE
-[Des_Air.SizHis(iS).CD0,Des_Air.SizHis(iS).Swet]   = Des_Air.polar_est( Des_Air.SizHis(iS).S,Des_Air.MTOM_est0 );
-fig_ri       = figure();
 
-fig_aux = figure();
+[Des_Air.SizHis(iS).CD0,Des_Air.SizHis(iS).Swet]   = Des_Air.polar_est( Des_Air.SizHis(iS).S,Des_Air.MTOM_est0 );
+fig_ri       = figure('Name','Sizing Plot');
+
+fig_aux = figure('Name','Auxiliary Figure for Sizing');
 [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot(Des_Air,iS,CLmax_TO_vett,...
     CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
     V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux);
@@ -123,6 +87,7 @@ while flag
     else
         Des_Air.SizHis(iS).WoS = tmp;
     end
+    % Prelimianry Drag and S Update
     Des_Air.SizHis(iS).S                             = Des_Air.MTOM_est0/Des_Air.SizHis(iS).WoS;
     [Des_Air.SizHis(iS).CD0,Des_Air.SizHis(iS).Swet] = Des_Air.polar_est( Des_Air.SizHis(iS).S,Des_Air.MTOM_est0 ); %polar_est(Sizing(iS).S,MTOM_it0);
     
@@ -133,10 +98,8 @@ while flag
     %hold off
 
 end
-
 sizPLT_ax_cf = sizing_plot_cfr( Airl,nAero,sizPLT_ax );
-%
-
+fig_p = figure('Name','Preliminary Polar');
 %% Wing Design
 Des_Air = Des_Air.final_out( ch_idxs,CLmax_TO_vett,CLmax_CR_vett,...
     CLmax_LND_vett,V_cr_vet,h_cr_vet );
