@@ -1,4 +1,4 @@
-function [fig,LEG] = sizing_plot_Cruise(CD0,dCD0_wave,Vcr,h_cruise,WcroWTO,e,AR,phi_v,T0oTcr)
+function [ ax1,ax2 ] = sizing_plot_Cruise( ax1,ax2,CD0,dCD0_wave,Vcr,h_cruise,WcroWTO,e,AR,phi_v,T0oTcr)
 %sizing_plot_Cruise Function that draws the cruise limitation for a jet
 %airplane. Inputs can be vector and in such case, every element corresponds
 %to a specific flight condition
@@ -14,7 +14,23 @@ function [fig,LEG] = sizing_plot_Cruise(CD0,dCD0_wave,Vcr,h_cruise,WcroWTO,e,AR,
 %   T0oTcr: ratio of max static thrust over Thrust in cruise. If not given
 %       the model Tcr = T0*phi*sigma will be used
 
-nConds = length(Vcr);
+nConds = length( Vcr );
+%% Graphics
+colors = [
+    0.22, 0.49, 0.72;  % blu brillante
+    0.53, 0.81, 0.92;  % azzurro chiaro
+    0.27, 0.51, 0.71;  % blu acciaio
+    0.00, 0.74, 0.83;  % azzurro-verde (cyan)
+    0.00, 0.00, 0.55;  % blu scuro
+    0.42, 0.35, 0.80;  % blu-grigio
+    ];
+
+if nConds > length( colors )
+    aux_c = random( nCLmaxes-colors,3 );
+    colors = [colors;aux_c];
+end
+MARK = {'x','^','square'};
+%% Plot
 COND = {'Initial W ','Final W ','Avg. W '};
 nW = length( WcroWTO );
 if nW == 2
@@ -22,34 +38,33 @@ if nW == 2
     nW = nW + 1;
 end
 K = 1/(pi*AR*e);
-WoS = linspace(0,700,100); % [Kg/m^2]
+WoS = linspace(0,1000,100); % [Kg/m^2]
 for j = 1:nConds
     [T, a, P, rho] = atmosisa(h_cruise(j));
     
     sigma = rho/1.225;
-    if nargin < 9
+    if nargin < 11
         T0oTcr = 1/(0.71*sigma*phi_v(j));
     end
     q = 0.5*sigma*1.225*Vcr(j)^2;
 
     for i = 1:nW
         ToW = ( (CD0+dCD0_wave)*q./(WoS*9.81)/WcroWTO(i) + K/q .* (WoS*9.81)*WcroWTO(i) )*WcroWTO(i)*T0oTcr; %WoS in [Kgf]
-        
-        subplot 211; hold on
-        fig(2*i-1,j) = plot( WoS,ToW );
-        fig(2*i-1,j).LineStyle = '-'; fig(2*i-1,j).LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
-        col = rand(1,3); fig(2*i-1,j).MarkerEdgeColor = col;
-        %set(fig(2*i-1,j), 'Visible','off');
-        LEG{i+(j-1)*3} = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
+        % [kg/m^2]
+        lin(2*i-1,j) = plot( ax1,WoS,ToW );
+        lin(2*i-1,j).LineStyle = '-'; lin(2*i-1,j).LineWidth = 2;
+        lin(2*i-1,j).Color = colors(j,:); lin(2*i-1,j).Marker = MARK{i};
+        lin(2*i-1,j).MarkerSize = 2.5;
+        lin(2*i-1,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
             ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
-        %axis([0,1000,0,1])
-        
-        subplot 212; hold on
-        fig(2*i,j) = plot( WoS*2.204623/(3.28084^2),ToW );
-        fig(2*i,j).LineStyle = '-'; fig(2*i,j).LineWidth = 2; %fig(1,i).Marker = aero_obj(i).Mark; fig(1,i).MarkerSize = 4;
-        col = rand(1,3); fig(2*i,j).MarkerEdgeColor = col;
-        %set(fig(2*i,j), 'Visible','off');
-        %axis([0,280,0,1])
+
+        % [lb/ft^2]
+        lin(2*i,j) = plot( ax2,WoS*2.204623/(3.28084^2),ToW );
+        lin(2*i,j).LineStyle = '-'; lin(2*i,j).LineWidth = 2;
+        lin(2*i,j).Color = colors(j,:); lin(2*i,j).Marker = MARK{i};
+        lin(2*i,j).MarkerSize = 2.5;
+        lin(2*i,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
+            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
     end
     
 end
