@@ -25,6 +25,7 @@ classdef ProfileClass %<handle
         x_ac                % Position of the a.c. as % of chord
         eps_ae              % Averange Aerodynamic twist [deg]
         poly_drag           % polyfit object containing regression of cd-alpha values
+        cm_alpha            % polyfit object containing regression of cm-alpha values
             % Drag: non sono assegnati da fuori ma calcolati
         K
         FF
@@ -84,7 +85,7 @@ classdef ProfileClass %<handle
                 obj.alphamax = aeroV(:,5);
                 obj.alpha0l  = aeroV(:,6);
                 obj.alphastar= aeroV(:,7);
-                obj.cmac     = aeroV(:,8);
+                obj.cmac     = aeroV(:,8); % It is the cm@Cl0
                 %% Profile aerodynamic centre
                 if length( aeroV(1,:) ) > 8
                     

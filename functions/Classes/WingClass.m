@@ -321,39 +321,41 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     [obj.panels(1).root.xglob,obj.panels(2).root.xglob,obj.panels(2).tip.xglob],yvec );
                 Xac_vet  = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
                     [obj.panels(1).root.x_ac,obj.panels(2).root.x_ac,obj.panels(2).tip.x_ac],yvec );
-                %% Wing Alpha-Zero Lift
-                azl_mean = 0;           %Zero-Lift Angle [deg]
+                %% Wing Alpha-Zero Lift and Aerodynamic Twist     
                 azl_int  =  cvet.*( azl_vet-eps_vet );
-                eps_int  =  ( -azl_vet(:) + azl_vet(1) ).*Cla_vet(:).*cvet(:);
-                eps_a    = 0;           % MEan Aerodynamic Twist
-                for i=2:n_stats
-                    azl_mean    = azl_mean + 0.5*( azl_int(i)+azl_int(i-1) )*( yvec(i)-yvec(i-1) );
-                    eps_a       = eps_a + 0.5*( eps_int(i)+eps_int(i-1) )*( yvec(i)-yvec(i-1) );
-                end
+                eps_int  =  ( -azl_vet(:) + azl_vet(1) ).*Cla_vet(:).*cvet(:);         
+                azl_mean = obj.trapezoidal_int( azl_int,yvec ); % Zero-Lift Angle [deg]
                 azl_mean = azl_mean*2/obj.Sw;
+                eps_a    = obj.trapezoidal_int( eps_int,yvec ); % Mean Aerodynamic Twist. Check also after vout2
+                
                 %% Mean Aerodynamic Twist
                 
-                %% Moments
+                %% Moments and Wing Aerodynamic Center
                 % Vector of coordinates of wing aerodynamic centers
                 % xc_4 = X_le + xac,p(y)/c(y)* c(y)
                 xc_4    =  Xac_vet.*cvet + Xle_vec;       
-                % Distance between wing and profiles aerodynamic center
-                x1      = ( xLE_MAC + cm*0.25 ) - xc_4; 
-                Cm1_int = CMac_vet.*cvet.^2;
-                Cm2_int = ( azl_mean+eps_vet-azl_vet ).*Cla_vet.*cvet.*x1;
-                Cm1_trap = 0; Cm2_trap = 0;
-                for i = 2:n_stats
-                    Cm1_trap = Cm1_trap + 0.5*(Cm1_int(i)+Cm1_int(i-1))*(yvec(i)-yvec(i-1));
-                    Cm2_trap = Cm2_trap + 0.5*(Cm2_int(i)+Cm2_int(i-1))*(yvec(i)-yvec(i-1));
-                end
-                Cm1 = 2*Cm1_trap/(obj.Sw*cm);
-                Cm2 = 2*Cm2_trap/(obj.Sw*cm);
-                
-                
+                % % Distance between wing and profiles aerodynamic center
+                alpha   = azl_mean:0.5:obj.weightAvg(alphastarv); % Sweep in alpha from a0l to alpha*
+                alpha = [-3,alpha]
+                % The x_ac/wing is calculated using the mean airfoil
+                % Cl_alpha
+                [xc_axw,Cm0,cm_add] = cm_alpha( obj,alpha,obj.weightAvg(av),...
+                    yvec,cvet,Xle_vec,Cla_vet,eps_vet,azl_vet,CMac_vet,Xac_vet,cm,xLE_MAC );
+                % REMARK: cm_add will be equal to Cma because they are both
+                % calculated @wing mac
+                % Additional Load@CL = 0
+                x_ref   = ( xLE_MAC + cm*xc_axw );
+                x1      =  x_ref - xc_4; 
+                Cma_int = ( azl_mean+eps_vet-azl_vet ).*Cla_vet.*cvet.*x1;
+                Cma     = obj.trapezoidal_int( Cma_int,yvec );
+                Cma     = 2*Cma/(obj.Sw*cm);
+                % We found Cm@CL = 0 that is the CM@ac_wing: THIS IS TRUE
+                % ONLY WHEN THE REFERENCE AXIS IS THE WING MAC
+
                 vout2 = [obj.weightAvg(av),...
                     obj.weightAvg(cl0v),obj.weightAvg(clstarv),obj.weightAvg(clmaxv),...
                     obj.weightAvg(alphamaxv),azl_mean,...
-                    obj.weightAvg(alphastarv),Cm1+Cm2,0.25,0];
+                    obj.weightAvg(alphastarv),Cm0+Cma,xc_axw,0];
                 eps_a = 2*eps_a/( vout2(1)*obj.panels(end).tip.c*obj.panels(end).tip.yglob ); % eps_a = sum/( Cla_avg*c_tip*b/2 )
                 vout2 = [vout2,eps_a];
             end
@@ -386,7 +388,101 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             n = 5;
             polydrag = polyfit( alpha,cd_av,n );
         end
+        
+        function [x_ref,cm0,cm_add] = cm_alpha( obj,alpha,Cla,yvec,cvet,x_vet,cla_vet,eps_vet,azl_vet,cm0_vet,xac_vet,MAC,XleMAC )
+            %cm_alpha: function that evaluates the Cm-alpha curve for a
+            %given set of alpha using cm data from sections
+            %INPUT
+            %   alpha: vector of alpha to calculate Cm. They should be in
+            %       the lienar range of the sections Cl-alpha
+            %   Cla: wing lift slope
+            %   yvec ... XleMAC: data associated with sections. If they are
+            %       omitted, the program will calculate them by itself
+            %OUTPUT
+            %   xoc_ref: wing x_ac position as a fraction of MAC
+            %   cm_0: pitching moment due to basic load
+            %   cm_add: vector of cm due to additional load evaluated at
+            %           at alpha given in alpha vector. BE CAREFUL: the
+            %           function exits when it finds the x_ac,wing so it is
+            %           expected that cm_add vs alpha will be all the same
+            if nargin < 3
+                % Wing stencil Definition
+                dy = 0.5; %dy = floor(0.5*obj.bw/dy);
+                yvec  = 0:dy:obj.panels(1).tip.yglob;
+                yvec2 = obj.panels(2).root.yglob:dy:obj.panels(2).tip.yglob;
+                yvec  = [yvec(1:end-1),yvec2(1:end-1),obj.panels(2).tip.yglob];
+                % Interpolation of Needed data
+                % chords
+                cvet     = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.c,obj.panels(2).root.c,obj.panels(2).tip.c],yvec );
+                % leading edges x coords
+                x_vet   = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.xglob,obj.panels(2).root.xglob,obj.panels(2).tip.xglob],yvec );
+                % cl_a
+                cla_vet = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.a,obj.panels(2).root.a,obj.panels(2).tip.a],yvec );
+                % Geometric twist
+                eps_vet  = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.eps,obj.panels(2).root.eps,obj.panels(2).tip.eps],yvec );
+                % Aerodynamic twist
+                azl_vet  = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.alpha0l,obj.panels(2).root.alpha0l,obj.panels(2).tip.alpha0l], yvec );
+                % cm@ac for profiles
+                cm0_vet  = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.cmac,obj.panels(2).root.cmac,obj.panels(2).tip.cmac], yvec );
+                % profile's aerodynamic centers
+                xac_vet  = interp1( [obj.panels(1).root.yglob,obj.panels(2).root.yglob,obj.panels(2).tip.yglob],...
+                    [obj.panels(1).root.x_ac,obj.panels(2).root.x_ac,obj.panels(2).tip.x_ac], yvec );
+                XleMAC   = obj.meanprofile.xglob;
+                MAC      = obj.meanprofile.c;
+                %Cla      = obj.prf3DClean.a;
+            end
+            n_alpha = length( alpha );
+            % Basic Load
+            cm_add  = zeros( n_alpha,1 ); 
+            cm0_int = cm0_vet(:).*cvet(:).^2;
+            cm0     = obj.trapezoidal_int( cm0_int,yvec );
+            cm0     = cm0*2/( obj.Sw*MAC);
+            % Homemade do..while for cm
+            tol = 1e-4; x_ref = 0.25;%cm_a = 0;
+            % Iteration 0
+            x1 = XleMAC+x_ref*MAC - ( x_vet(:) - x_vet(1) + cvet(:).*xac_vet(:) ) ;
+            for i_alpha = 1:n_alpha
+                cm_add_trap       = 0.5*( alpha(i_alpha)+eps_vet(:)-azl_vet(:) ).*cla_vet(:).*cvet(:).*x1;
+                cm_add( i_alpha ) = obj.trapezoidal_int( cm_add_trap,yvec );
+                cm_add( i_alpha ) = cm_add( i_alpha ) *2/( obj.Sw*MAC);
+            end
+            as     = polyfit( alpha,cm0+cm_add,1); cm_a = as(1); % Cm-alpha curve slope
+            x_ref  = x_ref - cm_a/Cla;
+            % Iterations
+            while abs( cm_a ) > tol
+                x1 = XleMAC+x_ref*MAC - ( x_vet(:) - x_vet(1) + cvet(:).*xac_vet(:) ) ;
+                for i_alpha = 1:n_alpha
+                    cm_add_trap       = ( alpha(i_alpha)+eps_vet(:)-azl_vet(:) ).*cla_vet(:).*cvet(:).*x1;
+                    cm_add( i_alpha ) = obj.trapezoidal_int( cm_add_trap,yvec );
+                    cm_add( i_alpha ) = cm_add( i_alpha )*2/( obj.Sw*MAC);
+                end
+                as     = polyfit( alpha,cm0+cm_add,1); cm_a = as(1); % Cm-alpha curve slope
+                x_ref  = x_ref - cm_a/Cla;  % Updates the position of the wing ac
+            end
+        end
+        
+        function int = trapezoidal_int (~,f_vet,x_vet)
+        %trapezoidal_int: function that calculates the integral for a
+        %function f(x) using teh trapezoidal integration
+        %INPUT
+        %   f_vet: vector of sampled points of integral function
+        %   x_vet: vector of sampling points for f
+        nsec = length( x_vet ); nfun =  length( f_vet );
+        if nsec ~= nfun
+            error('Number of samples not equal')
+        end
+        int = 0;
+        for i = 2:nsec
+            int = int + 0.5*( f_vet(i) + f_vet(i-1) )*( x_vet(i)-x_vet(i-1) );
+        end
 
+        end
         function [varG,varA,coords] = HLAssign(obj,varG,nM)
             %HLAssign: ricava per interpolazione i valori delle
             %caratteristiche geometriche e aerodinamiche dei profili che

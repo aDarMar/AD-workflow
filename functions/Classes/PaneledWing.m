@@ -133,7 +133,7 @@ classdef PaneledWing < WingClass
                end
            end
            n = 2; geom_prep(:,n) = geom_prep(:,n)*pi/180;   % eps in [rad]
-           aero_prep(:,2) = aero_prep(:,2)*180/pi;          % cla in [1/rad]
+           aero_prep(:,2)   = aero_prep(:,2)*180/pi;          % cla in [1/rad]
            aero_prep(:,6:8) = aero_prep(:,6:8)*pi/180;      % alphas in [rad]
        end
        
@@ -449,7 +449,11 @@ classdef PaneledWing < WingClass
             end
             Gtot = [0;Gtot]; eta = [1;eta];
             Gb_v = [0;Gb_v]; Ga_v = [0;Ga_v]; c_v = [obj.panels(end).tip.c;c_v];
-            lin(1) = plot( ax_fig,eta,Gtot ); cl_max_v = [obj.panels(end).tip.clmax.c;c_v];
+            %m_plot = 100;
+            %[ Gtot,phi_p ]   = obj.interp_loads( ,m_plot );
+            %[ Gtot,phi_p ] = obj.interp_loads( Ga_v,acos( eta ),m_plot );
+            %Ga_v   = interp_loads( obj,[Ga_v;flip( Ga_v(1:end-1) )],[arcos(eta(:));arcos(eta(1:end-1))+pi/2],m_plot );
+            lin(1) = plot( ax_fig,eta,Gtot ); cl_max_v = [obj.panels(end).tip.clmax;cl_max_v];
             lin(2) = plot( ax_fig,eta,Gb_v );
             lin(3) = plot( ax_fig,eta,Ga_v*alpha );
             ax_clc = axes('Parent',fig);
@@ -460,6 +464,24 @@ classdef PaneledWing < WingClass
             lin_cl(1)  = plot( ax_cl,eta,cl_v );
             lin_cl(2)  = plot( ax_cl,eta,cl_max_v );
        end
+
+       % function [G_vet,phi_v] = interp_loads( obj,G,phi,m_plot )
+       %     G   = [G;flip( G(1:end-1) )];
+       %     phi = [ phi;flip( pi-phi(1:end-1) ) ];
+       %     m     = length( G )-2; G_vet = zeros(m_plot,1);
+       %     phi_v = linspace( 0,pi,m_plot ); m_vet = 1:2:m
+       %     for k = 1:m
+       %         for n = 1:m
+       %             temp = 0;
+       %             for mu = m_vet
+       %                 temp = temp + sin( mu*phi(n) )*sin( mu*phi_v(k) );
+       %             end
+       %             G_vet(k) = G_vet(k) + G(n)*temp;
+       %         end
+       %     end
+       %     G_vet = G_vet*2/(m+1-2);
+       %     %G_vet(1) = 0; G_vet(end) = 0;
+       % end
        % NON-Weissinger
        % CM and Alpha0L
    end
