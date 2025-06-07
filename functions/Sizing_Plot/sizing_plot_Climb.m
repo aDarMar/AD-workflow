@@ -136,8 +136,8 @@ if nargin > 8 && ~isempty( Roc_req )
         RoC         = Roc_req(k,1)*0.3048/60;           % Required RoC in [m/s]
         WoS         = linspace(0,1000,100);             % WoS in [kg/m^2]
         [T,a,P,rho] = atmosisa( Roc_req(k,2) );
-        ToT0        = 1/( 0.71*(rho/1.225)*1 );         % Altitude Effect on Thrust at max Admission
-        WoWTO       = [da_c.MCroMTo(1),da_c.MCroMTo(1),0.5*( da_c.MCroMTo(1)+da_c.MCroMTo(2) )];
+        ToT0        = 1/( 0.75*(rho/1.225)*1 );         % Altitude Effect on Thrust at max Admission
+        WoWTO       = [da_c.MCroMTo(1),da_c.MCroMTo(2),0.5*( da_c.MCroMTo(1)+da_c.MCroMTo(2) )];
         WEIGHT      = {'Initial','Final','Avg'};
 
         i = nCLs+k;
