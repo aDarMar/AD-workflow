@@ -1,6 +1,6 @@
 function [ siz_ax,rem_ch,Roc_s ] = sizing_plot( da_c,iS,CLmax_TO_vett,...
     CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,Roc_s,rem_ch )
-%UNTITLED Summary of this function goes here
+%sizing_plot Summary of this function goes here
 %   Detailed explanation goes here
 %INPUT
 %   rem_ch: vector with indices of choices made for plotting

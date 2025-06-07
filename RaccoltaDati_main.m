@@ -58,7 +58,6 @@ flag = 1; tol = 1e-2;
 
 
 while flag
-
     if iS > 2
         [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot( Des_Air,iS-1,CLmax_TO_vett,...
             CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
@@ -96,11 +95,11 @@ while flag
     flag = err.WoS > tol; %&& abs.WoT <tol;
     iS = iS + 1;
     %hold off
-
 end
 sizPLT_ax_cf = sizing_plot_cfr( Airl,nAero,sizPLT_ax );
-fig_p = figure('Name','Preliminary Polar');
+
 %% Wing Design
 Des_Air = Des_Air.final_out( ch_idxs,CLmax_TO_vett,CLmax_CR_vett,...
     CLmax_LND_vett,V_cr_vet,h_cr_vet );
+fig_p = Des_Air.preliminary_polar_plot;
 Wing_Design( Des_Air );

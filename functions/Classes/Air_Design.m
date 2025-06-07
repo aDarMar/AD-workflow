@@ -359,10 +359,83 @@ classdef Air_Design
             /( V_cr_vet(ch)^2*rho );
         end
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+        function fig = preliminary_polar_plot( obj )
+           fig    = figure('Name','Preliminary Polar Estimation');
+           ax_1   = subplot(3,2,1,'Parent',fig); hold( ax_1,'on' );
+           colors = [
+               1, 0, 0;    % Rosso
+               0, 1, 0;    % Verde
+               0, 0, 1;    % Blu
+               1, 1, 0;    % Giallo
+               0, 1, 1;    % Ciano
+               1, 0, 1;    % Magenta
+               1, 0.647, 0 % Arancione
+               ];
+           %% Aircraft Polar
+           CL_vet   = linspace( -0.1*obj.CLmax_cr,obj.CLmax_cr,500); CL_vet = CL_vet(:);
+           CD_vet   = obj.SizHis(end-1).CD0 + CL_vet.^2 /( pi*obj.ARw*obj.TLARs.e);
+           lin(1,1) = plot( ax_1,CD_vet,CL_vet ); lin(1,1).LineStyle = '-'; lin(1,1).LineWidth = 2;
+           lin(1,1).Annotation.LegendInformation.IconDisplayStyle = 'off';
+           npts = 5; PT = {'E','P','A','stall','cruise';'o','o','o','o','square'}; PTO(1).CL   = sqrt( pi*obj.ARw*obj.TLARs.e*obj.SizHis(end-1).CD0 ); PTO(1).CD = 2*obj.SizHis(end-1).CD0; % Pto E
+           i = 2; PTO(i).CL = sqrt( 3*pi*obj.ARw*obj.TLARs.e*obj.SizHis(end-1).CD0 ); PTO(i).CD = 4*obj.SizHis(end-1).CD0; % Pto P
+           i = 3; PTO(i).CL = sqrt( 1/3*pi*obj.ARw*obj.TLARs.e*obj.SizHis(end-1).CD0 ); PTO(i).CD = 4/3*obj.SizHis(end-1).CD0; % Pto P
+           i = 4; PTO(i).CL = obj.CLmax_cr; PTO(i).CD = obj.SizHis(end-1).CD0 + obj.CLmax_cr.^2 /( pi*obj.ARw*obj.TLARs.e);
+           i = 5; PTO(i).CL = obj.CL_cr; PTO(i).CD = obj.SizHis(end-1).CD0 + obj.CL_cr.^2 /( pi*obj.ARw*obj.TLARs.e);
+           for i = 1:npts
+               lin(1,i+1) = plot( ax_1,PTO(i).CD,PTO(i).CL ); lin(1,i+1).LineStyle = 'none'; lin(1,i+1).Marker = PT{2,i};
+               lin(1,i+1).MarkerSize = 6; lin(1,i+1).MarkerEdgeColor = colors(i,:); lin(1,i+1).LineWidth = 1.2;
+               lin(1,i+1).DisplayName = ['Point ',PT{1,i}];
+           end
+           legend( ax_1,'Interpreter','Latex'); title('Preliminary Aircraft Polar','Interpreter','Latex'); xlabel( 'C$_D$','Interpreter','Latex' ); ylabel( 'C$_L$','Interpreter','Latex' ); 
+           %% CL - V Plot
+           % Cruise at max height and intermediate weight
+           ax_2     = subplot(3,2,3:4,'Parent',fig); j = 2; i = 1;
+           [T, a_sound, P, rho] = atmosisa(obj.TLARs.cruise.h);
+           V_cr     =  sqrt( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*CL_vet( CL_vet>0.1 ) ) ) ;
+           lin(2,1) = plot( ax_2,V_cr,CL_vet( CL_vet>0.1 ) ); hold( ax_2,'on' );
+           lin(j,i).LineStyle = '-'; lin(j,i).LineWidth = 2; lin(j,i).Annotation.LegendInformation.IconDisplayStyle = 'off';
+           ivt = 1:npts;
+           for i = 1:4
+               PTO(i).V  = sqrt( 2*9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )/( PTO(i).CL*rho ) );
+               lin(j,i)  = plot( ax_2,PTO(i).V,PTO(i).CL ); lin(j,i).LineStyle = 'none'; lin(j,i).Marker = PT{2,i};
+               lin(j,i).MarkerSize  = 6; lin(j,i).MarkerEdgeColor = colors(i,:); lin(j,i).LineWidth = 1.2;
+               lin(j,i).DisplayName = ['Point ',PT{1,i}];
+           end
+           i = 5; PTO(i).V  = obj.TLARs.cruise.M*a_sound; lin(j,i)  = plot( ax_2,PTO(i).V,PTO(i).CL ); lin(j,i).LineStyle = 'none'; lin(j,i).Marker = PT{2,i};
+           lin(j,i).MarkerSize  = 6; lin(j,i).MarkerEdgeColor = colors(i,:); lin(j,i).LineWidth = 1.2;
+           lin(j,i).DisplayName = ['Point ',PT{1,i}]; xlabel( 'V [m/s] ','Interpreter','Latex' ); ylabel( 'C$_L$','Interpreter','Latex' ); 
+           legend( ax_2,'Interpreter','Latex'); title('V - C$_L$ Diagram','Interpreter','Latex');
+           lin(j,i).LineStyle = 'none'; lin(j,i).Marker = 'square';
+           %% Preq - V
+           % Cruise at max height and intermediate weight
+           ax_3 = subplot(3,2,5:6,'Parent',fig); j = 3; i = 1;
+           D    = 0.5*rho*V_cr.^2*obj.Sw.*( obj.SizHis(end-1).CD0 + ...
+               1/(pi*obj.ARw*obj.TLARs.e)*( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*V_cr.^2 ) ).^2 );
+           Preq = D.*V_cr; lin(j,i) = plot( ax_3,V_cr,Preq ); hold( ax_3,'on' );
+           lin(j,i).LineStyle = '-'; lin(j,i).LineWidth = 2; lin(j,i).Annotation.LegendInformation.IconDisplayStyle = 'off';
+           for i = 1:5
+               PTO(i).D  = 0.5*rho*PTO(i).V.^2*obj.Sw.*( obj.SizHis(end-1).CD0 + ...
+               1/(pi*obj.ARw*obj.TLARs.e)*( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*PTO(i).V.^2 ) ).^2 );
+               lin(j,i)  = plot( ax_3,PTO(i).V,PTO(i).D*PTO(i).V ); lin(j,i).LineStyle = 'none'; lin(j,i).Marker = PT{2,i};
+               lin(j,i).MarkerSize  = 6; lin(j,i).MarkerEdgeColor = colors(i,:); lin(j,i).LineWidth = 1.2;
+               lin(j,i).DisplayName = ['Point ',PT{1,i}];
+           end
+           legend( ax_3,'Interpreter','Latex'); title('V - $\Pi_{req}$ Diagram','Interpreter','Latex');  xlabel( 'V [m/s] ','Interpreter','Latex' ); ylabel( '$\Pi_{req}$ [W]','Interpreter','Latex' ); 
+           lin(j,i).LineStyle = 'none'; lin(j,i).Marker = 'square';
+           %% E - V
+           ax_4 = subplot(3,2,2,'Parent',fig); j = 4; i = 1;
+           E_v =  9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ ( rho*V_cr.^2 )... % CL
+            ./ ( obj.SizHis(end-1).CD0 + ...
+               1/(pi*obj.ARw*obj.TLARs.e)*( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*V_cr.^2 ) ).^2 );
+            lin(j,i) = plot( ax_4,V_cr,E_v ); hold( ax_4,'on' );
+           lin(j,i).LineStyle = '-'; lin(j,i).LineWidth = 2; lin(j,i).Annotation.LegendInformation.IconDisplayStyle = 'off';
+           for i = 1:5
+               lin(j,i)  = plot( ax_4,PTO(i).V,PTO(i).CL/PTO(i).CD ); lin(j,i).LineStyle = 'none'; lin(j,i).Marker = PT{2,i};
+               lin(j,i).MarkerSize  = 6; lin(j,i).MarkerEdgeColor = colors(i,:); lin(j,i).LineWidth = 1.2;
+               lin(j,i).DisplayName = ['Point ',PT{1,i}];
+           end
+           legend( ax_4,'Interpreter','Latex'); title('V - E Diagram','Interpreter','Latex');  xlabel( 'V [m/s] ','Interpreter','Latex' ); ylabel( 'E','Interpreter','Latex' ); 
+           lin(j,i).LineStyle = 'none'; lin(j,i).Marker = 'square';
         end
         %% Wing Design
         function obj = equivalent_wing_def(obj,ctip)
