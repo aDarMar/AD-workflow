@@ -313,7 +313,7 @@ classdef Air_Design
             lb2kg = 0.45359237; ft2m = 0.3048;
             % From Roskam, values for Transport Jets
             % log10( Swet ) = c + d*log10( WTO ) with WTO in [lb], Swet in [ft^2]
-            c = 0.0199; d = 0.7331;
+            c = 0.0199; d = 0.7531;
 
             Swet  = 10^( c+d*log10(MTOM/lb2kg) ); %Swet in ft^2
             temp = readmatrix([obj.main_fold,'\statistical_data\cf_vs_Swet.csv']);
@@ -371,6 +371,7 @@ classdef Air_Design
                1, 0, 1;    % Magenta
                1, 0.647, 0 % Arancione
                ];
+           [T, a_sound, P, rho] = atmosisa(obj.TLARs.cruise.h); M_crit = obj.TLARs.cruise.M;
            %% Aircraft Polar
            CL_vet   = linspace( -0.1*obj.CLmax_cr,obj.CLmax_cr,500); CL_vet = CL_vet(:);
            CD_vet   = obj.SizHis(end-1).CD0 + CL_vet.^2 /( pi*obj.ARw*obj.TLARs.e);
@@ -386,11 +387,10 @@ classdef Air_Design
                lin(1,i+1).MarkerSize = 6; lin(1,i+1).MarkerEdgeColor = colors(i,:); lin(1,i+1).LineWidth = 1.2;
                lin(1,i+1).DisplayName = ['Point ',PT{1,i}];
            end
-           legend( ax_1,'Interpreter','Latex'); title('Preliminary Aircraft Polar','Interpreter','Latex'); xlabel( 'C$_D$','Interpreter','Latex' ); ylabel( 'C$_L$','Interpreter','Latex' ); 
+           legend( ax_1,'Interpreter','Latex'); title('Preliminary Aircraft Polar in Cruise','Interpreter','Latex'); xlabel( 'C$_D$','Interpreter','Latex' ); ylabel( 'C$_L$','Interpreter','Latex' ); 
            %% CL - V Plot
            % Cruise at max height and intermediate weight
            ax_2     = subplot(3,2,3:4,'Parent',fig); j = 2; i = 1;
-           [T, a_sound, P, rho] = atmosisa(obj.TLARs.cruise.h);
            V_cr     =  sqrt( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*CL_vet( CL_vet>0.1 ) ) ) ;
            lin(2,1) = plot( ax_2,V_cr,CL_vet( CL_vet>0.1 ) ); hold( ax_2,'on' );
            lin(j,i).LineStyle = '-'; lin(j,i).LineWidth = 2; lin(j,i).Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -410,7 +410,8 @@ classdef Air_Design
            % Cruise at max height and intermediate weight
            ax_3 = subplot(3,2,5:6,'Parent',fig); j = 3; i = 1;
            D    = 0.5*rho*V_cr.^2*obj.Sw.*( obj.SizHis(end-1).CD0 + ...
-               1/(pi*obj.ARw*obj.TLARs.e)*( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*V_cr.^2 ) ).^2 );
+               1/(pi*obj.ARw*obj.TLARs.e)*( 9.81*obj.SizHis(end-1).WoS*0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ./ (rho.*V_cr.^2 ) ).^2  + ...
+               20*( V_cr./a_sound - M_crit ) ).*( V_cr./a_sound > M_crit );
            Preq = D.*V_cr; lin(j,i) = plot( ax_3,V_cr,Preq ); hold( ax_3,'on' );
            lin(j,i).LineStyle = '-'; lin(j,i).LineWidth = 2; lin(j,i).Annotation.LegendInformation.IconDisplayStyle = 'off';
            for i = 1:5
