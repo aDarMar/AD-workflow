@@ -1,5 +1,5 @@
 function [ siz_ax,rem_ch,Roc_s ] = sizing_plot( da_c,iS,CLmax_TO_vett,...
-    CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,V_cr_vett,h_cr_vett,phi_v, fig_ri,fig_aux,Roc_s,rem_ch )
+    CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,V_cr_vett,h_cr_vett,n_fact,phi_v, fig_ri,fig_aux,Roc_s,rem_ch )
 %sizing_plot Summary of this function goes here
 %   Detailed explanation goes here
 %INPUT
@@ -24,7 +24,7 @@ aus_ax_1 = subplot(2,1,1,'Parent',fig_aux); aus_ax_2 = subplot(2,1,2,'Parent',fi
 %% Plot Choices
 % Take-Off
 nTO = length(CLmax_TO_vett);
-n_inp = 14; % excludes the last input rem_ch
+n_inp = 15; % excludes the last input rem_ch
 if nargin < n_inp
     rem_ch = nan(1,2); % Initializes rem_ch
     disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
@@ -136,7 +136,7 @@ disp( '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 [ aus_ax_1,aus_ax_2 ] = sizing_plot_Climb( aus_ax_1,aus_ax_2,...
     CLmax_TO_vett( climb_idxs(:,1) ),CLmax_LND_vett( climb_idxs(:,1) ),CLmax_CR_vett( climb_idxs(:,1) ),...
                             da_c,CD0,TisaoT50,Roc_s );
-[ aus_ax_1,aus_ax_2 ] = sizing_plot_Cruise( aus_ax_1,aus_ax_2,CD0,dCD0_wave,V_cr_vett,h_cr_vett,WcroWTO,da_c.TLARs.e,da_c.ARw,phi_v );
+[ aus_ax_1,aus_ax_2 ] = sizing_plot_Cruise( aus_ax_1,aus_ax_2,CD0,dCD0_wave,V_cr_vett,h_cr_vett,n_fact,WcroWTO,da_c.TLARs.e,da_c.ARw,phi_v );
 
 delete( fig_ri.Children );
 siz_ax = copyobj( aus_ax_1,fig_ri ); lin_pl = siz_ax.Children;

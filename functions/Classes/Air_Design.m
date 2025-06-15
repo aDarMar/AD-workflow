@@ -356,7 +356,7 @@ classdef Air_Design
             [T,a,P,rho]   = atmosisa( h_cr( ch(1) ) );
             obj.CL_cr     = 9.81*obj.SizHis(iS).WoS*...
                 0.5*( obj.MCroMTo(1)+obj.MCroMTo(2) )*2 ...
-            /( V_cr_vet(ch)^2*rho );
+            /( V_cr_vet( ch(1) )^2*rho );
         end
         
         function fig = preliminary_polar_plot( obj )

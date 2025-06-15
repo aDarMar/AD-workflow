@@ -7,8 +7,8 @@ addpath('functions')
 addpath('functions\Wing_Design');
 addpath('functions\Wing_Design\Wing_Functions');
 addpath('functions\Weight_estimation');
-addpath('functions\Sizing_Plot');
-addpath('functions\Classes');
+addpath('functions\Sizing_Plot'); 
+addpath('functions\Classes'); addpath('functions\Wing_Design\Wing_Functions'); addpath('functions\Wing_Design\Wing_Functions\Grafici');
 %% Lettura Nomi Aerei da File
 
 name_list = dir('statistical_data/aircrafts');
@@ -18,7 +18,7 @@ Airl = AirData_class.empty;
 for iAero = 1:nAero
     Airl(iAero) = AirData_class( [name_list(iAero+2).folder,'\',name_list(iAero+2).name] );
 end
-
+fun_plot_air( Airl,nAero );
 [a,b]   = linear_regressions(Airl,nAero);
 reg_cfs = [a,b];
 fig_W = MTOMvsEM_plot(Airl,nAero,[a,b],[0.0810,1.0730;0.0913,1.0425]);
@@ -35,22 +35,24 @@ CLmax_TO_vett = [ 2, 2.1, 2.2 ];    sigma = 1;
 CLmax_CR_vett = [ 1.4,1.5,1.6 ];
 CLmax_LND_vett = [ 2.1, 2.3, 2.5 ]; sigma = 1;
 
-TisaoT50 = 1/0.8; phi_v = [1,0.85];
-V_cr_vet = [Des_Air.TLARs.cruise.V,236];
-h_cr_vet = [Des_Air.TLARs.cruise.h,11277];
-
+TisaoT50 = 1/0.8; phi_v = [1,1,1,0.85];
+V_cr_vet = [Des_Air.TLARs.cruise.V, 1,Des_Air.TLARs.cruise.V,236];
+h_cr_vet = [Des_Air.TLARs.cruise.h,Des_Air.TLARs.cruise.h, Des_Air.TLARs.cruise.h,11277];
+n_fact   = [ 1,1.3, 1.3,1];
 % Initialization
 iS = 1;
 Des_Air.SizHis(iS).WoS = 550;   % First Guess WoS [Kg/m^2]
 Des_Air.SizHis(iS).S   = Des_Air.MTOM_est0/Des_Air.SizHis(iS).WoS;
-
+%
+[~, ~, ~, rho_h] = atmosisa( h_cr_vet(2) ); V_cr_vet(2) = sqrt( 2*Des_Air.SizHis(iS).WoS*9.81/(rho_h*2.1) )*1.2; % VFTO_calc
+%
 [Des_Air.SizHis(iS).CD0,Des_Air.SizHis(iS).Swet]   = Des_Air.polar_est( Des_Air.SizHis(iS).S,Des_Air.MTOM_est0 );
 fig_ri       = figure('Name','Sizing Plot');
 
 fig_aux = figure('Name','Auxiliary Figure for Sizing');
 [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot(Des_Air,iS,CLmax_TO_vett,...
     CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
-    V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux);
+    V_cr_vet,h_cr_vet,n_fact,phi_v,fig_ri,fig_aux);
 
 iS = 2;
 
@@ -59,9 +61,12 @@ flag = 1; tol = 1e-2;
 
 while flag
     if iS > 2
+        %
+        [~, ~, ~, rho_h] = atmosisa( h_cr_vet(2) ); V_cr_vet(2) = sqrt( 2*Des_Air.SizHis(iS-1).WoS*9.81/(rho_h*2.1) )*1.2; % VFTO_calc [Optional]
+        %
         [ sizPLT_ax,ch_idxs,RoC_vt ] = sizing_plot( Des_Air,iS-1,CLmax_TO_vett,...
             CLmax_LND_vett,CLmax_CR_vett,sigma,TisaoT50,...
-            V_cr_vet,h_cr_vet,phi_v,fig_ri,fig_aux,RoC_vt,ch_idxs );
+            V_cr_vet,h_cr_vet,n_fact,phi_v,fig_ri,fig_aux,RoC_vt,ch_idxs );
     end
     % Plots a line corresponding to the assumed WoS
     lin           = plot( sizPLT_ax,Des_Air.SizHis(iS-1).WoS*[1,1],[0,1] );

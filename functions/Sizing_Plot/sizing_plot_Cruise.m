@@ -1,4 +1,4 @@
-function [ ax1,ax2 ] = sizing_plot_Cruise( ax1,ax2,CD0,dCD0_wave,Vcr,h_cruise,WcroWTO,e,AR,phi_v,T0oTcr)
+function [ ax1,ax2 ] = sizing_plot_Cruise( ax1,ax2,CD0,dCD0_wave,Vcr,h_cruise,n_fact,WcroWTO,e,AR,phi_v,T0oTcr)
 %sizing_plot_Cruise Function that draws the cruise limitation for a jet
 %airplane. Inputs can be vector and in such case, every element corresponds
 %to a specific flight condition
@@ -19,7 +19,7 @@ nConds = length( Vcr );
 colors = [
     0.22, 0.49, 0.72;  % blu brillante
     0.53, 0.81, 0.92;  % azzurro chiaro
-    0.27, 0.51, 0.71;  % blu acciaio
+    %0.27, 0.51, 0.71;  % blu acciaio
     0.00, 0.74, 0.83;  % azzurro-verde (cyan)
     0.00, 0.00, 0.55;  % blu scuro
     0.42, 0.35, 0.80;  % blu-grigio
@@ -43,20 +43,20 @@ for j = 1:nConds
     [T, a, P, rho] = atmosisa(h_cruise(j));
     
     sigma = rho/1.225;
-    if nargin < 11
+    if nargin < 12
         T0oTcr = 1/(0.71*sigma*phi_v(j));
     end
     q = 0.5*sigma*1.225*Vcr(j)^2;
 
     for i = 1:nW
-        ToW = ( (CD0+dCD0_wave)*q./(WoS*9.81)/WcroWTO(i) + K/q .* (WoS*9.81)*WcroWTO(i) )*WcroWTO(i)*T0oTcr; %WoS in [Kgf]
+        ToW = ( (CD0+dCD0_wave)*q./(WoS*9.81)/WcroWTO(i) + K/q .* (WoS*9.81)*WcroWTO(i)*n_fact(j)^2 )*WcroWTO(i)*T0oTcr; %WoS in [Kgf]
         % [kg/m^2]
         lin(2*i-1,j) = plot( ax1,WoS,ToW );
         lin(2*i-1,j).LineStyle = '-'; lin(2*i-1,j).LineWidth = 2;
         lin(2*i-1,j).Color = colors(j,:); lin(2*i-1,j).Marker = MARK{i};
         lin(2*i-1,j).MarkerSize = 2.5;
         lin(2*i-1,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
-            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
+            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) ),' n = ',num2str(n_fact(j))] ];
 
         % [lb/ft^2]
         lin(2*i,j) = plot( ax2,WoS*2.204623/(3.28084^2),ToW );
@@ -64,7 +64,7 @@ for j = 1:nConds
         lin(2*i,j).Color = colors(j,:); lin(2*i,j).Marker = MARK{i};
         lin(2*i,j).MarkerSize = 2.5;
         lin(2*i,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
-            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) )] ];
+            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) ),' n = ',num2str(n_fact(j))] ];
     end
     
 end
