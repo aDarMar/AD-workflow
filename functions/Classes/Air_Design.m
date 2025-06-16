@@ -581,8 +581,8 @@ classdef Air_Design
                 Mdd(j) = (Msub(j)-0.06)/(1.02+0.08*(1-cosc4));
                 Cl_mdd(j) = (K1*cosc4^2-Mdd(j)*cosc4^3)/K2;
             end
-            fig = figure( 'Name','Buffet Check' ); ax_b = axis('Parent',fig);
-            plot( ax_b,M_vett(1:jstart),Cl_d0(1:jstart)); hold(fig,'on');
+            fig = figure( 'Name','Buffet Check' ); ax_b = axes('Parent',fig);
+            plot( ax_b,M_vett(1:jstart),Cl_d0(1:jstart)); hold(ax_b,'on');
             plot( ax_b,Msub,Cl_mcc(jstart:end) );
             plot( ax_b,Msub,Cl_mdd );
             plot( ax_b,obj.TLARs.cruise.M,obj.CL_cr,'o' ); %current point
@@ -608,12 +608,12 @@ classdef Air_Design
             % CL_low = CL a basse velocità
 
             
-            
+            fig = figure("Name","Wing Polars");
             X = {alfavett,alfavett,CL_low,CL_high};
             Y = {CL_low,CL_high,CD_low,CD_high};
             
             for i = 1:4 %1 a 6 se metti CM
-                subplot(2, 2, i);
+                ax_c(i) = subplot(2, 2, i,"Parent",fig); 
                 plot(X{i}, Y{i}, 'LineWidth', 1.5);
             end
 

@@ -466,6 +466,7 @@ classdef PaneledWing < WingClass
             lin_cl(1)  = plot( ax_cl,eta,cl_v ); 
             lin_cl(2)  = plot( ax_cl,eta,cl_max_v );
             title( ax_cl,'Stall Path','Interpreter','Latex'); xlabel(ax_cl,'$\eta$','Interpreter','Latex'); ylabel(ax_cl,'cl','Interpreter','Latex');
+            sgtitle(['Wing loading at $\alpha$ = ',num2str(alpha*57.3)],'Interpreter','Latex'); 
        end
 
        % function [G_vet,phi_v] = interp_loads( obj,G,phi,m_plot )
