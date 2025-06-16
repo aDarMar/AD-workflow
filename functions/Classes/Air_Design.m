@@ -581,10 +581,11 @@ classdef Air_Design
                 Mdd(j) = (Msub(j)-0.06)/(1.02+0.08*(1-cosc4));
                 Cl_mdd(j) = (K1*cosc4^2-Mdd(j)*cosc4^3)/K2;
             end
-            plot(M_vett(1:jstart),Cl_d0(1:jstart));hold on;
-            plot(Msub,Cl_mcc(jstart:end));hold on;
-            plot(Msub,Cl_mdd);hold on;
-            plot(obj.TLARs.cruise.M,obj.CL_cr,'o'); %current point
+            fig = figure( 'Name','Buffet Check' ); ax_b = axis('Parent',fig);
+            plot( ax_b,M_vett(1:jstart),Cl_d0(1:jstart)); hold(fig,'on');
+            plot( ax_b,Msub,Cl_mcc(jstart:end) );
+            plot( ax_b,Msub,Cl_mdd );
+            plot( ax_b,obj.TLARs.cruise.M,obj.CL_cr,'o' ); %current point
             legend('Cl a M diverso da 0','Cl a Mcc','Cl a MDD','Current point')
             % Chiedi all'utente se vuole continuare
             risposta = input('Do you want to go on? (s/n): ', 's');

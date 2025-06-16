@@ -50,7 +50,7 @@ while ( diff > tol ) && A1_Sw > 0
     xLE_kink = xLE_root+tand(sweep)*ykink;       xTE_kink = xLE_kink + ckink;
     xLE_tip  = xLE_root+tand(sweep)*ytip;        xTE_tip  = xLE_tip + ctip;
     % Wing Plot
-    wingPlot(f,ax,croot,ckink,ctip,xLE_root,xLE_kink,xLE_tip,yroot,ykink,ytip);
+    wingPlot(ax,croot,ckink,ctip,xLE_root,xLE_kink,xLE_tip,yroot,ykink,ytip);
     % Wing Aerea Check
     A1   = .5*(ckink+croot)*(ykink-yroot);
     A2   = .5*(ckink+ctip)*(ytip-ykink);
@@ -79,8 +79,9 @@ end
 
 end
 
-function wingPlot(f,ax,croot,ckink,ctip,xLE_root,xLE_kink,xLE_tip,yroot,ykink,ytip)
-    pl = plot(ax,[xLE_root,xLE_kink,xLE_tip],[yroot,ykink,ytip]); hold on
+function wingPlot(ax,croot,ckink,ctip,xLE_root,xLE_kink,xLE_tip,yroot,ykink,ytip)
+    pl = plot(ax,[xLE_root,xLE_kink,xLE_tip],[yroot,ykink,ytip]); hold( ax, 'on'); axis equal
     p2 = plot(ax,[xLE_root,xLE_kink,xLE_tip]+[croot,ckink,ctip],[yroot,ykink,ytip]);
-    p3 = plot(ax,[xLE_tip,xLE_tip]+[0,ctip],[ytip,ytip]); hold off
+    p3 = plot(ax,[xLE_tip,xLE_tip]+[0,ctip],[ytip,ytip]); hold( ax,'off' );
+    
 end
