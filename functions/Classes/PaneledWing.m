@@ -436,7 +436,7 @@ classdef PaneledWing < WingClass
        function wing_circ(obj,alpha)
            alpha   = alpha*pi/180;
             fig    = figure("Name",'Wing Span Load'); 
-            ax_fig = axes('Parent',fig);hold( ax_fig,'on' );
+            ax_fig = subplot(3,1,1,'Parent',fig);hold( ax_fig,'on' );
             Ga_v = nan(obj.m_red,1); Gb_v = Ga_v; eta = Ga_v; Gtot = Ga_v;
             c_v  = Ga_v; cl_max_v = Ga_v;
             for i = 1:obj.m_red
@@ -455,14 +455,17 @@ classdef PaneledWing < WingClass
             %Ga_v   = interp_loads( obj,[Ga_v;flip( Ga_v(1:end-1) )],[arcos(eta(:));arcos(eta(1:end-1))+pi/2],m_plot );
             lin(1) = plot( ax_fig,eta,Gtot ); cl_max_v = [obj.panels(end).tip.clmax;cl_max_v];
             lin(2) = plot( ax_fig,eta,Gb_v );
-            lin(3) = plot( ax_fig,eta,Ga_v*alpha );
-            ax_clc = axes('Parent',fig);
-            ccl    = Gtot/(2*obj.b); % Dimensional Load
+            lin(3) = plot( ax_fig,eta,Ga_v*alpha ); 
+            title( ax_fig,'Nondimensional Circulation','Interpreter','Latex'); xlabel(ax_fig,'$\eta$','Interpreter','Latex'); ylabel(ax_fig,'$\frac{cl c}{2b}$','Interpreter','Latex');
+            ax_clc = subplot(3,1,2,'Parent',fig);
+            ccl    = Gtot*(2*obj.b); % Dimensional Load
             cl_v   = ccl./c_v;
             lin_ccl(1) = plot( ax_clc,eta,ccl );
-            ax_cl = axes('Parent',fig);
-            lin_cl(1)  = plot( ax_cl,eta,cl_v );
+            title( ax_clc,'Wing Loading','Interpreter','Latex'); xlabel(ax_clc,'$\eta$','Interpreter','Latex'); ylabel(ax_clc,'cl c','Interpreter','Latex');
+            ax_cl = subplot(3,1,3,'Parent',fig); hold( ax_cl,'on' );
+            lin_cl(1)  = plot( ax_cl,eta,cl_v ); 
             lin_cl(2)  = plot( ax_cl,eta,cl_max_v );
+            title( ax_cl,'Stall Path','Interpreter','Latex'); xlabel(ax_cl,'$\eta$','Interpreter','Latex'); ylabel(ax_cl,'cl','Interpreter','Latex');
        end
 
        % function [G_vet,phi_v] = interp_loads( obj,G,phi,m_plot )
