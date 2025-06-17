@@ -569,24 +569,33 @@ classdef Air_Design
             cosc4 = cos(obj.low_speed.sweep/57.3); %cos dell'angolo di freccia a c/4
             deltamcc = 0.06; % delta mach critico per profili supercritici(0.06)
             Cl_d0 = Cl_max./sqrt(1-M_vett.^2);% CL con correzione di prandtl-glauert
-
+            
             x = (tc_mean/cosc4);
             K1 = 2.8355*x^2-1.9072*x+0.9499;
             K2 = 0.2*(1-2.131*x);
             Cl_mcc = (K1*cosc4^2-(M_vett-deltamcc)*cosc4^3)/K2;
             diff = Cl_mcc -Cl_d0;
             jstart = find(diff<0.01,1,"first");
+            
             Msub = M_vett(jstart:end);
+            Cljstart = (K1*cosc4^2-Msub(1)*cosc4^3)/K2;
+            CLadas = linspace(0,Cljstart,10);
+            [mccADAS,mddADAS] = mdd(tc_mean,obj.sweepw,CLadas,obj.low_speed.sweep,obj.main_fold);
             for j = 1:length(Msub)
                 Mdd(j) = (Msub(j)-0.06)/(1.02+0.08*(1-cosc4));
                 Cl_mdd(j) = (K1*cosc4^2-Mdd(j)*cosc4^3)/K2;
+                %metodo by Korn
+                Mcc_Korn(j) = (Msub(j)-(0.1/80)^(1/3));
+                CL_mdd_Korn(j) = 10*0.95*cosc4^2-tc_mean*10*cosc4-Msub(j)*10*cosc4^3;
             end
             fig = figure( 'Name','Buffet Check' ); ax_b = axes('Parent',fig);
             plot( ax_b,M_vett(1:jstart),Cl_d0(1:jstart)); hold(ax_b,'on');
             plot( ax_b,Msub,Cl_mcc(jstart:end) );
             plot( ax_b,Msub,Cl_mdd );
             plot( ax_b,obj.TLARs.cruise.M,obj.CL_cr,'o' ); %current point
-            legend('Cl a M diverso da 0','Cl a Mcc','Cl a MDD','Current point')
+            plot ( ax_b,Mcc_Korn,CL_mdd_Korn); plot (ax_b, Msub,CL_mdd_Korn);
+            plot(ax_b,mccADAS,CLadas);plot(ax_b,mddADAS,CLadas);
+            legend('Cl a M diverso da 0','Cl a Mcc','Cl a MDD','Current point','Cl(MCC) KORN','Cl(MDD) Korn','Cl(mcc)adas','cl(mdd)adas')
             % Chiedi all'utente se vuole continuare
             risposta = input('Do you want to go on? (s/n): ', 's');
             % Controlla la risposta

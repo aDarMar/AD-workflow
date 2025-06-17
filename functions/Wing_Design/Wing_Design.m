@@ -129,7 +129,7 @@ i = 4; geom_vec(:,i) = toc(:)';
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
 alpha_v = -3:18;
 % Low Speed
-m = 7; M = 7;
+m = 15; M = 15;
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
 % 3D data calculation and estimation
