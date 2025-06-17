@@ -11,8 +11,10 @@ classdef PaneledWing < WingClass
        % Global Profiles
        a_coeffs
        b_coeffs
-       
-
+       % Aerodynamic Coefficients
+       Cl0_W   % Cl0 according to Weissinger Method
+       alpha0l_W % Alpha zero-lift according to W [deg]
+       a_W % Cl-alpha slope according to W [1/deg]
    end
    methods
        function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach)
@@ -107,7 +109,8 @@ classdef PaneledWing < WingClass
            %% Weissinger
            % Calculates Wing Loading
            [obj.a_coeffs,obj.b_coeffs] = obj.aeroDef; % Defines influence ad geometric coefficients
-           [ Gb,Ga,CLa,a0L,CM0_basic ] = obj.loadsEval;
+           [ Gb,Ga,obj.a_W,obj.alpha0l_W,CM0_basic ] = obj.loadsEval;
+           obj.a_W = obj.a_W*pi/180; obj.alpha0l_W = obj.alpha0l_W*180/pi;
            for n = 1:obj.m_red-1
                % Symmetric Loadings
                obj.geom_sect(n).Gb = Gb(n); obj.geom_sect(obj.m+1-n).Gb = Gb(n);
@@ -318,7 +321,7 @@ classdef PaneledWing < WingClass
        
        %% Loads Calculation
        function [ Gb,Ga,CLa,a0L,CM0_basic ] = loadsEval(obj)
-           [Gb, a0L] = obj.basicLoad;              % Basic load distribution
+           [Gb, a0L] = obj.basicLoad;              % Basic load distribution and alpha at root for zero-lift (NOT the zero lift angle of the wing)
            %CDi_basic = obj.induced_drag( Gb );     % Induced drag due to Basic Loads
            CM0_basic = obj.pitchCoeff_basic( Gb ); % Pitching Moment Coeff. due to Basic load
            
@@ -383,7 +386,7 @@ classdef PaneledWing < WingClass
            for nu = nu_idx_red
                % Twist in radiants. All angles defined in the class are
                % always in radiants otherwise specified.
-               eps(nu) = ( obj.geom_sect(nu).eps + obj.geom_sect(nu).alpha0l - obj.geom_sect(nu_r).alpha0l );
+               eps(nu) = ( obj.geom_sect(nu).eps - obj.geom_sect(nu).alpha0l + obj.geom_sect(nu_r).alpha0l );
                for n = nu_idx_red
                    A(nu,n) = obj.a_coeffs(nu,n)-obj.a_coeffs(nu_r,n)-...
                        ( obj.a_coeffs(nu,nu_r)-obj.a_coeffs(nu_r,nu_r) )*2*sin( obj.geom_sect(n).phi );
@@ -434,7 +437,7 @@ classdef PaneledWing < WingClass
        
        % Plot
        function wing_circ(obj,alpha)
-           alpha   = alpha*pi/180;
+           alpha   = ( alpha-obj.alpha0l_W )*pi/180;
             fig    = figure("Name",'Wing Span Load'); 
             ax_fig = subplot(3,1,1,'Parent',fig);hold( ax_fig,'on' );
             Ga_v = nan(obj.m_red,1); Gb_v = Ga_v; eta = Ga_v; Gtot = Ga_v;
@@ -466,7 +469,8 @@ classdef PaneledWing < WingClass
             lin_cl(1)  = plot( ax_cl,eta,cl_v ); 
             lin_cl(2)  = plot( ax_cl,eta,cl_max_v );
             title( ax_cl,'Stall Path','Interpreter','Latex'); xlabel(ax_cl,'$\eta$','Interpreter','Latex'); ylabel(ax_cl,'cl','Interpreter','Latex');
-            sgtitle(['Wing loading at $\alpha$ = ',num2str(alpha*57.3)],'Interpreter','Latex'); 
+            sgtitle({['Wing loading at $\alpha_a$ = ',num2str(alpha*57.3)],...
+                ['CL = ',num2str(obj.a_W*alpha),' $\alpha_{0L}$ = ',num2str(obj.alpha0l_W)] },'Interpreter','Latex'); 
        end
 
        % function [G_vet,phi_v] = interp_loads( obj,G,phi,m_plot )
