@@ -599,7 +599,7 @@ classdef Air_Design
             end
         end
 
-        function plot_fun(obj,alfavett,CL_low,CL_high,CD_low,CD_high)
+        function plot_fun(~,alfavett,CL_low,CL_high,CD_low,CD_high)
             %plot effettua i grafici mettendo a confronto CL-alfa, CD-CL
             %
             %INPUT:
@@ -607,16 +607,22 @@ classdef Air_Design
             % alphavett = vettore di alfa
             % CL_low = CL a basse velocità
 
-            
-            fig = figure("Name","Wing Polars");
             X = {alfavett,alfavett,CL_low,CL_high};
             Y = {CL_low,CL_high,CD_low,CD_high};
+            
+            fig = figure("Name","Wing Polars");
+            
+            LAB = {'$\alpha_w$','CL_w';'$\alpha_w$','CL_w';'CD','CD'}; 
+            TIT = {'Low Speed CL-$\alpha_w$','High Speed CL-$\alpha_w$','Low Speed Poolar','High Speed Polar'};
             
             for i = 1:4 %1 a 6 se metti CM
                 ax_c(i) = subplot(2, 2, i,"Parent",fig); 
                 plot(X{i}, Y{i}, 'LineWidth', 1.5);
+                xlabel(ax_c(i),LAB{i,1},'Interpreter','Latex');
+                ylabel(ax_c(i),LAB{i,2},'Interpreter','Latex');
+                title(ax_c(i),TIT{i},'Interpreter','Latex');
+                grid minor
             end
-
         end
     end
 end
