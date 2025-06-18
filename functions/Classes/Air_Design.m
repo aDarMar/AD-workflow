@@ -604,19 +604,26 @@ classdef Air_Design
             %
             %INPUT:
             %
-            % alphavett = vettore di alfa
-            % CL_low = CL a basse velocità
+            %   alphavett = vettore di alfa
+            %   CL_low = CL a basse velocità
 
-            
-            fig = figure("Name","Wing Polars");
             X = {alfavett,alfavett,CL_low,CL_high};
             Y = {CL_low,CL_high,CD_low,CD_high};
             
+            fig = figure("Name","Wing Polars");
+            
+            LAB = {'$\alpha_w$','C$_{Lw}$';'$\alpha_w$','C$_{Lw}$';'C$_{Lw}$','C$_D$';'C$_{Lw}$','C$_D$'}; 
+            TIT = {'Low Speed CL-$\alpha_w$','High Speed CL-$\alpha_w$','Low Speed Polar','High Speed Polar'};
+            SUB = {['M$_\infty$ = ',num2str(obj.low_speed.prf3DClean.M)],['M$_\infty$ = ',num2str(obj.low_speed.prf3DClean.M)]...
+                   ['M$_\infty$ = ',num2str(obj.high_speed.prf3DClean.M)],['M$_\infty$ = ',num2str(obj.high_speed.prf3DClean.M)]};
             for i = 1:4 %1 a 6 se metti CM
                 ax_c(i) = subplot(2, 2, i,"Parent",fig); 
                 plot(X{i}, Y{i}, 'LineWidth', 1.5);
+                xlabel(ax_c(i),LAB{i,1},'Interpreter','Latex');
+                ylabel(ax_c(i),LAB{i,2},'Interpreter','Latex');
+                title(ax_c(i),{TIT{i},SUB{i}},'Interpreter','Latex');
+                grid minor
             end
-
         end
     end
 end
