@@ -561,41 +561,86 @@ classdef Air_Design
             %
             % OUTPUT:
             %
-            v1 = linspace(0,0.5,11);
-            v2 = linspace(0.52,0.87,9);
+            %% M-V-t/c-CL definition
+            % Mach Vector Definition
+            v1     = linspace(0,0.5,11);
+            v2     = linspace(0.52,0.87,9);
             M_vett = [v1,v2]; % Vettore di mach assunto
-            Cl_max = obj.low_speed.prf3DClean.clmax *0.8;% prende il Clmax 2d e lo moltiplica per 0.8 per ottenere quello 3d
-            tc_mean = obj.low_speed.meanprofile.tc;
-            cosc4 = cos(obj.low_speed.sweep/57.3); %cos dell'angolo di freccia a c/4
+            
+            Cl_max   = obj.low_speed.prf3DClean.clmax *0.8;% prende il Clmax 2d e lo moltiplica per 0.8 per ottenere quello 3d
+            tc_mean  = obj.low_speed.meanprofile.tc;
+            cosc4    = cos(obj.low_speed.sweep/57.3); %cos dell'angolo di freccia a c/4
             deltamcc = 0.06; % delta mach critico per profili supercritici(0.06)
-            Cl_d0 = Cl_max./sqrt(1-M_vett.^2);% CL con correzione di prandtl-glauert
-            
-            x = (tc_mean/cosc4);
-            K1 = 2.8355*x^2-1.9072*x+0.9499;
-            K2 = 0.2*(1-2.131*x);
+            Cl_d0    = Cl_max.*sqrt( 1-obj.low_speed.prf3DClean.M^2 )./sqrt( 1-M_vett.^2 );% CL con correzione di prandtl-glauert 
+            % -> Takes into account that Cl from low_speed 3D data is already at a Mach > 0
+            % That's why it is multiplied by beta(M_low speed)
+            %% Buffet Equations
+            % Kroo: see Ciornei for Ref.
+            x      = (tc_mean/cosc4);
+            K1     = 2.8355*x^2-1.9072*x+0.9499;
+            K2     = 0.2*(1-2.131*x);
             Cl_mcc = (K1*cosc4^2-(M_vett-deltamcc)*cosc4^3)/K2;
-            diff = Cl_mcc -Cl_d0;
+            diff   = Cl_mcc - Cl_d0;
             jstart = find(diff<0.01,1,"first");
+            % ADAS Approach
+            Msub     = M_vett(jstart:end);                                  % Coffin corner's Mach
+            Cljstart = (K1*cosc4^2-Msub(1)*cosc4^3)/K2;                     % Buffet CL according to Kroo
             
-            Msub = M_vett(jstart:end);
-            Cljstart = (K1*cosc4^2-Msub(1)*cosc4^3)/K2;
-            CLadas = linspace(0,Cljstart,10);
-            [mccADAS,mddADAS] = mdd(tc_mean,obj.sweepw,CLadas,obj.low_speed.sweep,obj.main_fold);
-            for j = 1:length(Msub)
-                Mdd(j) = (Msub(j)-0.06)/(1.02+0.08*(1-cosc4));
-                Cl_mdd(j) = (K1*cosc4^2-Mdd(j)*cosc4^3)/K2;
-                %metodo by Korn
-                Mcc_Korn(j) = (Msub(j)-(0.1/80)^(1/3));
+            % Kroo and Horn Calculations
+            n_Mbuffet = length(Msub);
+            Mcc      = nan(n_Mbuffet,1); CL_mdd      = nan(n_Mbuffet,1);    % According to Kroo
+            Mcc_Korn = nan(n_Mbuffet,1); CL_mdd_Korn = nan(n_Mbuffet,1);    % According to Korn
+            for j = 1:n_Mbuffet
+                % Kroo's Method
+                Mcc(j)    = ( Msub(j)-0.06 ) / ( 1.02+0.08*(1-cosc4) );
+                CL_mdd(j) = ( K1*cosc4^2-Mcc(j)*cosc4^3 ) / K2;
+                % Korn's Method
+                Mcc_Korn(j)    = ( Msub(j) - (0.1/80)^(1/3) );
                 CL_mdd_Korn(j) = 10*0.95*cosc4^2-tc_mean*10*cosc4-Msub(j)*10*cosc4^3;
             end
-            fig = figure( 'Name','Buffet Check' ); ax_b = axes('Parent',fig);
-            plot( ax_b,M_vett(1:jstart),Cl_d0(1:jstart)); hold(ax_b,'on');
-            plot( ax_b,Msub,Cl_mcc(jstart:end) );
-            plot( ax_b,Msub,Cl_mdd );
-            plot( ax_b,obj.TLARs.cruise.M,obj.CL_cr,'o' ); %current point
-            plot ( ax_b,Mcc_Korn,CL_mdd_Korn); plot (ax_b, Msub,CL_mdd_Korn);
-            plot(ax_b,mccADAS,CLadas);plot(ax_b,mddADAS,CLadas);
-            legend('Cl a M diverso da 0','Cl a Mcc','Cl a MDD','Current point','Cl(MCC) KORN','Cl(MDD) Korn','Cl(mcc)adas','cl(mdd)adas')
+            % ADAS
+            %CL_adas  = linspace(0,Cljstart,10);                             % Vector of CLs
+            [Mdd_ADAS,Mcc_ADAS] = mdd(tc_mean,...
+                obj.sweepw,CL_mdd,obj.low_speed.sweep,obj.main_fold);      % Mcc and Mdd according to ADAS method
+            %% Plot of CL max at Various Mach
+            CLs  = [CL_mdd(:),CL_mdd_Korn(:),CL_mdd(:)]; MDDs = [Msub(:),Msub(:),Mdd_ADAS(:)];
+            MCCs = [Mcc(:),Mcc_Korn(:),Mcc_ADAS(:)];
+            colors = [
+                1, 0.6, 0.6;  % Rosso chiaro
+                0.6, 0, 0;    % Rosso scuro
+                0.6, 0.8, 1;  % Blu chiaro
+                0, 0, 0.6;    % Blu scuro
+                0.6, 1, 0.6;  % Verde chiaro
+                0, 0.6, 0     % Verde scuro
+                ];
+            fig  = figure( 'Name','Buffet Check' ); ax_b = axes('Parent',fig); N_mth = 3; % Number of methods
+            NAME = {'M$_{DD}$','M$_{CC}$'}; METH = {'Kroo','Korn','ADAS'}; hold( ax_b,'on' )
+            for i = 1:N_mth
+                k = 1;
+                lin(i,k) = plot( ax_b,MDDs(:,i),CLs(:,i) ); lin(i,k).LineWidth = 2; lin(i,k).LineStyle = '-'; 
+                lin(i,k).DisplayName = [ NAME{k},METH{i} ]; lin(i,k).Color = colors(2*(i-1)+k,:);
+                k = 2;
+                lin(i,k) = plot( ax_b,MCCs(:,i),CLs(:,i) ); lin(i,k).LineWidth = 2; lin(i,k).LineStyle = '--';
+                lin(i,k).DisplayName = [ NAME{k},METH{i} ] ; lin(i,k).Color = colors(2*(i-1)+k,:);
+            end
+
+            i = N_mth+1; k = 1; lin( i,1 ) = plot( ax_b,M_vett(1:jstart),Cl_d0(1:jstart) );
+            lin(i,k).LineWidth = 2;  lin(i,k).DisplayName = 'Low Speed Stall';
+            i = N_mth+2; k = 1; lin( i,1 ) = plot( obj.TLARs.cruise.M,obj.CL_cr );
+            lin(i,k).LineStyle = 'none';  lin(i,k).Marker = 'diamond'; 
+            lin(i,k).MarkerSize = 6; lin(i,k).LineWidth = 2;
+            lin(i,k).DisplayName = 'Current Point';
+            legend( ax_b,'Interpreter','Latex'); grid minor;
+            title('CL$_{max}$ at Different M$_\infty$','Interpreter','Latex');
+            xlabel('$M_\infty$','Interpreter','Latex'); ylabel('$C_{L,w}$','Interpreter','Latex')
+            % hold(ax_b,'on');
+            % plot( ax_b,Msub,Cl_mcc(jstart:end) );
+            % plot( ax_b,Msub,Cl_mdd );
+            % plot( ax_b,obj.TLARs.cruise.M,obj.CL_cr,'o' ); %current point
+            % plot ( ax_b,Mcc_Korn,CL_mdd_Korn); plot (ax_b, Msub,CL_mdd_Korn);
+            % plot(ax_b,mccADAS,CLadas);plot(ax_b,mddADAS,CLadas);
+            % legend('Cl a M diverso da 0','Cl a Mcc','Cl a MDD','Current point','Cl(MCC) KORN','Cl(MDD) Korn','Cl(mcc)adas','cl(mdd)adas')
+            %% User Input
             % Chiedi all'utente se vuole continuare
             risposta = input('Do you want to go on? (s/n): ', 's');
             % Controlla la risposta
