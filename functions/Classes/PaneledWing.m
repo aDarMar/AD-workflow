@@ -382,7 +382,7 @@ classdef PaneledWing < WingClass
            % A(i,j) = a(i,j)-a(r,j)-( a(i,r)-a(r,r) )*2*sin( phi(j) )
            
            nu_idx = 1:obj.m_red; nu_idx_red = nu_idx( nu_idx ~= nu_r);
-           A      = nan( obj.m_red - 1 );
+           A      = nan( obj.m_red - 1 ); %eps(nu_r) = obj.geom_sect(nu_r).alpha0l;
            for nu = nu_idx_red
                % Twist in radiants. All angles defined in the class are
                % always in radiants otherwise specified.
@@ -436,8 +436,13 @@ classdef PaneledWing < WingClass
        end
        
        % Plot
-       function wing_circ(obj,alpha)
-           alpha   = ( alpha-obj.alpha0l_W )*pi/180;
+       function wing_circ(obj,alfa)
+           %wing_circ: function that calculates the total circulation for
+           %the wing at a given alpha wing.
+           %INPUT:
+           %    alpha: AoA @ to the root chord in deg;
+           %% Reading Data
+           alpha   = ( alfa-obj.alpha0l_W )*pi/180 - obj.geom_sect(obj.m_red).alpha0l; % Wing absolute AoA
             fig    = figure("Name",'Wing Span Load'); 
             ax_fig = subplot(3,1,1,'Parent',fig);hold( ax_fig,'on' );
             Ga_v = nan(obj.m_red,1); Gb_v = Ga_v; eta = Ga_v; Gtot = Ga_v;
@@ -450,48 +455,62 @@ classdef PaneledWing < WingClass
                 eta(i)      = obj.geom_sect(i).eta;
                 Gtot(i)     = Ga_v(i)*alpha + Gb_v(i);
             end
-            Gtot = [0;Gtot]; eta = [1;eta];
-            Gb_v = [0;Gb_v]; Ga_v = [0;Ga_v]; c_v = [obj.panels(end).tip.c;c_v];
-            %m_plot = 100;
-            %[ Gtot,phi_p ]   = obj.interp_loads( ,m_plot );
-            %[ Gtot,phi_p ] = obj.interp_loads( Ga_v,acos( eta ),m_plot );
-            %Ga_v   = interp_loads( obj,[Ga_v;flip( Ga_v(1:end-1) )],[arcos(eta(:));arcos(eta(1:end-1))+pi/2],m_plot );
-            lin(1) = plot( ax_fig,eta,Gtot ); cl_max_v = [obj.panels(end).tip.clmax;cl_max_v];
-            lin(2) = plot( ax_fig,eta,Gb_v );
-            lin(3) = plot( ax_fig,eta,Ga_v*alpha ); 
+            %% Interpolations
+            m_plot = 100;
+            % Loads Interpolation
+            [ Gtot_int,~ ] = obj.interp_loads( Gtot,acos( eta ),m_plot );
+            [ Ga_int,~ ]   = obj.interp_loads( Ga_v*alpha,acos( eta ),m_plot );
+            [ G0_int,~ ]   = obj.interp_loads( Gb_v,acos( eta ),m_plot );
+            % Section Lift Coefficient Interpolation
+            [ cl_int,phi_int ] = obj.interp_loads( Gtot*(2*obj.b)./c_v,acos( eta ),m_plot );
+            %% Graphics
+            % Plot 1
+            lin(1) = plot( ax_fig,cos(phi_int),Gtot_int );  k=1; lin(k).LineStyle = '-'; lin(k).LineWidth = 2; lin(k).DisplayName = 'Total Load';
+            lin(2) = plot( ax_fig,cos(phi_int),Ga_int );    k=2; lin(k).LineStyle = '-'; lin(k).LineWidth = 2; lin(k).DisplayName = 'Additional Load';
+            lin(3) = plot( ax_fig,cos(phi_int),G0_int );    k=3; lin(k).LineStyle = '-'; lin(k).LineWidth = 2; lin(k).DisplayName = 'Basic Load';
+            k = 4; lin(k) = plot( ax_fig,eta,Gtot );   lin(k).LineStyle = 'none'; lin(k).MarkerSize = 3; lin(k).Marker = 'o'; lin(k).MarkerEdgeColor = 'r'; lin(k).LineWidth = 2; lin(k).Annotation.LegendInformation.IconDisplayStyle = 'off';
+            k = 5; lin(k) = plot( ax_fig,eta,Gb_v );   lin(k).LineStyle = 'none'; lin(k).MarkerSize = 3; lin(k).Marker = 'o'; lin(k).MarkerEdgeColor = 'r'; lin(k).LineWidth = 2; lin(k).Annotation.LegendInformation.IconDisplayStyle = 'off';
+            k = 6; lin(k) = plot( ax_fig,eta,Ga_v*alpha );   lin(k).LineStyle = 'none'; lin(k).MarkerSize = 3; lin(k).Marker = 'o'; lin(k).MarkerEdgeColor = 'r'; lin(k).LineWidth = 2; lin(k).Annotation.LegendInformation.IconDisplayStyle = 'off';
+            legend( ax_fig,'Interpreter','Latex');
             title( ax_fig,'Nondimensional Circulation','Interpreter','Latex'); xlabel(ax_fig,'$\eta$','Interpreter','Latex'); ylabel(ax_fig,'$\frac{cl c}{2b}$','Interpreter','Latex');
+            % Plot 2
             ax_clc = subplot(3,1,2,'Parent',fig);
-            ccl    = Gtot*(2*obj.b); % Dimensional Load
-            cl_v   = ccl./c_v;
-            lin_ccl(1) = plot( ax_clc,eta,ccl );
+            ccl    = Gtot_int*(2*obj.b); % Dimensional Load
+            lin_ccl(1) = plot( ax_clc,cos(phi_int),ccl ); lin_ccl(1).LineStyle = '-'; lin_ccl(1).LineWidth = 2;
             title( ax_clc,'Wing Loading','Interpreter','Latex'); xlabel(ax_clc,'$\eta$','Interpreter','Latex'); ylabel(ax_clc,'cl c','Interpreter','Latex');
+            % Plot 3
+            cl_max_v = interp1( [obj.panels(end-1).root.yglob;obj.panels(end-1).tip.yglob;obj.panels(end).tip.yglob]./obj.panels(end).tip.yglob,...
+                [obj.panels(end-1).root.clmax;obj.panels(end-1).tip.clmax;obj.panels(end).tip.clmax],cos(phi_int) );
             ax_cl = subplot(3,1,3,'Parent',fig); hold( ax_cl,'on' );
-            lin_cl(1)  = plot( ax_cl,eta,cl_v ); 
-            lin_cl(2)  = plot( ax_cl,eta,cl_max_v );
+            k = 1; lin_cl(k)  = plot( ax_cl,cos(phi_int),cl_int );   lin_cl(k).LineStyle = '-'; lin_cl(k).LineWidth = 2; lin_cl(k).DisplayName = 'Section Cl';
+            k = 2; lin_cl(k)  = plot( ax_cl,cos(phi_int),cl_max_v ); lin_cl(k).LineStyle = '-'; lin_cl(k).LineWidth = 2; lin_cl(k).DisplayName = 'Section Cl max';
             title( ax_cl,'Stall Path','Interpreter','Latex'); xlabel(ax_cl,'$\eta$','Interpreter','Latex'); ylabel(ax_cl,'cl','Interpreter','Latex');
-            sgtitle({['Wing loading at $\alpha_a$ = ',num2str(alpha*57.3)],...
-                ['CL = ',num2str(obj.a_W*alpha),' $\alpha_{0L}$ = ',num2str(obj.alpha0l_W)] },'Interpreter','Latex'); 
+            legend( ax_cl,'Interpreter','Latex');
+            sgtitle({['Wing loading at $\alpha_{a,w}$ = ',num2str(alpha*180/pi),'$^{\circ}$ and $\alpha_w$ = ',num2str(alfa),'$^{\circ}$'],...
+                ['CL = ',num2str(obj.a_W*alpha*180/pi),' $\alpha_{0L}$ = ',num2str(obj.geom_sect(obj.m_red).alpha0l*180/pi + obj.alpha0l_W)] },'Interpreter','Latex'); 
        end
 
-       % function [G_vet,phi_v] = interp_loads( obj,G,phi,m_plot )
-       %     G   = [G;flip( G(1:end-1) )];
-       %     phi = [ phi;flip( pi-phi(1:end-1) ) ];
-       %     m     = length( G )-2; G_vet = zeros(m_plot,1);
-       %     phi_v = linspace( 0,pi,m_plot ); m_vet = 1:2:m
-       %     for k = 1:m
-       %         for n = 1:m
-       %             temp = 0;
-       %             for mu = m_vet
-       %                 temp = temp + sin( mu*phi(n) )*sin( mu*phi_v(k) );
-       %             end
-       %             G_vet(k) = G_vet(k) + G(n)*temp;
-       %         end
-       %     end
-       %     G_vet = G_vet*2/(m+1-2);
-       %     %G_vet(1) = 0; G_vet(end) = 0;
-       % end
-       % NON-Weissinger
-       % CM and Alpha0L
+       function [G_vet,phi_v] = interp_loads( ~,G,phi,m_plot )
+           %interp_loads: function that permorms the interpolation of given
+           %data using the interpolating functions of Weissinger Method.
+           G     = [G;flip( G(1:end-1) )];
+           phi   = [ phi;flip( pi-phi(1:end-1) ) ];
+           m     = length( G ); G_vet = zeros(m_plot,1);
+           phi_v = linspace( 0,pi,m_plot ); m_vet = 1:2:m;
+           for p = 1:m_plot
+               for n = 1:m
+                   temp = 0;
+                   for mu = m_vet
+                       temp = temp + sin( mu*phi(n) )*sin( mu*phi_v(p) );
+                       %G_vet(p) = G_vet(p) + sin( mu*phi(n) )*sin( mu*phi_v(p) );
+                   end
+                   G_vet(p) = G_vet(p) + temp*G(n);
+                     %G_vet(p) = G_vet(p)*G(n);
+               end
+               G_vet(p) = G_vet(p)*2/(m+1);
+           end
+           %plot( cos(phi_v),G_vet,'--',cos(phi),G,'or' )
+       end
    end
    
 end
