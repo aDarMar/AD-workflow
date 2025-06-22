@@ -153,7 +153,7 @@ function out = iter_read(f_id,n_i)
     %   f_id: ID of file we want to reaad from
     %   n_i: size of data we expect to read from a column
     temp = zeros(1,n_i); i = 1;
-    temp = fscanf(f_id,'%f'); fgetl(f_id)
+    temp = fscanf(f_id,'%f'); fgetl(f_id);
     while ~isempty(temp)
         out(i,:) = temp(:)'; 
         temp = fscanf(f_id,'%f '); fgetl(f_id);

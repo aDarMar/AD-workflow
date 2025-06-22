@@ -217,6 +217,7 @@ classdef PanelClass < handle%< ProfileClass
                         obj.deltaCoeffs(3) = var;
 
                 end
+                out = obj;
             else
                 switch flag
                     case 'dCL0'
@@ -253,6 +254,7 @@ classdef PanelClass < handle%< ProfileClass
                     otherwise
                         error('Campo non esistente');
                 end
+                out = obj;
             else
                 switch flag
                     case 'dCl02D_mean'

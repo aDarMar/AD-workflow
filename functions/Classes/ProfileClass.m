@@ -187,6 +187,7 @@ classdef ProfileClass %<handle
                     otherwise
                         error('Campo inesistente')
                 end
+                out = obj;
             else
                 switch flag
                     case 'dCl02D'
