@@ -499,6 +499,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         end
 
         end
+        
         function [varG,varA,coords] = HLAssign(obj,varG,nM,n_i)
             %HLAssign: ricava per interpolazione i valori delle
             %caratteristiche geometriche e aerodinamiche dei profili che
@@ -592,10 +593,12 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         function profClass = aero3Dwing(obj, flg, M, deltaF, deltaS,Fcalc)
             %aero3Dwing calcola le caratteristiche aerodinamiche dell'ala
             %tridimensionale
-            %   profClass oggetto classe profilo sul quale salvare i dati
+            %INPUT
+            %   profClass: oggetto classe profilo sul quale salvare i dati
             %       aerodinamici
             %   Fcalc: se definito forza il calcolo dei coefficienti
             %   dell'ala pulita nel calcolo dell'ala con ipersost 
+            
             if nargin > 2
                 % Controlla se viene assegnato il Mach, altrimenti calcola
                 % i dati 3D per ogni mach immagazzinato nei profili
@@ -617,8 +620,8 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                         end
                     end
                 end
-                if isnan(Midx(nMi))
-                    error(" Nessun dato trovato per il mach imposto")
+                if isnan( Midx(nMi) )
+                    error("Nessun dato trovato per il mach imposto")
                 end
             else
                 M = obj.meanprofile.M;
@@ -707,7 +710,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                         dCLmaxTotSlat = 0;
                         dClmax2DSlats = 0;
                     end
-                    obj.csocAvg = csavg;
+                    obj.csocAvg           = csavg;
                     profClass.clmax(Midx) = profClass.clmax(Midx) + dCLmaxTotSlat;
 
                     profClass.alphamax(Midx)  = ...
@@ -745,11 +748,11 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     nEl = length(profClass.a);
                     idx = 1:nEl; idx(idx == Midx ) = 0;
                     for i = 1:nEl
-                        profClass.M(idx>0) = NaN; profClass.a(idx>0) = NaN;
-                        profClass.cl0(idx>0) = NaN; profClass.clstar(idx>0) = NaN; 
-                        profClass.clmax(idx>0) = NaN; profClass.alphamax(idx>0)= NaN; 
-                        profClass.alphastar(idx>0)= NaN;  profClass.alpha0l(idx>0)= NaN; 
-                        profClass.cmac(idx>0)= NaN; 
+                        profClass.M(idx>0)         = NaN; profClass.a(idx>0) = NaN;
+                        profClass.cl0(idx>0)       = NaN; profClass.clstar(idx>0) = NaN; 
+                        profClass.clmax(idx>0)     = NaN; profClass.alphamax(idx>0)= NaN; 
+                        profClass.alphastar(idx>0) = NaN;  profClass.alpha0l(idx>0)= NaN; 
+                        profClass.cmac(idx>0)      = NaN; 
                     end
                     % Assegnamo nome flag
                     if deltaF>0 && deltaS >0

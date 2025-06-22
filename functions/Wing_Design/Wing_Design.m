@@ -122,7 +122,13 @@ aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1),...
     HLflag,[flaps_data(:,2:4);slats_data(:,2:4)],nan,1 ); % first column of flap and slat data is the flap ID
 % 3D data calculation and estimation
-aero_des.low_speed.prf3DClean             = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
+aero_des.low_speed.prf3DClean  = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
+% High Lift Definition
+aero_des.low_speed.wing3Ddata  = HighLift_Design(aero_des);
+% aero_des.low_speed.wing3Ddata(m)          = aero_des.low_speed.aero3Dwing( 'Take-off',M(m),deltaFs(m),deltaSs(m) );
+% aero_des.low_speed.wing3Ddata(m)          = aero_des.low_speed.aero3Dwing( 'Landing',M(m),deltaFs(m),deltaSs(m) );
+
+% Drag Definition
 aero_des.low_speed.meanprofile.poly_drag  = aero_des.low_speed.poly_drag( low_speed_drag(:,1),low_speed_drag(:,2:4) ); % Defines the interpolating function for cd avg
 CDl = aero_des.CDlow_Mach( alpha_v );
 %cm  = aero_des.low_speed.cm_alpha( alpha_v );
