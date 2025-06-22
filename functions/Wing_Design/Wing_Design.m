@@ -50,47 +50,34 @@ for i = 1:n_inp_aero
     % Mach,cla,cl0,cl*,clmax,alphamax,alpha0l,alpha*,cm_ac
     aero_vec_low(:,i) = fscanf(f_id,'%f '); fgetl(f_id);
 end
-temp = fgetl(f_id);
+
 % Low Speed Drag
-tag = 'Low Speed Drag';
-if ~strcmp(temp,tag)
-    error('Error Reading Low Speed Drag')
-end
-%fgetl(f_id);
-tag = 'DRAGEND'; i = 1; temp = [0,0,0,0];
-while ~isempty(temp)
-    low_speed_drag(i,:) = temp(:)'; fgetl(f_id);
-    temp = fscanf(f_id,'%f ');
-    i = i+1;
-end
-low_speed_drag = low_speed_drag(2:end,:); % Excludes firt row of all zeros
-fgetl(f_id); temp = fgetl(f_id);
+tag = 'Low Speed Drag'; err_read(f_id,tag);
+fgetl(f_id); low_speed_drag = iter_read(f_id,4);
+
 %High Speed Data
-tag = 'High Speed';
-if ~strcmp(temp,tag)
-    error('Error Reading High Speed Data')
-end
+tag = 'High Speed'; err_read(f_id,tag);
 n_inp_aero = 11;
 aero_vec_high = nan(3,n_inp_aero);
 for i = 1:n_inp_aero
     % Mach,cla,cl0,cl*,clmax,alphamax,alpha0l,alpha*,cm_ac
     aero_vec_high(:,i) = fscanf(f_id,'%f '); fgetl(f_id);
 end
-temp = fgetl(f_id);
-% Low Speed Drag
-tag = 'High Speed Drag';
-if ~strcmp(temp,tag)
-    error('Error Reading High Speed Drag')
-end
-%fgetl(f_id);
-tag = 'DRAGEND'; i = 1; temp = [0,0,0,0];
-while ~isempty(temp)
-    high_speed_drag(i,:) = temp(:)'; fgetl(f_id);
-    temp = fscanf(f_id,'%f ');
-    i = i+1;
-end
-high_speed_drag   = high_speed_drag(2:end,:); % Excludes firt row of all zeros
-fgetl(f_id); temp = fgetl(f_id);
+
+% High Speed Drag
+tag = 'High Speed Drag'; err_read(f_id,tag);
+fgetl(f_id)
+high_speed_drag = iter_read(f_id,4);
+
+% High Lift Devices
+tag = 'High-Lift Devices'; err_read(f_id,tag);
+tag = 'Flaps'; err_read(f_id,tag); 
+fgetl(f_id);  flaps_data = iter_read(f_id,4);
+
+tag = 'Slats'; err_read(f_id,tag); %fgetl(f_id); 
+fgetl(f_id); slats_data = iter_read(f_id,4);
+fgetl(f_id); % Skips the row after
+
 fclose(f_id);
 
 %% Plantform Definition
@@ -128,10 +115,12 @@ i = 4; geom_vec(:,i) = toc(:)';
 %% Wing Circulation
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
 alpha_v = -3:18;
-% Low Speed
-m = 7; M = 7;
+% Low Speed Wing Object Definition
+m = 7; M = 7; % Spanwise section for Weissinger Method
+HLflag = HL_build( flaps_data,slats_data );
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
-    aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1) );
+    aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1),...
+    HLflag,[flaps_data(:,2:4);slats_data(:,2:4)],nan,1 ); % first column of flap and slat data is the flap ID
 % 3D data calculation and estimation
 aero_des.low_speed.prf3DClean             = aero_des.low_speed.aero3Dwing( 'clean', aero_des.low_speed.panels(1).root.M );
 aero_des.low_speed.meanprofile.poly_drag  = aero_des.low_speed.poly_drag( low_speed_drag(:,1),low_speed_drag(:,2:4) ); % Defines the interpolating function for cd avg
@@ -150,4 +139,47 @@ CL_low  = aero_des.low_speed.lift_eval(alpha_v,aero_des.low_speed.prf3DClean);
 CL_high = aero_des.high_speed.lift_eval(alpha_v,aero_des.high_speed.prf3DClean );
 aero_des.plot_fun(alpha_v,CL_low,CL_high,CDl, CDh)
 aero_des.low_speed.wing_circ(3)
+end
+
+function out = iter_read(f_id,n_i)
+    %iter_read: function that reads rows of data from files.
+    %INPUT:
+    %   f_id: ID of file we want to reaad from
+    %   n_i: size of data we expect to read from a column
+    temp = zeros(1,n_i); i = 1;
+    temp = fscanf(f_id,'%f'); fgetl(f_id)
+    while ~isempty(temp)
+        out(i,:) = temp(:)'; 
+        temp = fscanf(f_id,'%f '); fgetl(f_id);
+        i = i+1;
+    end
+    %out   = out(2:end,:); % Excludes firt row of all zeros
+end
+
+function err_read(f_id,tag)
+    temp = fgetl(f_id);
+    if ~strcmp(temp,tag)
+        error(['Error Reading ', tag ,' Data'])
+    end
+end
+
+function HLF = HL_build( flaps_data,slats_data )
+    n_fl = length( flaps_data(:,1) ); 
+    Qo = floor(n_fl / 2);  % Quoziente intero
+    R = mod(n_fl, 2);    % Resto
+    if R > 0
+        warning('Number of Flap sections is odd');
+    end
+    HLF = repmat( {'flaps'},Qo,1);
+    n_sl = length( slats_data(:,1) ); 
+    Q = floor(n_sl / 2);  % Quoziente intero
+    R = mod(n_sl, 2);    % Resto
+    if R > 0
+        warning('Number of Slat sections is odd');
+    end
+    for i = 1:Q
+     HLF{Qo+i} = 'slats';   
+    end
+    
+    
 end

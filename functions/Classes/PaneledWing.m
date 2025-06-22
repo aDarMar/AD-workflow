@@ -17,7 +17,8 @@ classdef PaneledWing < WingClass
        a_W % Cl-alpha slope according to W [1/deg]
    end
    methods
-       function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach)
+       function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach,... 
+               HLflag,sectsHL,misc,ext_data_flag )
            %m: number of sections
            %M: number of integration points
            %geom_vec: vector of half-wing geometric sections 
@@ -58,9 +59,12 @@ classdef PaneledWing < WingClass
                    geom_vec( kink_idx(k),1 ) )*b/2;
            end
            % WARNING: only one dihedral and sweep for the entire wing
+           if nargin < 11 % Excluing from HLflag onward
+               HLflag = []; sectsHL = nan(2,4); misc = nan; ext_data_flag = 0;
+           end
            obj@WingClass( bs,ones(n_pan)*sweep,ones(n_pan)*dihedral,iang,apexC,Mach,...
-               geom_vec(kink_idx,2:end),aero_vec(kink_idx,2:end) ); % call superclass constructor
-           
+                   geom_vec(kink_idx,2:end),aero_vec(kink_idx,2:end),...
+                   HLflag,sectsHL,misc,ext_data_flag ); % call superclass constructor
            %% Sections Definition
 
            if mod( m,2 ) == 0

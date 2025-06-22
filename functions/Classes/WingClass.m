@@ -48,7 +48,15 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         function obj = WingClass(bs,sweeps,dihedrals,iang,apexC,M,...
                 sectsGeom, sectsAero,...
                 HLflag,sectsHL,...
-                misc) %Costruttore
+                misc,tFL ) %Costruttore
+            %INPUT
+            %   HLflag: variable containing the type of HL surface, for
+            %       example if there are three flaps, it will contain three
+            %       chars 'flap'
+            %   sectsHL: for flaps -> [ 2*y/b,cf/c,flap_type ]
+            %            for slats -> [ 2*y/b, cs/c, c_ext/c ]
+            %   tFL: a flag that if it passed tells the program to consider
+            %       the extended aerodynamics inputs
             if nargin == 1
                 % Lettura XML
             else
@@ -112,10 +120,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             % Definizione di Slat e Flap: sono degli oggetti della classe
             % Panel
             if exist('HLflag',"var")
-                obj.flaps = PanelClass.empty;
-                obj.slats = PanelClass.empty;
+                obj.flaps       = PanelClass.empty;
+                obj.slats       = PanelClass.empty;
                 obj.commandSurf = PanelClass.empty;
-                sectsHL = [sectsHL(:,1)*0.5*obj.bw,sectsHL]; % Trasforma le coordinate adimensionali in dimensionali
+                sectsHL         = [sectsHL(:,1)*0.5*obj.bw,sectsHL]; % Trasforma le coordinate adimensionali in dimensionali
                 m = 1; mm = 1;
                 while mm < length(HLflag) + 1
                     switch HLflag{mm}
@@ -124,30 +132,38 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                             % Dati Geometrici delle sezioni ei profili
                             varG = NaN(2,8+3);
                             % 2 coordinate di flap e 8 valori
-                            varG(:,9:11) = sectsHL(m:m+1,2:end); %copia le grandezze di input dei flaps nella var temp
-                            varG(:,9) = varG(:,9)*0.5*obj.bw;   %trasforma dy/b in coord. dimensionali
+                            varG(:,9:11) = sectsHL(m:m+1,2:end);   % copia le grandezze di input dei flaps nella var temp
+                            varG(:,9)    = varG(:,9)*0.5*obj.bw;   % trasforma dy/b in coord. dimensionali
                             % Dati Aerodinamici delle Sezioni dei Profili
-                            [varG,varA,coords] = HLAssign(obj,varG,nM);
+                            if nargin < 12 || tFL == 0 % this means that tFL has not been defined  
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM );
+                            else
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM,9 );
+                            end
                             obj.flaps(obj.nflaps) = PanelClass(varG(2,9) - varG(1,9),0,0,M,...
                                 varG(1,1:8),varA(1:nM,:),varG(2,1:8),varA(nM+1:2*nM,:),HLflag{mm},sectsHL(m:m+1,:));
                             % Assegna le coordinate globali
                             obj.flaps(obj.nflaps).root.xglob = coords(1,1); obj.flaps(obj.nflaps).root.zglob = coords(1,2);
-                            obj.flaps(obj.nflaps).tip.xglob = coords(2,1); obj.flaps(obj.nflaps).tip.zglob = coords(2,2);
+                            obj.flaps(obj.nflaps).tip.xglob  = coords(2,1); obj.flaps(obj.nflaps).tip.zglob = coords(2,2);
                             m = m + 2; mm = mm + 1;
                         case 'slats'
                             obj.nslats = obj.nslats + 1;
                             % Dati Geometrici delle sezioni ei profili
                             varG = NaN(2,8+3);
                             % 2 coordinate di flap e 8 valori
-                            varG(:,9:11) = sectsHL(m:m+1,2:end); %copia le grandezze di input dei flaps nella var temp
-                            varG(:,9) = varG(:,9)*0.5*obj.bw;   %trasforma dy/b in coord. dimensionali
+                            varG(:,9:11) = sectsHL(m:m+1,2:end);   % copia le grandezze di input dei flaps nella var temp
+                            varG(:,9)    = varG(:,9)*0.5*obj.bw;   % trasforma dy/b in coord. dimensionali
                             % Dati Aerodinamici delle Sezioni dei Profili
-                            [varG,varA,coords] = HLAssign(obj,varG,nM);
+                            if nargin < 12 || tFL == 0 % this means that tFL has not been defined  
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM );
+                            else
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM,9 );
+                            end
                             obj.slats(obj.nslats) = PanelClass(varG(2,9) - varG(1,9),0,0,M,...
                                 varG(1,1:8),varA(1:nM,:),varG(2,1:8),varA(nM+1:2*nM,:),HLflag{mm},sectsHL(m:m+1,:));
                             % Assegna le coordinate globali
                             obj.slats(obj.nslats).root.xglob = coords(1,1); obj.slats(obj.nslats).root.zglob = coords(1,2);
-                            obj.slats(obj.nslats).tip.xglob = coords(2,1); obj.slats(obj.nslats).tip.zglob = coords(2,2);
+                            obj.slats(obj.nslats).tip.xglob  = coords(2,1); obj.slats(obj.nslats).tip.zglob = coords(2,2);
                             m = m + 2; mm = mm + 1;
                         case 'elevator'
                             % Provvisorio, da finire quando si avranno le
@@ -483,7 +499,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         end
 
         end
-        function [varG,varA,coords] = HLAssign(obj,varG,nM)
+        function [varG,varA,coords] = HLAssign(obj,varG,nM,n_i)
             %HLAssign: ricava per interpolazione i valori delle
             %caratteristiche geometriche e aerodinamiche dei profili che
             %delimitano i flaps, cui posizione sull'apertura è contenuta
@@ -493,8 +509,14 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             %   nM: numero di condizioni di volo
             %   varA: vettore contenente le caratteristiche aerodinamiche
             %       dei profili che delimitano i flaps
-            varA = NaN(2*nM,8);
+            
             %nM = length(varA(:,1))*0.5;
+            if nargin < 4
+                varA = NaN(2*nM,8);
+                n_i = 8; % it is used for retrocompatibility, because the original code needed less aerodynamic inputs
+            else
+               varA = NaN(2*nM,10); 
+            end
             ny = 0; j=1;
             coords = NaN(2,2);
             while ny<2
@@ -502,12 +524,12 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     varG(:,9));
 
                 if ~isempty(ypts) && ny == 0
-                    varA(1:length(ypts)*nM,:) = obj.panels(j).panelInterp(varG(:,9),8); % a
+                    varA(1:length(ypts)*nM,:) = obj.panels(j).panelInterp(varG(:,9),n_i); % a
                     varG(1:length(ypts),1:8) = varGtmp;
                     coords(1:length(ypts),1) = obj.panels(j).root.xglob +  (varG(1:length(ypts),9) - obj.panels(j).root.yglob)*tan( obj.panels(j).sweep*pi/180); %coordinata x
                     coords(1:length(ypts),2) = obj.panels(j).root.zglob +  (varG(1:length(ypts),9) - obj.panels(j).root.yglob)*tan( obj.panels(j).dihedral*pi/180); %coordinata z
                 elseif ~isempty(ypts) %&& ny == 1
-                    varA(nM+1:2*nM,:) = obj.panels(j).panelInterp(varG(:,9),8); % a
+                    varA(nM+1:2*nM,:) = obj.panels(j).panelInterp(varG(:,9),n_i); % a
                     varG(2,1:8) = varGtmp;
                     coords(2,1) = obj.panels(j).root.xglob +  (varG(2,9) - obj.panels(j).root.yglob)*tan( obj.panels(j).sweep*pi/180); %coordinata x
                     coords(2,2) = obj.panels(j).root.zglob +  (varG(2,9) - obj.panels(j).root.yglob)*tan( obj.panels(j).dihedral*pi/180); %coordinata z
