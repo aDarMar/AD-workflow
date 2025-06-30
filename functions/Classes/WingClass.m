@@ -690,10 +690,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     % Calcolo degli Effetti dei Flaps
 
                     if deltaF > 0
-                        [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot] = ...
+                        [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot,dCd0] = ...
                             obj.flapEffects(deltaF,Midx,oidx); %Calcola i coefficienti 3D con i flaps
                     else
-                        [cfavg,~,~,cbaroc_avg,cfoc_avg,~] = ...
+                        [cfavg,~,~,cbaroc_avg,cfoc_avg,~,dCd0] = ...
                             obj.flapEffects(deltaF,Midx,oidx); %Calcola i coefficienti 3D con i flaps
                         dcl0_mean = 0; dclmax_tot = 0;
                     end
@@ -702,7 +702,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                         ( cbaroc_avg* (1-cfoc_avg*sin(deltaF*pi/180).^2) -1 ) );
                     profClass.cl0(Midx)   = obj.wing3Ddata(oidx).cl0(Midx) + dcl0_tot;
                     profClass.clmax(Midx) = obj.wing3Ddata(oidx).clmax(Midx) + dclmax_tot;
-
+                    profClass.dCd0(Midx)  = dCd0;
                     %Calcolo Effetto degli Slat
                     if deltaS > 0
                         [csavg,dCLmaxTotSlat,dClmax2DSlats] = slatEffects(obj,deltaS);
@@ -816,7 +816,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             obProf.flag = 'Wing in Clean Configuration';
         end
 
-        function [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot] = flapEffects(obj,deltaF,Midx,oidx)
+        function [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot,dCd0] = flapEffects(obj,deltaF,Midx,oidx)
             %flapEffects; calcola gli effetti dei flaps sulle
             %caratteristiche 3D dell'ala
             %   deltaF: deflessioen dei flaps in deg
@@ -892,7 +892,8 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     obj.flaps(i).HLauxVariables('dCl02D_mean')*...
                     obj.flaps(i).HLauxVariables('Kb')*...
                     obj.flaps(i).HLauxVariables('Kc') );
-
+                %dCd0
+                dCd0 = dCd0_flaps( obj.flaps(i),deltaF,obj );
                 %a 3D con flap
                 dcl0_mean = dcl0_mean + ...
                     obj.flaps(i).HLauxVariables('dCl02D_mean')*2*obj.flaps(i).S/obj.Sw;
