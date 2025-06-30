@@ -353,7 +353,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 xc_4    =  Xac_vet.*cvet + Xle_vec;       
                 % % Distance between wing and profiles aerodynamic center
                 alpha   = azl_mean:0.5:obj.weightAvg(alphastarv); % Sweep in alpha from a0l to alpha*
-                alpha = [-3,alpha]
+                alpha = [-3,alpha];
                 % The x_ac/wing is calculated using the mean airfoil
                 % Cl_alpha
                 [xc_axw,Cm0,cm_add] = cm_alpha( obj,alpha,obj.weightAvg(av),...
@@ -376,7 +376,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 eps_a = 2*eps_a/( vout2(1)*obj.panels(end).tip.c*obj.panels(end).tip.yglob ); % eps_a = sum/( Cla_avg*c_tip*b/2 )
                 vout2 = [vout2,eps_a];
             end
-            vout = [cm,1,obj.weightAvg(tcv),1,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
+            vout = [cm,nan,obj.weightAvg(tcv),nan,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
                 obj.weightAvg(xrtLowv),obj.weightAvg(dYv)];
 
         end
