@@ -1,10 +1,10 @@
-function [croot_eq,ctip_eq,sweep_eq] = Equivalent_Wing( Sw,ARw,eps_root,eps_tip )
+function [croot_eq,ctip_eq,sweep_eq] = Equivalent_Wing( Sw,bw,eps_root,eps_tip )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
 %% Equivalent Wing
-croot_eq = ((((Sw/(0.5*bw*(1-yroot/bw)))-2*ctip)/(0.5*bw*(1-yroot/bw)))*0.5* ...
-    bw*yroot/bw)+(Sw/(0.5*bw*(1-yroot/bw)))-ctip;
+croot_eq = ( ( ( ( Sw/(0.5*bw*(1-yroot/bw) )) - 2*ctip)/( 0.5*bw*( 1-yroot/bw ) ) )*0.5* ...
+    bw*yroot/bw)+(Sw/(0.5*bw*(1-yroot/bw)) ) - ctip;
 ctip_eq     = ctip;
 xTE_root_eq = xLE_root + croot_eq;
 xTE_tip_eq  = xLE_tip + ctip_eq;
