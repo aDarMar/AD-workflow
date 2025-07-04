@@ -82,9 +82,10 @@ fclose(f_id);
 
 %% Plantform Definition
 [f_wing,ax_wing,yroot,ykink,ytip,croot,ckink,ctip,xLE_root,xLE_kink, ...
-    xLE_tip,A1_Sw] = Wing_Plantform_fun( aero_des.Sw,aero_des.bw,aero_des.sweepw,aero_des.TRiw,...
+    xLE_tip,A1_Sw,Sw_new] = Wing_Plantform_fun( aero_des.Sw,aero_des.bw,aero_des.sweepw,aero_des.TRiw,...
     yob(2),aero_des.TRw,aero_des.AioSw );
 aero_des.AioSw = A1_Sw; % Updating A1/Sw
+aero_des.Sw    = Sw_new; % Updating Sw
 %% Equivalent Wing Definition
 aero_des = aero_des.equivalent_wing_def(ctip);
 % hold on
@@ -116,7 +117,7 @@ i = 4; geom_vec(:,i) = toc(:)';
 apexC = [ aero_des.wingapex.x,aero_des.wingapex.y,aero_des.wingapex.z ];
 alpha_v = -3:18;
 % Low Speed Wing Object Definition
-m = 7; M = 7; % Spanwise section for Weissinger Method
+m = 11; M = 11; % Spanwise section for Weissinger Method
 HLflag = HL_build( flaps_data,slats_data );
 aero_des.low_speed = PaneledWing( m,M,geom_vec,aero_vec_low,aero_des.bw,...
     aero_des.sweepw,aero_des.dihedralw,aero_des.iw,apexC,aero_vec_low(1,1),...
@@ -145,6 +146,12 @@ CL_low  = aero_des.low_speed.lift_eval(alpha_v,aero_des.low_speed.prf3DClean);
 CL_high = aero_des.high_speed.lift_eval(alpha_v,aero_des.high_speed.prf3DClean );
 aero_des.plot_fun(alpha_v,CL_low,CL_high,CDl, CDh)
 aero_des.low_speed.wing_circ(3)
+
+for i = 1:(m+1)*0.5
+    temp0(i,1) = aero_des.low_speed.geom_sect(i).eta;
+    temp0(i,2) = aero_des.low_speed.geom_sect(i).eps*180/pi;
+end
+
 end
 
 function out = iter_read(f_id,n_i)

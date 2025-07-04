@@ -828,7 +828,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
 
             % Inizializzazione delle Variabili di Output
             dcl0_mean = 0; dcl0_tot = 0; cbaroc_avg = 0;
-            cfoc_avg = 0; dclmax_tot = 0; weiS = 0; cfavg = 0;
+            cfoc_avg = 0; dclmax_tot = 0; weiS = 0; cfavg = 0; dCd0 = 0;
             for i =1:obj.nflaps
                 % variabili usate per il calcolo delle
                 % caratteristiche high lift
@@ -893,7 +893,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     obj.flaps(i).HLauxVariables('Kb')*...
                     obj.flaps(i).HLauxVariables('Kc') );
                 %dCd0
-                dCd0 = dCd0_flaps( obj.flaps(i),deltaF,obj );
+                dCd0 = dCd0 + dCd0_flaps( obj.flaps(i),deltaF,obj );
                 %a 3D con flap
                 dcl0_mean = dcl0_mean + ...
                     obj.flaps(i).HLauxVariables('dCl02D_mean')*2*obj.flaps(i).S/obj.Sw;
