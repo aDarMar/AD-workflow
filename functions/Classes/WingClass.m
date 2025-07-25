@@ -571,7 +571,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 if alpha(i) < min( profile.alpha0l,-1 )
                     % alpha< alpha_0L
                     % Fixes CL at CL alpha0L-1
-                    CL(i) = profile.cl0 + profile.a*( profile.alpha0l-1 ); 
+                    CL(i) = profile.cl0 + profile.a*min( profile.alpha0l,-1 ); 
                 elseif alpha(i) < profile.alphastar
                     % alpha0l < alpha < alpha*
                     % Linear section of CL

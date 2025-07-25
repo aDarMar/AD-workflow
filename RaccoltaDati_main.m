@@ -37,7 +37,7 @@ CLmax_LND_vett = [ 2.1, 2.3, 2.5 ]; sigma = 1;
 
 TisaoT50 = 1/0.8; phi_v = [1,1,1,0.85];
 V_cr_vet = [Des_Air.TLARs.cruise.V, 1,Des_Air.TLARs.cruise.V,236];
-h_cr_vet = [Des_Air.TLARs.cruise.h,Des_Air.TLARs.cruise.h, Des_Air.TLARs.cruise.h,11277];
+h_cr_vet = [39000/3.3,Des_Air.TLARs.cruise.h, Des_Air.TLARs.cruise.h,11277];
 n_fact   = [ 1,1.3, 1.3,1];
 % Initialization
 iS = 1;
@@ -102,7 +102,8 @@ while flag
     %hold off
 end
 sizPLT_ax_cf = sizing_plot_cfr( Airl,nAero,sizPLT_ax );
-
+xlabel(sizPLT_ax,'W/S [Kg/m$^2$]','Interpreter','Latex','FontSize',16);
+ylabel(sizPLT_ax,'T/W','Interpreter','Latex','FontSize',16)
 %% Wing Design
 Des_Air = Des_Air.final_out( ch_idxs,CLmax_TO_vett,CLmax_CR_vett,...
     CLmax_LND_vett,V_cr_vet,h_cr_vet );

@@ -64,7 +64,7 @@ for j = 1:nConds
         lin(2*i,j).Color = colors(j,:); lin(2*i,j).Marker = MARK{i};
         lin(2*i,j).MarkerSize = 2.5;
         lin(2*i,j).DisplayName = [COND{i},[' at h = ',num2str( h_cruise(j) ),...
-            ' V = ',num2str( Vcr(j) ),' $\phi$ = ',num2str( phi_v(j) ),' n = ',num2str(n_fact(j))] ];
+            ' V = ',num2str( Vcr(j) ) ] ];%,' $\phi$ = ',num2str( phi_v(j) ),' n = ',num2str(n_fact(j))] ];
     end
     
 end
