@@ -483,8 +483,13 @@ classdef PaneledWing < WingClass
             lin_ccl(1) = plot( ax_clc,cos(phi_int),ccl ); lin_ccl(1).LineStyle = '-'; lin_ccl(1).LineWidth = 2;
             title( ax_clc,'Wing Loading','Interpreter','Latex'); xlabel(ax_clc,'$\eta$','Interpreter','Latex'); ylabel(ax_clc,'cl c','Interpreter','Latex');
             % Plot 3
+            if length( obj.panels  ) > 1
             cl_max_v = interp1( [obj.panels(end-1).root.yglob;obj.panels(end-1).tip.yglob;obj.panels(end).tip.yglob]./obj.panels(end).tip.yglob,...
                 [obj.panels(end-1).root.clmax;obj.panels(end-1).tip.clmax;obj.panels(end).tip.clmax],cos(phi_int) );
+            else
+                cl_max_v = interp1( [obj.panels.root.yglob;obj.panels.tip.yglob]./obj.panels.tip.yglob,...
+                [obj.panels.root.clmax;obj.panels.tip.clmax],cos(phi_int) );
+            end
             ax_cl = subplot(3,1,3,'Parent',fig); hold( ax_cl,'on' );
             k = 1; lin_cl(k)  = plot( ax_cl,cos(phi_int),cl_int );   lin_cl(k).LineStyle = '-'; lin_cl(k).LineWidth = 2; lin_cl(k).DisplayName = 'Section Cl';
             k = 2; lin_cl(k)  = plot( ax_cl,cos(phi_int),cl_max_v ); lin_cl(k).LineStyle = '-'; lin_cl(k).LineWidth = 2; lin_cl(k).DisplayName = 'Section Cl max';
