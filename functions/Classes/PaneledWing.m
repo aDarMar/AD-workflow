@@ -17,7 +17,8 @@ classdef PaneledWing < WingClass
        a_W % Cl-alpha slope according to W [1/deg]
    end
    methods
-       function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach)
+       function obj = PaneledWing(m,M,geom_vec,aero_vec,b,sweep,dihedral,iang,apexC,Mach,... 
+               HLflag,sectsHL,misc,ext_data_flag )
            %m: number of sections
            %M: number of integration points
            %geom_vec: vector of half-wing geometric sections 
@@ -58,9 +59,12 @@ classdef PaneledWing < WingClass
                    geom_vec( kink_idx(k),1 ) )*b/2;
            end
            % WARNING: only one dihedral and sweep for the entire wing
+           if nargin < 11 % Excluing from HLflag onward
+               HLflag = []; sectsHL = nan(2,4); misc = nan; ext_data_flag = 0;
+           end
            obj@WingClass( bs,ones(n_pan)*sweep,ones(n_pan)*dihedral,iang,apexC,Mach,...
-               geom_vec(kink_idx,2:end),aero_vec(kink_idx,2:end) ); % call superclass constructor
-           
+                   geom_vec(kink_idx,2:end),aero_vec(kink_idx,2:end),...
+                   HLflag,sectsHL,misc,ext_data_flag ); % call superclass constructor
            %% Sections Definition
 
            if mod( m,2 ) == 0
@@ -479,8 +483,13 @@ classdef PaneledWing < WingClass
             lin_ccl(1) = plot( ax_clc,cos(phi_int),ccl ); lin_ccl(1).LineStyle = '-'; lin_ccl(1).LineWidth = 2;
             title( ax_clc,'Wing Loading','Interpreter','Latex'); xlabel(ax_clc,'$\eta$','Interpreter','Latex'); ylabel(ax_clc,'cl c','Interpreter','Latex');
             % Plot 3
+            if length( obj.panels  ) > 1
             cl_max_v = interp1( [obj.panels(end-1).root.yglob;obj.panels(end-1).tip.yglob;obj.panels(end).tip.yglob]./obj.panels(end).tip.yglob,...
                 [obj.panels(end-1).root.clmax;obj.panels(end-1).tip.clmax;obj.panels(end).tip.clmax],cos(phi_int) );
+            else
+                cl_max_v = interp1( [obj.panels.root.yglob;obj.panels.tip.yglob]./obj.panels.tip.yglob,...
+                [obj.panels.root.clmax;obj.panels.tip.clmax],cos(phi_int) );
+            end
             ax_cl = subplot(3,1,3,'Parent',fig); hold( ax_cl,'on' );
             k = 1; lin_cl(k)  = plot( ax_cl,cos(phi_int),cl_int );   lin_cl(k).LineStyle = '-'; lin_cl(k).LineWidth = 2; lin_cl(k).DisplayName = 'Section Cl';
             k = 2; lin_cl(k)  = plot( ax_cl,cos(phi_int),cl_max_v ); lin_cl(k).LineStyle = '-'; lin_cl(k).LineWidth = 2; lin_cl(k).DisplayName = 'Section Cl max';

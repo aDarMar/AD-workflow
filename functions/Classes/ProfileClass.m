@@ -56,7 +56,7 @@ classdef ProfileClass %<handle
             %   geomV: array contenente le informazioni geometriche
             %   della sezione
             %   aeroV: array che contiene le informazioni aerodinamiche
-            %       delal sezione organizzate per righe: una riga corrisponde
+            %       della sezione organizzate per righe: una riga corrisponde
             %       a   d una condiziopne di volo.
             %   M,Cla,cl0,cl*,clmax,apha_max,alphaol,alpha*,cm@Cl0,x_ref,Cm_a@x_ref
             %   Values must be in [deg] and [1/deg]
@@ -121,10 +121,10 @@ classdef ProfileClass %<handle
             if nargin == 5
                 switch HLflag
                     case 'flaps'
-                        obj.flag = 'Flapper Profile';
+                        obj.flag  = 'Flapper Profile';
                         obj.yglob = HLvals(1);
-                        obj.yob = HLvals(2);
-                        obj.cfoc = HLvals(3);
+                        obj.yob   = HLvals(2);
+                        obj.cfoc  = HLvals(3);
                         switch HLvals(4)
                             case 1
                                 obj.flaptype = 'fowler';
@@ -187,6 +187,7 @@ classdef ProfileClass %<handle
                     otherwise
                         error('Campo inesistente')
                 end
+                out = obj;
             else
                 switch flag
                     case 'dCl02D'

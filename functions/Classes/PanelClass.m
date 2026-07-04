@@ -149,6 +149,32 @@ classdef PanelClass < handle%< ProfileClass
                         temp((i-1)*nM+ 1:i*nM,8) = ... %cmac
                             (obj.tip.cmac - obj.root.cmac)./obj.b * (y(i) - obj.root.yglob) + obj.root.cmac;
                     end
+                case 9
+                    temp = NaN(length(y)*length(obj.tip.a),1);
+                    nl = length(y);
+                    nM = length(obj.root.a);
+                    for i=1:nl
+                        temp((i-1)*nM + 1:i*nM,1) = ... %a
+                            (obj.tip.a - obj.root.a)./obj.b .* (y(i) - obj.root.yglob) + obj.root.a;
+                        temp((i-1)*nM + 1:i*nM,2)  = ... %cl0
+                            (obj.tip.cl0 - obj.root.cl0)./obj.b .* (y(i) - obj.root.yglob) + obj.root.cl0;
+                        temp((i-1)*nM + 1:i*nM,3) = ... %cl0
+                            (obj.tip.clstar - obj.root.clstar)./obj.b * (y(i) - obj.root.yglob) + obj.root.clstar;
+                        temp((i-1)*nM+ 1:i*nM,4) = ... %clmax
+                            (obj.tip.clmax - obj.root.clmax)./obj.b * (y(i) - obj.root.yglob) + obj.root.clmax;
+                        temp((i-1)*nM + 1:i*nM,5) = ... %alphamax
+                            (obj.tip.alphamax - obj.root.alphamax)./obj.b * (y(i) - obj.root.yglob) + obj.root.alphamax;
+                        temp((i-1)*nM + 1:i*nM,6) = ... %alpha0l
+                            (obj.tip.alpha0l - obj.root.alpha0l)./obj.b * (y(i) - obj.root.yglob) + obj.root.alpha0l;
+                        temp((i-1)*nM + 1:i*nM,7) = ... %alphastar
+                            (obj.tip.alphastar - obj.root.alphastar)./obj.b * (y(i) - obj.root.yglob) + obj.root.alphastar;
+                        temp((i-1)*nM+ 1:i*nM,8) = ... %cmac
+                            (obj.tip.cmac - obj.root.cmac)./obj.b * (y(i) - obj.root.yglob) + obj.root.cmac;
+                         temp((i-1)*nM+ 1:i*nM,9) =... %x_ac for moment
+                            (obj.tip.x_ac - obj.root.x_ac)./obj.b * (y(i) - obj.root.yglob) + obj.root.x_ac;
+                        temp((i-1)*nM+ 1:i*nM,10) =... %x_ac for moment
+                            (obj.tip.x_ac - obj.root.x_ac)./obj.b * (y(i) - obj.root.yglob)*0 + obj.root.x_ac*0;
+                    end
 
             end
 
@@ -191,6 +217,7 @@ classdef PanelClass < handle%< ProfileClass
                         obj.deltaCoeffs(3) = var;
 
                 end
+                out = obj;
             else
                 switch flag
                     case 'dCL0'
@@ -227,6 +254,7 @@ classdef PanelClass < handle%< ProfileClass
                     otherwise
                         error('Campo non esistente');
                 end
+                out = obj;
             else
                 switch flag
                     case 'dCl02D_mean'

@@ -1,5 +1,5 @@
 function [f,ax,yroot,ykink,ytip,croot,ckink,ctip,xLE_root,xLE_kink, ...
-    xLE_tip,A1_Sw] = Wing_Plantform_fun( Sw,bw,sweep,tr1,...
+    xLE_tip,A1_Sw,Atot] = Wing_Plantform_fun( Sw,bw,sweep,tr1,...
     ykink_b,tr2,A1_Sw )
 %UNTITLED Summary of this function goes here
 %INPUT
@@ -60,7 +60,7 @@ while ( diff > tol ) && A1_Sw > 0
     if cnt > 1 || diff > tol
         disp('Change What')
         disp(['1. A1/Sw: Current ',num2str(A1_Sw)])
-        disp(['2. TRi  : Current ',num2str(tr2)])
+        disp(['2. TR   : Current ',num2str(tr2)])
         chg = input('>>');
         switch chg
             case 1

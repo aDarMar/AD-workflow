@@ -550,8 +550,8 @@ classdef Air_Design
             t3 = ( obj.high_speed.meanprofile.eps_ae*obj.high_speed.meanprofile.a )^2*w;
 
             CDi   = t1+t2+t3;
-
-            CDfun = Cd_avg(:) + CDi(:) + DeltaCd_wave(:);
+            CDfun = CDi(:) + DeltaCd_wave(:);
+            %CDfun = Cd_avg(:) + CDi(:) + DeltaCd_wave(:);
         end
 
         function Mdd(obj)
@@ -599,7 +599,7 @@ classdef Air_Design
             end
         end
 
-        function plot_fun(~,alfavett,CL_low,CL_high,CD_low,CD_high)
+        function plot_fun(obj,alfavett,CL_low,CL_high,CD_low,CD_high)
             %plot effettua i grafici mettendo a confronto CL-alfa, CD-CL
             %
             %INPUT:

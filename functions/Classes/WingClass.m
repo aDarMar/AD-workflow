@@ -48,7 +48,15 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         function obj = WingClass(bs,sweeps,dihedrals,iang,apexC,M,...
                 sectsGeom, sectsAero,...
                 HLflag,sectsHL,...
-                misc) %Costruttore
+                misc,tFL ) %Costruttore
+            %INPUT
+            %   HLflag: variable containing the type of HL surface, for
+            %       example if there are three flaps, it will contain three
+            %       chars 'flap'
+            %   sectsHL: for flaps -> [ 2*y/b,cf/c,flap_type ]
+            %            for slats -> [ 2*y/b, cs/c, c_ext/c ]
+            %   tFL: a flag that if it passed tells the program to consider
+            %       the extended aerodynamics inputs
             if nargin == 1
                 % Lettura XML
             else
@@ -112,10 +120,11 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             % Definizione di Slat e Flap: sono degli oggetti della classe
             % Panel
             if exist('HLflag',"var")
-                obj.flaps = PanelClass.empty;
-                obj.slats = PanelClass.empty;
+                obj.wing3Ddata  = ProfileClass.empty;
+                obj.flaps       = PanelClass.empty;
+                obj.slats       = PanelClass.empty;
                 obj.commandSurf = PanelClass.empty;
-                sectsHL = [sectsHL(:,1)*0.5*obj.bw,sectsHL]; % Trasforma le coordinate adimensionali in dimensionali
+                sectsHL         = [sectsHL(:,1)*0.5*obj.bw,sectsHL]; % Trasforma le coordinate adimensionali in dimensionali
                 m = 1; mm = 1;
                 while mm < length(HLflag) + 1
                     switch HLflag{mm}
@@ -124,30 +133,38 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                             % Dati Geometrici delle sezioni ei profili
                             varG = NaN(2,8+3);
                             % 2 coordinate di flap e 8 valori
-                            varG(:,9:11) = sectsHL(m:m+1,2:end); %copia le grandezze di input dei flaps nella var temp
-                            varG(:,9) = varG(:,9)*0.5*obj.bw;   %trasforma dy/b in coord. dimensionali
+                            varG(:,9:11) = sectsHL(m:m+1,2:end);   % copia le grandezze di input dei flaps nella var temp
+                            varG(:,9)    = varG(:,9)*0.5*obj.bw;   % trasforma dy/b in coord. dimensionali
                             % Dati Aerodinamici delle Sezioni dei Profili
-                            [varG,varA,coords] = HLAssign(obj,varG,nM);
+                            if nargin < 12 || tFL == 0 % this means that tFL has not been defined  
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM );
+                            else
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM,9 );
+                            end
                             obj.flaps(obj.nflaps) = PanelClass(varG(2,9) - varG(1,9),0,0,M,...
                                 varG(1,1:8),varA(1:nM,:),varG(2,1:8),varA(nM+1:2*nM,:),HLflag{mm},sectsHL(m:m+1,:));
                             % Assegna le coordinate globali
                             obj.flaps(obj.nflaps).root.xglob = coords(1,1); obj.flaps(obj.nflaps).root.zglob = coords(1,2);
-                            obj.flaps(obj.nflaps).tip.xglob = coords(2,1); obj.flaps(obj.nflaps).tip.zglob = coords(2,2);
+                            obj.flaps(obj.nflaps).tip.xglob  = coords(2,1); obj.flaps(obj.nflaps).tip.zglob = coords(2,2);
                             m = m + 2; mm = mm + 1;
                         case 'slats'
                             obj.nslats = obj.nslats + 1;
                             % Dati Geometrici delle sezioni ei profili
                             varG = NaN(2,8+3);
                             % 2 coordinate di flap e 8 valori
-                            varG(:,9:11) = sectsHL(m:m+1,2:end); %copia le grandezze di input dei flaps nella var temp
-                            varG(:,9) = varG(:,9)*0.5*obj.bw;   %trasforma dy/b in coord. dimensionali
+                            varG(:,9:11) = sectsHL(m:m+1,2:end);   % copia le grandezze di input dei flaps nella var temp
+                            varG(:,9)    = varG(:,9)*0.5*obj.bw;   % trasforma dy/b in coord. dimensionali
                             % Dati Aerodinamici delle Sezioni dei Profili
-                            [varG,varA,coords] = HLAssign(obj,varG,nM);
+                            if nargin < 12 || tFL == 0 % this means that tFL has not been defined  
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM );
+                            else
+                                [varG,varA,coords]    = obj.HLAssign( varG,nM,9 );
+                            end
                             obj.slats(obj.nslats) = PanelClass(varG(2,9) - varG(1,9),0,0,M,...
                                 varG(1,1:8),varA(1:nM,:),varG(2,1:8),varA(nM+1:2*nM,:),HLflag{mm},sectsHL(m:m+1,:));
                             % Assegna le coordinate globali
                             obj.slats(obj.nslats).root.xglob = coords(1,1); obj.slats(obj.nslats).root.zglob = coords(1,2);
-                            obj.slats(obj.nslats).tip.xglob = coords(2,1); obj.slats(obj.nslats).tip.zglob = coords(2,2);
+                            obj.slats(obj.nslats).tip.xglob  = coords(2,1); obj.slats(obj.nslats).tip.zglob = coords(2,2);
                             m = m + 2; mm = mm + 1;
                         case 'elevator'
                             % Provvisorio, da finire quando si avranno le
@@ -336,7 +353,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 xc_4    =  Xac_vet.*cvet + Xle_vec;       
                 % % Distance between wing and profiles aerodynamic center
                 alpha   = azl_mean:0.5:obj.weightAvg(alphastarv); % Sweep in alpha from a0l to alpha*
-                alpha = [-3,alpha]
+                alpha = [-3,alpha];
                 % The x_ac/wing is calculated using the mean airfoil
                 % Cl_alpha
                 [xc_axw,Cm0,cm_add] = cm_alpha( obj,alpha,obj.weightAvg(av),...
@@ -359,7 +376,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 eps_a = 2*eps_a/( vout2(1)*obj.panels(end).tip.c*obj.panels(end).tip.yglob ); % eps_a = sum/( Cla_avg*c_tip*b/2 )
                 vout2 = [vout2,eps_a];
             end
-            vout = [cm,1,obj.weightAvg(tcv),1,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
+            vout = [cm,nan,obj.weightAvg(tcv),nan,obj.weightAvg(xrtcv),obj.weightAvg(xtrUpv),...
                 obj.weightAvg(xrtLowv),obj.weightAvg(dYv)];
 
         end
@@ -483,7 +500,8 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         end
 
         end
-        function [varG,varA,coords] = HLAssign(obj,varG,nM)
+        
+        function [varG,varA,coords] = HLAssign(obj,varG,nM,n_i)
             %HLAssign: ricava per interpolazione i valori delle
             %caratteristiche geometriche e aerodinamiche dei profili che
             %delimitano i flaps, cui posizione sull'apertura è contenuta
@@ -493,8 +511,14 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             %   nM: numero di condizioni di volo
             %   varA: vettore contenente le caratteristiche aerodinamiche
             %       dei profili che delimitano i flaps
-            varA = NaN(2*nM,8);
+            
             %nM = length(varA(:,1))*0.5;
+            if nargin < 4
+                varA = NaN(2*nM,8);
+                n_i = 8; % it is used for retrocompatibility, because the original code needed less aerodynamic inputs
+            else
+               varA = NaN(2*nM,10); 
+            end
             ny = 0; j=1;
             coords = NaN(2,2);
             while ny<2
@@ -502,12 +526,12 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     varG(:,9));
 
                 if ~isempty(ypts) && ny == 0
-                    varA(1:length(ypts)*nM,:) = obj.panels(j).panelInterp(varG(:,9),8); % a
+                    varA(1:length(ypts)*nM,:) = obj.panels(j).panelInterp(varG(:,9),n_i); % a
                     varG(1:length(ypts),1:8) = varGtmp;
                     coords(1:length(ypts),1) = obj.panels(j).root.xglob +  (varG(1:length(ypts),9) - obj.panels(j).root.yglob)*tan( obj.panels(j).sweep*pi/180); %coordinata x
                     coords(1:length(ypts),2) = obj.panels(j).root.zglob +  (varG(1:length(ypts),9) - obj.panels(j).root.yglob)*tan( obj.panels(j).dihedral*pi/180); %coordinata z
                 elseif ~isempty(ypts) %&& ny == 1
-                    varA(nM+1:2*nM,:) = obj.panels(j).panelInterp(varG(:,9),8); % a
+                    varA(nM+1:2*nM,:) = obj.panels(j).panelInterp(varG(:,9),n_i); % a
                     varG(2,1:8) = varGtmp;
                     coords(2,1) = obj.panels(j).root.xglob +  (varG(2,9) - obj.panels(j).root.yglob)*tan( obj.panels(j).sweep*pi/180); %coordinata x
                     coords(2,2) = obj.panels(j).root.zglob +  (varG(2,9) - obj.panels(j).root.yglob)*tan( obj.panels(j).dihedral*pi/180); %coordinata z
@@ -547,7 +571,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 if alpha(i) < min( profile.alpha0l,-1 )
                     % alpha< alpha_0L
                     % Fixes CL at CL alpha0L-1
-                    CL(i) = profile.cl0 + profile.a*( profile.alpha0l-1 ); 
+                    CL(i) = profile.cl0 + profile.a*min( profile.alpha0l,-1 ); 
                 elseif alpha(i) < profile.alphastar
                     % alpha0l < alpha < alpha*
                     % Linear section of CL
@@ -570,10 +594,12 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         function profClass = aero3Dwing(obj, flg, M, deltaF, deltaS,Fcalc)
             %aero3Dwing calcola le caratteristiche aerodinamiche dell'ala
             %tridimensionale
-            %   profClass oggetto classe profilo sul quale salvare i dati
+            %INPUT
+            %   profClass: oggetto classe profilo sul quale salvare i dati
             %       aerodinamici
             %   Fcalc: se definito forza il calcolo dei coefficienti
             %   dell'ala pulita nel calcolo dell'ala con ipersost 
+            
             if nargin > 2
                 % Controlla se viene assegnato il Mach, altrimenti calcola
                 % i dati 3D per ogni mach immagazzinato nei profili
@@ -595,8 +621,8 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                         end
                     end
                 end
-                if isnan(Midx(nMi))
-                    error(" Nessun dato trovato per il mach imposto")
+                if isnan( Midx(nMi) )
+                    error("Nessun dato trovato per il mach imposto")
                 end
             else
                 M = obj.meanprofile.M;
@@ -664,10 +690,10 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     % Calcolo degli Effetti dei Flaps
 
                     if deltaF > 0
-                        [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot] = ...
+                        [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot,dCd0] = ...
                             obj.flapEffects(deltaF,Midx,oidx); %Calcola i coefficienti 3D con i flaps
                     else
-                        [cfavg,~,~,cbaroc_avg,cfoc_avg,~] = ...
+                        [cfavg,~,~,cbaroc_avg,cfoc_avg,~,dCd0] = ...
                             obj.flapEffects(deltaF,Midx,oidx); %Calcola i coefficienti 3D con i flaps
                         dcl0_mean = 0; dclmax_tot = 0;
                     end
@@ -676,7 +702,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                         ( cbaroc_avg* (1-cfoc_avg*sin(deltaF*pi/180).^2) -1 ) );
                     profClass.cl0(Midx)   = obj.wing3Ddata(oidx).cl0(Midx) + dcl0_tot;
                     profClass.clmax(Midx) = obj.wing3Ddata(oidx).clmax(Midx) + dclmax_tot;
-
+                    profClass.dCd0(Midx)  = dCd0;
                     %Calcolo Effetto degli Slat
                     if deltaS > 0
                         [csavg,dCLmaxTotSlat,dClmax2DSlats] = slatEffects(obj,deltaS);
@@ -685,7 +711,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                         dCLmaxTotSlat = 0;
                         dClmax2DSlats = 0;
                     end
-                    obj.csocAvg = csavg;
+                    obj.csocAvg           = csavg;
                     profClass.clmax(Midx) = profClass.clmax(Midx) + dCLmaxTotSlat;
 
                     profClass.alphamax(Midx)  = ...
@@ -698,12 +724,14 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     %
                     SflapTot = 0; SslatTot = 0; cbarocSlat = 0;
                     for i=1:obj.nflaps
-                        SflapTot = SflapTot + obj.flaps(i).S;
-                        SslatTot = SslatTot + obj.slats(i).S;
+                        SflapTot   = SflapTot + obj.flaps(i).S;
+                    end
+                    for i = 1:obj.nslats
+                        SslatTot   = SslatTot + obj.slats(i).S;
                         cbarocSlat = cbarocSlat + ...
                             (obj.slats(i).root.cextoc + obj.slats(i).tip.cextoc)/(obj.nslats*2);
                     end
-                    obj.Sflaps = SflapTot; obj.Sslats = SslatTot;
+                    obj.Sflaps    = SflapTot; obj.Sslats = SslatTot;
                     dClmax2DSlats = dClmax2DSlats/SslatTot;
 
                     % Effetti sul Momento
@@ -723,11 +751,11 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                     nEl = length(profClass.a);
                     idx = 1:nEl; idx(idx == Midx ) = 0;
                     for i = 1:nEl
-                        profClass.M(idx>0) = NaN; profClass.a(idx>0) = NaN;
-                        profClass.cl0(idx>0) = NaN; profClass.clstar(idx>0) = NaN; 
-                        profClass.clmax(idx>0) = NaN; profClass.alphamax(idx>0)= NaN; 
-                        profClass.alphastar(idx>0)= NaN;  profClass.alpha0l(idx>0)= NaN; 
-                        profClass.cmac(idx>0)= NaN; 
+                        profClass.M(idx>0)         = NaN; profClass.a(idx>0) = NaN;
+                        profClass.cl0(idx>0)       = NaN; profClass.clstar(idx>0) = NaN; 
+                        profClass.clmax(idx>0)     = NaN; profClass.alphamax(idx>0)= NaN; 
+                        profClass.alphastar(idx>0) = NaN;  profClass.alpha0l(idx>0)= NaN; 
+                        profClass.cmac(idx>0)      = NaN; 
                     end
                     % Assegnamo nome flag
                     if deltaF>0 && deltaS >0
@@ -788,7 +816,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
             obProf.flag = 'Wing in Clean Configuration';
         end
 
-        function [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot] = flapEffects(obj,deltaF,Midx,oidx)
+        function [cfavg,dcl0_mean,dcl0_tot,cbaroc_avg,cfoc_avg,dclmax_tot,dCd0] = flapEffects(obj,deltaF,Midx,oidx)
             %flapEffects; calcola gli effetti dei flaps sulle
             %caratteristiche 3D dell'ala
             %   deltaF: deflessioen dei flaps in deg
@@ -800,22 +828,22 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
 
             % Inizializzazione delle Variabili di Output
             dcl0_mean = 0; dcl0_tot = 0; cbaroc_avg = 0;
-            cfoc_avg = 0; dclmax_tot = 0; weiS = 0; cfavg = 0;
+            cfoc_avg = 0; dclmax_tot = 0; weiS = 0; cfavg = 0; dCd0 = 0;
             for i =1:obj.nflaps
                 % variabili usate per il calcolo delle
                 % caratteristiche high lift
                 % (1) dCl0 flap
                 [dclo,cboc,alphadf] = dCl02DHLFun(deltaF,obj.flaps(i),'root',Midx);
-                obj.flaps(i).root.HLauxVariables('dCl02D', dclo);
-                obj.flaps(i).root.HLauxVariables('cbaroc', cboc);
-                obj.flaps(i).root.HLauxVariables('alphaDeltaf', alphadf);
-                obj.flaps(i).root.HLauxVariables('dClmax2D', dClMaxHLFun(deltaF,...
+                obj.flaps(i).root = obj.flaps(i).root.HLauxVariables('dCl02D', dclo);
+                obj.flaps(i).root = obj.flaps(i).root.HLauxVariables('cbaroc', cboc);
+                obj.flaps(i).root = obj.flaps(i).root.HLauxVariables('alphaDeltaf', alphadf);
+                obj.flaps(i).root = obj.flaps(i).root.HLauxVariables('dClmax2D', dClMaxHLFun(deltaF,...
                     obj.flaps(i),'root'));
                 [dclo,cboc,alphadf] = dCl02DHLFun(deltaF,obj.flaps(i),'tip',Midx);
-                obj.flaps(i).tip.HLauxVariables('dCl02D', dclo);
-                obj.flaps(i).tip.HLauxVariables('cbaroc', cboc);
-                obj.flaps(i).tip.HLauxVariables('alphaDeltaf', alphadf);
-                obj.flaps(i).tip.HLauxVariables('dClmax2D', dClMaxHLFun(deltaF,...
+                obj.flaps(i).tip = obj.flaps(i).tip.HLauxVariables('dCl02D', dclo);
+                obj.flaps(i).tip = obj.flaps(i).tip.HLauxVariables('cbaroc', cboc);
+                obj.flaps(i).tip = obj.flaps(i).tip.HLauxVariables('alphaDeltaf', alphadf);
+                obj.flaps(i).tip = obj.flaps(i).tip.HLauxVariables('dClmax2D', dClMaxHLFun(deltaF,...
                     obj.flaps(i),'tip'));
 
                 % Calcolo Pesi Corde Flaps
@@ -827,7 +855,7 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 cfavg = cfavg + k1*obj.flaps(i).root.cfoc + k2*obj.flaps(i).tip.cfoc;
                 %dClMax2D_flap
                 %dClMax2D medio
-                obj.flaps(i).HLauxVariables('dCLmax_mean', k1*obj.flaps(i).root.HLauxVariables('dClmax2D')+...
+                obj.flaps(i) = obj.flaps(i).HLauxVariables('dCLmax_mean', k1*obj.flaps(i).root.HLauxVariables('dClmax2D')+...
                     k2*obj.flaps(i).tip.HLauxVariables('dClmax2D'));
 
                 sweep025 = ...
@@ -835,36 +863,37 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 Ksweep = (1-0.08*cos(sweep025*pi/180).^2)*cos(sweep025*pi/180).^(3/4) ;
                 SfoS = 2*obj.flaps(i).S/obj.Sw;
                 %dCLmax
-                obj.flaps(i).coeffsShiftFun('dCLmax',SfoS*Ksweep*...
+                obj.flaps(i) = obj.flaps(i).coeffsShiftFun('dCLmax',SfoS*Ksweep*...
                     obj.flaps(i).HLauxVariables('dCLmax_mean'));
 
                 %%dCl02D_flap
                 %dCl02D medio
-                obj.flaps(i).HLauxVariables('dCl02D_mean', ...
+                obj.flaps(i) = obj.flaps(i).HLauxVariables('dCl02D_mean', ...
                     k1*obj.flaps(i).root.HLauxVariables('dCl02D')+...
                     k2*obj.flaps(i).tip.HLauxVariables('dCl02D'));
                 % a medio flap
-                obj.flaps(i).HLauxVariables('a_mean',k1*obj.flaps(i).root.a(Midx)+...
+                obj.flaps(i) = obj.flaps(i).HLauxVariables('a_mean',k1*obj.flaps(i).root.a(Midx)+...
                     k2*obj.flaps(i).tip.a(Midx));
                 % alphaDeltaf medio
-                obj.flaps(i).HLauxVariables('alphaDeltaf' , ...
+                obj.flaps(i) = obj.flaps(i).HLauxVariables('alphaDeltaf' , ...
                     k1*obj.flaps(i).root.HLauxVariables('alphaDeltaf')+...
                     k2*obj.flaps(i).tip.HLauxVariables('alphaDeltaf'));
                 %Kb flap
-                obj.flaps(i).HLauxVariables('Kb', kbFun(...
+               obj.flaps(i)  = obj.flaps(i).HLauxVariables('Kb', kbFun(...
                     [2*obj.flaps(i).root.yglob/obj.bw,...
                     2*obj.flaps(i).tip.yglob/obj.bw],obj.TR));
                 %Kc flap
-                obj.flaps(i).HLauxVariables('Kc', kcFun( ...
+                obj.flaps(i)  = obj.flaps(i).HLauxVariables('Kc', kcFun( ...
                     obj.flaps(i).HLauxVariables('alphaDeltaf')...
                     ,obj.AR,1));
                 %dCL0 flaps
-                obj.flaps(i).coeffsShiftFun('dCL0',...
+                obj.flaps(i)  = obj.flaps(i).coeffsShiftFun('dCL0',...
                     obj.wing3Ddata(oidx).a(Midx)/obj.flaps(i).HLauxVariables('a_mean')*...
                     obj.flaps(i).HLauxVariables('dCl02D_mean')*...
                     obj.flaps(i).HLauxVariables('Kb')*...
                     obj.flaps(i).HLauxVariables('Kc') );
-
+                %dCd0
+                dCd0 = dCd0 + dCd0_flaps( obj.flaps(i),deltaF,obj );
                 %a 3D con flap
                 dcl0_mean = dcl0_mean + ...
                     obj.flaps(i).HLauxVariables('dCl02D_mean')*2*obj.flaps(i).S/obj.Sw;
@@ -886,25 +915,25 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
         function [csavg,dCLmaxTotSlat, dClmax2DSlats] = slatEffects(obj,deltaS)
             for i=1:obj.nslats
                 % Sezione Slat di Radice
-                obj.slats(i).root.HLauxVariables('etaMax',...
+                obj.slats(i).root = obj.slats(i).root.HLauxVariables('etaMax',...
                     etaMaxFun(obj.slats(i).root.LERc/obj.slats(i).root.tc,1)); % DatoLER/t potrebbe essere sbagliato
-                obj.slats(i).root.HLauxVariables('etaDelta',...
+                obj.slats(i).root = obj.slats(i).root.HLauxVariables('etaDelta',...
                     etaDeltaFun(deltaS,1));
-                obj.slats(i).root.HLauxVariables('CloDs',...
+                obj.slats(i).root = obj.slats(i).root.HLauxVariables('CloDs',...
                     clOdsSlat(obj.slats(i).root.cfoc));
-                obj.slats(i).root.HLauxVariables('dClmax_slat',...
+                obj.slats(i).root = obj.slats(i).root.HLauxVariables('dClmax_slat',...
                     obj.slats(i).root.HLauxVariables('etaMax')*...
                     obj.slats(i).root.HLauxVariables('etaDelta')*...
                     obj.slats(i).root.HLauxVariables('CloDs')*...
                     deltaS*obj.slats(i).root.cextoc);
                 % Sezione Slat di Estremità
-                obj.slats(i).tip.HLauxVariables('etaMax',...
+                obj.slats(i).tip = obj.slats(i).tip.HLauxVariables('etaMax',...
                     etaMaxFun(obj.slats(i).tip.LERc/obj.slats(i).tip.tc,1));
-                obj.slats(i).tip.HLauxVariables('etaDelta',...
+                obj.slats(i).tip = obj.slats(i).tip.HLauxVariables('etaDelta',...
                     etaDeltaFun(deltaS,1));
-                obj.slats(i).tip.HLauxVariables('CloDs',...
+                obj.slats(i).tip = obj.slats(i).tip.HLauxVariables('CloDs',...
                     clOdsSlat(obj.slats(i).tip.cfoc));
-                obj.slats(i).tip.HLauxVariables('dClmax_slat',...
+                obj.slats(i).tip = obj.slats(i).tip.HLauxVariables('dClmax_slat',...
                     obj.slats(i).tip.HLauxVariables('etaMax')*...
                     obj.slats(i).tip.HLauxVariables('etaDelta')*...
                     obj.slats(i).tip.HLauxVariables('CloDs')*...
@@ -920,13 +949,13 @@ classdef WingClass %< handle %<WingClass è una sottoclassed della classe predef
                 weiS = k1 + k2 + weiS; % Somma dei pesi
                 csavg = csavg + k1*obj.slats(i).root.cfoc + k2*obj.slats(i).tip.cfoc;
 
-                obj.slats(i).HLauxVariables('dCmax2D_slat',...
+                obj.slats(i) = obj.slats(i).HLauxVariables('dCmax2D_slat',...
                     k1*obj.slats(i).root.HLauxVariables('dClmax_slat') + ...
                     k2*obj.slats(i).tip.HLauxVariables('dClmax_slat') );
                 sweep025 = ...
                     obj.sweepChange(obj.panels(1).sweep,0,0.25,obj.AR,obj.TR);
                 Ksweep = (1-0.08*cos(sweep025*pi/180).^2)*cos(sweep025*pi/180).^(3/4) ;
-                obj.slats(i).coeffsShiftFun('dCLmax_slat',...
+                obj.slats(i) = obj.slats(i).coeffsShiftFun('dCLmax_slat',...
                     obj.slats(i).HLauxVariables('dCmax2D_slat')*Ksweep*2*obj.slats(i).S/obj.Sw );
                 dCLmaxTotSlat = dCLmaxTotSlat + obj.slats(i).coeffsShiftFun('dCLmax_slat');
 
