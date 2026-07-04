@@ -1,0 +1,86 @@
+Design Parameters
+Wing
+General
+9.5	AR
+0.22	TR
+0.56	TRi ckink/croot
+0.5	AioS Inner Panel Area over Half Area
+32.0	Sweep at LE [deg]
+6	Dihedral [deg]
+0	i Wing [deg]
+0	0	0	wing apex (x,y,z) [m]
+Sections
+Geometry
+Root	Kink	Tip
+0	0.31	1	2y/b
+0	-2	-4	eps [deg]
+0.14	0.093	0.093	toc
+0	0	0	ler/c
+0.372	0.35	0.35	x@max(t/c)
+0	0	0	x@transition Upper
+0	0	0	x@transition Lower
+0.018	0.0121	0.0121	dY
+Aerodynamics
+0.95	0.95	0.95	ka supercritical
+Low Speed
+0.20	0.20	0.20	M 
+0.126	0.127	0.122	Cla [1/deg]
+0.514	0.269	0.305	Cl0 
+1.23	1.54	1.53	Cl* 
+2.04	1.55	1.75	Clmax 
+14.60	10.7	13.6	alphamax [deg]
+-2.64	-2.10	-2.51	alpha0L  [deg]
+5.66	9.97	10.1	alpha*   [deg]
+-0.136	-0.0780	-0.0771	cm@Cl0
+0.25	0.25	0.25	x_pole/c [-]
+-0.00395	-0.00104	-0.00202	Cma@x_pole [1/deg]
+Low Speed Drag
+Alpha	Root	Kink	Tip
+-7.9	101.0	98.9	96.3	Cd0	[drag count]
+-5.7	82.6	99.9	87.0	Cd0	[drag count]
+-3.7	77.5	91.0	83.1	Cd0	[drag count]
+-1.6	75.8	85.8	84.7	Cd0	[drag count]
+0.60	74.2	83.2	83.6	Cd0	[drag count]
+2.70	69.1	85.2	91.8	Cd0	[drag count]
+7.00	92.7	113.0	121.0	Cd0	[drag count]
+9.20	99.4	134.0	145.0	Cd0	[drag count]
+11.4	123.0	181.0	188.0	Cd0	[drag count]
+13.8	162.0	177.0	191.0	Cd0	[drag count]
+DRAGEND
+High Speed
+0.740	0.74	0.74	M 
+0.162	0.172	0.172	Cla [1/deg]
+0.605	0.512	0.512	Cl0 
+0.770	1.03	1.03	Cl* 
+0.932	1.26	1.26	Clmax 
+7	7	7	alphamax [deg]
+-3.72	-3.19	-3.19	alpha0L  [deg]
+1.02	3	3	alpha*   [deg]
+-0.167	0.169	0.169	cm@Cl0
+0.25	0.25	0.25	x_pole/c [-]
+-0.0035	-0.00180	-0.00180	Cma@x_pole [1/deg]
+High Speed Drag
+Alpha	Root	Kink	Tip
+-2.0	90.6	71.8	71.8	Cd0	[drag count]
+-1.50	89.7	76.2	76.2	Cd0	[drag count]
+-1.0	90.7	80.9	80.9	Cd0	[drag count]
+-0.5	90.4	84.5	84.5	Cd0	[drag count]
+0.01	92.0	105	105	Cd0	[drag count]
+0.50	96.3	150	150	Cd0	[drag count]
+1.02	112	197	197	Cd0	[drag count]
+DRAGEND
+High-Lift Devices
+Flaps
+flap	2*y/c	cf/c	type
+1	0.14	0.300	1	Flap 1 Root
+1	0.308	0.300	1	Flap 1 Tip
+2	0.311	0.300	1	Flap 2 Root
+2	0.710	0.300	1	Flap 2 Tip
+FLAPEND
+Slats
+slat	2*y/c	cs/c	cext/c
+1	0.115	0.120	1.03	Slat 1 Root
+1	0.300	0.120	1.03	Slat 1 Tip
+2	0.311	0.120	1.03	Slat 1 Root
+2	0.840	0.120	1.03	Slat 1 Tip
+SLATEND

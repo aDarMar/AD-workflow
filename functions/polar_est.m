@@ -6,6 +6,7 @@ global main_fold
 
 lb2kg = 0.45359237; ft2m = 0.3048;
 % From Roskam, values for Transport Jets
+% log10( Swet ) = c + d*log10( WTO ) with WTO in [lb], Swet in [ft^2]
 c = 0.0199; d = 0.7331;
 
 Swet  = 10^( c+d*log10(MTOM/lb2kg) ); %Swet in ft^2
